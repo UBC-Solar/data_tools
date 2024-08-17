@@ -1,0 +1,20 @@
+[tool.poetry]
+name = "data-tools"
+version = "0.1.0"
+description = "UBC Solar's data analysis and querying tools"
+authors = ["Joshua Riefman <joshuariefman@gmail.com>"]
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+influxdb-client = "^1.45.0"
+python-dotenv = "^1.0.1"
+numpy = "^2.0.1"
+pandas = "^2.2.2"
+matplotlib = "^3.9.2"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
