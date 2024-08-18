@@ -317,10 +317,3 @@ class TimeSeries(np.ndarray):
         result = np.fromiter(map(lambda x: re.sub("[^0-9|.]", "", x), tuple_arr[:, 1]), dtype=float)
 
         return result
-
-
-if __name__ == "__main__":
-    pack_current = TimeSeries.from_csv("data_analysis/data/FSGP Current Data.csv", 0.1, "BatteryCurrent")
-
-
-
