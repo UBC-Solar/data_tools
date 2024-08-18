@@ -6,7 +6,7 @@ authors = ["Joshua Riefman <joshuariefman@gmail.com>"]
 license = "MIT"
 readme = "README.md"
 packages = [
-    "data_tools"
+    { include = "data_tools" }
 ]
 
 [tool.poetry.dependencies]
