@@ -5,6 +5,9 @@ description = "UBC Solar's data analysis and querying tools"
 authors = ["Joshua Riefman <joshuariefman@gmail.com>"]
 license = "MIT"
 readme = "README.md"
+packages = [
+    "data_tools"
+]
 
 [tool.poetry.dependencies]
 python = "^3.11"
