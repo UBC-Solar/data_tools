@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "ubc-solar-data-tools"
-version = "0.1.0"
+version = "0.1.1"
 description = "UBC Solar's data analysis and querying tools"
 authors = ["Joshua Riefman <joshuariefman@gmail.com>"]
 license = "MIT"
