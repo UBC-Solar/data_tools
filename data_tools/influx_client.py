@@ -8,19 +8,25 @@ import pandas as pd
 import numpy as np
 import math
 
-load_dotenv()
 
 INFLUX_URL = "http://influxdb.telemetry.ubcsolar.com"
-INFLUX_TOKEN = os.getenv("INFLUX_TOKEN")
-INFLUX_ORG = os.getenv("INFLUX_ORG")
 
 
 class InfluxClient:
     """
     This class encapsulates a connection to an InfluxDB database.
     """
-    def __init__(self):
-        self._client = InfluxDBClient(url=INFLUX_URL, org=INFLUX_ORG, token=INFLUX_TOKEN)
+    def __init__(self, influxdb_org=None, influxdb_token=None):
+        if influxdb_token is None or influxdb_org is None:
+            load_dotenv()
+
+            influxdb_token = os.getenv("INFLUX_TOKEN")
+            influxdb_org = os.getenv("INFLUX_ORG")
+
+        print(f"Creating client with API Token: {influxdb_token}")
+        print(f"Creating client with Org: {influxdb_org}")
+
+        self._client = InfluxDBClient(url=INFLUX_URL, org=influxdb_org, token=influxdb_token)
 
     def get_buckets(self) -> list[str]:
         """
