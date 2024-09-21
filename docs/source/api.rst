@@ -2,10 +2,10 @@ API Reference
 =============
 
 .. toctree::
-   :maxdepth: 3
+   :maxdepth: 0
+   :hidden:
+   :titlesonly:
    :caption: API Reference
 
-   data_tools/data_tools
-   data_tools/query_tools
-   data_tools/flux_tools
-
+   Collections <collections/index>
+   InfluxDB Tools <influxdb/index>
