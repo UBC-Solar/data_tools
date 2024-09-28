@@ -1,6 +1,5 @@
 [tool.poetry]
 name = "ubc-solar-data-tools"
-version = "0.1.1"
 description = "UBC Solar's data analysis and querying tools"
 authors = ["Joshua Riefman <joshuariefman@gmail.com>"]
 license = "MIT"
@@ -8,6 +7,7 @@ readme = "README.md"
 packages = [
     { include = "data_tools" }
 ]
+dynamic = ["version"]
 
 [tool.poetry.dependencies]
 python = "^3.11"
@@ -17,6 +17,11 @@ numpy = "^2.0.1"
 pandas = "^2.2.2"
 matplotlib = "^3.9.2"
 
+[tool.poetry.group.dev.dependencies]
+poetry-dynamic-versioning = "^1.4.1"
+
+[tool.poetry-dynamic-versioning]
+enable = true
 
 [build-system]
 requires = ["poetry-core"]

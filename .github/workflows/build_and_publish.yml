@@ -32,11 +32,11 @@ jobs:
       - name: Install Dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install build twine==5.1.1 
+          pip install poetry==1.8.3
 
       - name: Build Source Distribution
         run: |
-          python3 -m build --sdist
+          poetry build
 
       - name: Upload sdist to PyPI
         run: twine upload dist/*
@@ -61,13 +61,10 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v2
 
-      # We run `python -m setuptools_scm` and `git status` for debugging purposes, to verify that
-      # setuptools_scm is properly identifying the version based on the tag
-      - name: Install and prepare build dependencies
+      - name: Install and Prepare Build Dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install setuptools_scm==8.1.0 twine==5.1.1 cibuildwheel==2.20.0
-          python -m setuptools_scm 
+          pip install cibuildwheel==2.20.0
           git status
 
       # Now, we use cibuildwheel to build all the wheels that we want for the platforms we defined in matrix.os
