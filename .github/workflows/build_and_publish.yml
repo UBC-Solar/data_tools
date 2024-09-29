@@ -3,15 +3,9 @@
 name: Build and Publish Wheels
 
 on:
-#  workflow_run:  # THIS IS DISABLED BECAUSE IT PROBABLY DOESN'T WORK!
-#    workflows: ["Run Tests"]
-#    types:
-#      - completed
-
   release:  # This workflow will be triggered upon a release being published on GitHub
     types:
       - published
-
   workflow_dispatch:  # Enable manual dispatching of this workflow
 
 jobs:
@@ -40,61 +34,15 @@ jobs:
           echo "$POETRY_HOME/bin" >> $GITHUB_PATH
           poetry self add poetry-dynamic-versioning[plugin]
           poetry config virtualenvs.create true
-          poetry config virtualenvs.in-project true
+          poetry config virtualenvs.in-project true  
 
       - name: Build Source Distribution
         run: |
           poetry build --format=sdist
 
-      - name: Upload sdist to PyPI
-        run: twine upload dist/*
-        env:
-          TWINE_USERNAME: __token__
-          TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
-
-
-  build_wheels:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false  # Without this, one of the wheels failing for some reason would cancel all of the others.
-      matrix:
-        os: [macos-latest, windows-latest, ubuntu-latest]  # Build wheels for macOS and Windows, and Linux.
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
+      - uses: pypa/gh-action-pypi-publish@release/v1
+        name: Upload to PyPI
         with:
-          fetch-depth: 0  # Required to fetch full history including tags, so setuptools_scm can determine version
-
-      - name: Set up Python
-        uses: actions/setup-python@v2
-
-      - name: Install Poetry
-        if: steps.cached-poetry.outputs.cache-hit != 'true'
-        uses: snok/install-poetry@v1
-
-      - name: Configure Poetry # Needs to be separate from install-poetry because cache.
-        run: |
-          echo "$POETRY_HOME/bin" >> $GITHUB_PATH
-          poetry self add poetry-dynamic-versioning[plugin]
-          poetry config virtualenvs.create true
-          poetry config virtualenvs.in-project true
-
-      - name: Install and Prepare Build Dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install cibuildwheel==2.20.0
-          git status
-
-      # Now, we use cibuildwheel to build all the wheels that we want for the platforms we defined in matrix.os
-      # It will build wheels for Python versions that are allowed based on our pyproject.toml
-      - name: Build wheels
-        run: cibuildwheel --output-dir dist
-        env:
-          CIBW_ARCHS_MACOS: "x86_64 arm64"  # Make sure both x86_64 and arm64 wheels are built for macOS
-
-      - name: Upload wheels to PyPI
-        run: twine upload dist/*
-        env:
-          TWINE_USERNAME: __token__
-          TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
+          password: ${{ secrets.PYPI_TOKEN }}
+          packages_dir: dist/
+          skip_existing: true
