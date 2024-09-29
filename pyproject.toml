@@ -25,6 +25,7 @@ style = "semver"
 [tool.cibuildwheel]
 archs = "auto"  # Automatically detects architectures (e.g., x86, ARM)
 skip = ["pp*", "*-musllinux_*", "*-win32"]  # Skip PyPy (only want CPython), Musllinux, win32 wheels
+build = ["cp39-*", "cp310-*", "cp311-*", "cp312-*"]
 manylinux-x86_64-image = "manylinux2014"
 manylinux-i686-image = "manylinux2014"
 manylinux-aarch64-image = "manylinux2014"
