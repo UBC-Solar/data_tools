@@ -1,5 +1,5 @@
 import pandas as pd
-from os import path
+import pathlib
 from datetime import datetime
 import pytz
 
@@ -7,17 +7,19 @@ import pytz
 class FSGPDayLaps:
 
     def __init__(self, day: int):
-        self.day = day
+        self.day: int = day
 
-        self.filepath = path.normpath(path.join(path.dirname(__file__),
-                                                f"fsgp_timing_data\\fsgp_timing_day_{day}.csv"))
-        self._df_full = pd.read_csv(self.filepath)
+        self.filepath: pathlib.Path = (pathlib.Path(__file__).parent.parent
+                         / "static_data"
+                         / "fsgp_timing_2024"
+                         / f"fsgp_timing_day_{day}.csv")
+        self._df_full: pd.DataFrame = pd.read_csv(self.filepath)
 
-        header = self._df_full.iloc[2]
-        data = self._df_full.iloc[4:]
+        header: pd.Series = self._df_full.iloc[2]
+        data: pd.DataFrame = self._df_full.iloc[4:]
         self.df = pd.DataFrame(data.values, columns=header)
 
-        selected_cols = [
+        selected_cols: list = [
             'Lap #',
             'Start Time (Only if Diff than Prev Finish)',
             'Finish Time (HH:MM:SS)',
@@ -28,18 +30,18 @@ class FSGPDayLaps:
             'DRVR Name',
         ]
 
-        dtypes = {
+        dtypes: dict = {
             'Lap #': 'int',
             'Pit Time Before Lap (Min)': 'float',
             'Lap Time (Min)': 'float',
             'Avg Lap Speed (MPH)': 'float',
         }
 
-        self.df = self.df[selected_cols].dropna(axis=0, how='all').astype(dtypes)
+        self.df: pd.DataFrame = self.df[selected_cols].dropna(axis=0, how='all').astype(dtypes)
         self.df.set_index('Lap #', inplace=True)
 
     @staticmethod
-    def _pad_timestamp(timestamp: str):
+    def _pad_timestamp(timestamp: str) -> str:
         """
         Pad a timestamp to match HH:MM:SS format
 
@@ -54,10 +56,10 @@ class FSGPDayLaps:
         else:
             raise ValueError('timestamp did not have H:MM:SS format or HH:MM:SS format, should have len 7 or 8')
 
-    def get_lap_count(self):
+    def get_lap_count(self) -> int:
         return self.df.index.max()
 
-    def _get_utc(self, time_str):
+    def _get_utc(self, time_str: str) -> str:
 
         date_time_str = f"{'2024-07-'}{15 + self.day} {time_str}"
         naive_datetime = datetime.strptime(date_time_str, "%Y-%m-%d %H:%M:%S")
@@ -69,7 +71,7 @@ class FSGPDayLaps:
         # Format the UTC time to ISO 8601 string format
         return utc_datetime.strftime("%Y-%m-%dT%H:%M:%S") + "Z"
 
-    def get_start_utc(self, lap) -> str:
+    def get_start_utc(self, lap: int) -> str:
         """
         Get lap start time as a UTC timestamp
 
@@ -83,7 +85,7 @@ class FSGPDayLaps:
             time_str = self.df.loc[lap - 1, 'Finish Time (HH:MM:SS)']
         return self._get_utc(time_str)
 
-    def get_finish_utc(self, lap) -> str:
+    def get_finish_utc(self, lap: int) -> str:
         """
         Get lap finish time as a UTC timestamp
 
@@ -93,7 +95,7 @@ class FSGPDayLaps:
         time_str = self.df.loc[lap, 'Finish Time (HH:MM:SS)']
         return self._get_utc(time_str)
 
-    def get_time(self, lap) -> str:
+    def get_time(self, lap: int) -> str:
         """
         Get lap time as an HH:MM:SS timestamp
 
@@ -102,7 +104,7 @@ class FSGPDayLaps:
         """
         return self._pad_timestamp(self.df.loc[lap, 'Lap Time (HH:MM:SS)'])
 
-    def get_pit_time(self, lap) -> float:
+    def get_pit_time(self, lap: int) -> float:
         """
         Get pit time before lap in minutes as a decimal, or 0. if Brightside didn't pit
 
@@ -111,7 +113,7 @@ class FSGPDayLaps:
         """
         return self.df.loc[lap, 'Pit Time Before Lap (Min)']
 
-    def get_time_minutes(self, lap) -> float:
+    def get_time_minutes(self, lap: int) -> float:
         """
         Get lap time in minutes as a decimal
 
@@ -120,7 +122,7 @@ class FSGPDayLaps:
         """
         return self.df.loc[lap, 'Lap Time (Min)']
 
-    def get_lap_mph(self, lap) -> float:
+    def get_lap_mph(self, lap: int) -> float:
         """
         Get the average lap speed in mph
 
@@ -129,7 +131,7 @@ class FSGPDayLaps:
         """
         return self.df.loc[lap, 'Avg Lap Speed (MPH)']
 
-    def get_lap_driver(self, lap) -> str:
+    def get_lap_driver(self, lap: int) -> str:
         """
         Get the name of a driver for a lap
 
@@ -138,7 +140,3 @@ class FSGPDayLaps:
         """
         return self.df.loc[lap, 'DRVR Name']
 
-
-if __name__ == "__main__":
-    laps3 = FSGPDayLaps(3)
-    breakpoint()
