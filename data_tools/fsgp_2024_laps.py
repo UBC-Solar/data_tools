@@ -79,6 +79,7 @@ class FSGPDayLaps:
         :return: Start time in %Y-%m-%dT%H:%M:%SZ format e.g. 2024-07-16T20:46:32Z
         """
         start_time = self.df.loc[lap, 'Start Time (Only if Diff than Prev Finish)']
+        assert lap > 0, "Lap number must be greater than zero; first lap is lap 1"
         if isinstance(start_time, str) and len(start_time) > 0:
             time_str = start_time
         else:
@@ -92,6 +93,7 @@ class FSGPDayLaps:
         :param lap: Lap number from the race day
         :return: Finish time in %Y-%m-%dT%H:%M:%SZ format e.g. 2024-07-16T20:46:32Z
         """
+        assert lap > 0, "Lap number must be greater than zero; first lap is lap 1"
         time_str = self.df.loc[lap, 'Finish Time (HH:MM:SS)']
         return self._get_utc(time_str)
 
@@ -102,6 +104,7 @@ class FSGPDayLaps:
         :param lap: Lap number from the race day
         :return: Time in HH:MM:SS format e.g. 00:06:59
         """
+        assert lap > 0, "Lap number must be greater than zero; first lap is lap 1"
         return self._pad_timestamp(self.df.loc[lap, 'Lap Time (HH:MM:SS)'])
 
     def get_pit_time(self, lap: int) -> float:
@@ -111,6 +114,7 @@ class FSGPDayLaps:
         :param lap: Lap number from the race day
         :return: Pit time before lap in minutes as a decimal, e.g. 3.583
         """
+        assert lap > 0, "Lap number must be greater than zero; first lap is lap 1"
         return self.df.loc[lap, 'Pit Time Before Lap (Min)']
 
     def get_time_minutes(self, lap: int) -> float:
@@ -120,6 +124,7 @@ class FSGPDayLaps:
         :param lap: Lap number from the race day
         :return: Time in minutes as a decimal, e.g. 6.324
         """
+        assert lap > 0, "Lap number must be greater than zero; first lap is lap 1"
         return self.df.loc[lap, 'Lap Time (Min)']
 
     def get_lap_mph(self, lap: int) -> float:
@@ -129,6 +134,7 @@ class FSGPDayLaps:
         :param lap: Lap number from the race day
         :return: Speed in mph, e.g. 26.745
         """
+        assert lap > 0, "Lap number must be greater than zero; first lap is lap 1"
         return self.df.loc[lap, 'Avg Lap Speed (MPH)']
 
     def get_lap_driver(self, lap: int) -> str:
@@ -138,5 +144,6 @@ class FSGPDayLaps:
         :param lap: Lap number from the race day
         :return: Name of driver, e.g. 'Diego'
         """
+        assert lap > 0, "Lap number must be greater than zero; first lap is lap 1"
         return self.df.loc[lap, 'DRVR Name']
 
