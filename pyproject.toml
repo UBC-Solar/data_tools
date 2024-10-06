@@ -16,6 +16,11 @@ python-dotenv = "^1.0.1"
 numpy = "^2.0.1"
 pandas = "^2.2.2"
 matplotlib = "^3.9.2"
+
+[tool.poetry.group.test]
+optional = true
+
+[tool.poetry.group.test.dependencies]
 pytest = "^8.3.3"
 
 
