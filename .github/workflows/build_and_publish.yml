@@ -1,0 +1,48 @@
+# This workflow is maintained according to STG Specification #2: Physics Publishing
+
+name: Build and Publish Wheels
+
+on:
+  release:  # This workflow will be triggered upon a release being published on GitHub
+    types:
+      - published
+  workflow_dispatch:  # Enable manual dispatching of this workflow
+
+jobs:
+  build_sdist:
+    runs-on: ubuntu-latest
+    env:
+      POETRY_HOME: "~/poetry"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0  # Required to fetch full history including tags, so setuptools_scm can determine version
+
+      - name: Setup Python
+        uses: actions/setup-python@v1
+        with:
+          python-version: 3.9
+
+      - name: Install Poetry
+        if: steps.cached-poetry.outputs.cache-hit != 'true'
+        uses: snok/install-poetry@v1
+
+      - name: Configure Poetry # Needs to be separate from install-poetry because cache.
+        run: |
+          echo "$POETRY_HOME/bin" >> $GITHUB_PATH
+          poetry self add poetry-dynamic-versioning[plugin]
+          poetry config virtualenvs.create true
+          poetry config virtualenvs.in-project true  
+
+      - name: Build Source Distribution
+        run: |
+          poetry build --format=sdist
+
+      - uses: pypa/gh-action-pypi-publish@release/v1
+        name: Upload to PyPI
+        with:
+          password: ${{ secrets.PYPI_TOKEN }}
+          packages_dir: dist/
+          skip_existing: true

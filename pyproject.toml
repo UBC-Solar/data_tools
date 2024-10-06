@@ -1,6 +1,5 @@
 [tool.poetry]
 name = "ubc-solar-data-tools"
-version = "0.1.1"
 description = "UBC Solar's data analysis and querying tools"
 authors = ["Joshua Riefman <joshuariefman@gmail.com>"]
 license = "MIT"
@@ -8,9 +7,10 @@ readme = "README.md"
 packages = [
     { include = "data_tools" }
 ]
+version = "0.0.0"  # DO NOT MODIFY
 
 [tool.poetry.dependencies]
-python = "^3.11"
+python = "^3.9"
 influxdb-client = "^1.45.0"
 python-dotenv = "^1.0.1"
 numpy = "^2.0.1"
@@ -23,7 +23,19 @@ optional = true
 [tool.poetry.group.test.dependencies]
 pytest = "^8.3.3"
 
+[tool.poetry-dynamic-versioning]
+enable = true
+vcs = "git"
+style = "semver"
+
+[tool.cibuildwheel]
+archs = "auto"  # Automatically detects architectures (e.g., x86, ARM)
+skip = ["pp*", "*-musllinux_*", "*-win32"]  # Skip PyPy (only want CPython), Musllinux, win32 wheels
+build = ["cp39-*", "cp310-*", "cp311-*", "cp312-*"]
+manylinux-x86_64-image = "manylinux2014"
+manylinux-i686-image = "manylinux2014"
+manylinux-aarch64-image = "manylinux2014"
 
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires = ["poetry-core>=1.0.0", "poetry-dynamic-versioning>=1.0.1"]
+build-backend = "poetry_dynamic_versioning.backend"

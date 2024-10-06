@@ -1,26 +1,34 @@
 import os
 
-from data_tools.flux_query_builder import FluxQuery
-from data_tools.time_series import TimeSeries
+from data_tools.influxdb.flux import FluxQuery
+from data_tools.collections.time_series import TimeSeries
 from influxdb_client import InfluxDBClient
 from dotenv import load_dotenv
 import pandas as pd
 import numpy as np
 import math
 
-load_dotenv()
 
 INFLUX_URL = "http://influxdb.telemetry.ubcsolar.com"
-INFLUX_TOKEN = os.getenv("INFLUX_TOKEN")
-INFLUX_ORG = os.getenv("INFLUX_ORG")
 
 
-class InfluxClient:
+class DBClient:
     """
     This class encapsulates a connection to an InfluxDB database.
     """
-    def __init__(self):
-        self._client = InfluxDBClient(url=INFLUX_URL, org=INFLUX_ORG, token=INFLUX_TOKEN)
+    def __init__(self, influxdb_org=None, influxdb_token=None):
+        if influxdb_token is None or influxdb_org is None:
+            load_dotenv()
+
+            influxdb_token = os.getenv("INFLUX_TOKEN")
+            influxdb_org = os.getenv("INFLUX_ORG")
+
+        print(f"Creating client with API Token: {influxdb_token}")
+        print(f"Creating client with Org: {influxdb_org}")
+
+        self._influx_org = influxdb_org
+
+        self._client = InfluxDBClient(url=INFLUX_URL, org=influxdb_org, token=influxdb_token)
 
     def get_buckets(self) -> list[str]:
         """
@@ -43,7 +51,7 @@ class InfluxClient:
                 schema.measurements(bucket: "{bucket}")
                 '''
 
-        result = self._client.query_api().query(org=INFLUX_ORG, query=query)
+        result = self._client.query_api().query(org=self._influx_org, query=query)
         measurements = {record.get_value() for table in result for record in table.records}
 
         return list(measurements)
@@ -61,7 +69,7 @@ class InfluxClient:
                       |> group(columns: ["_field"])
                       |> distinct(column: "_field")'''
 
-        field_result = self._client.query_api().query(org=INFLUX_ORG, query=field_query)
+        field_result = self._client.query_api().query(org=self._influx_org, query=field_query)
         fields = {record.get_value() for table in field_result for record in table.records}
 
         return list(fields)
@@ -77,7 +85,7 @@ class InfluxClient:
                       |> range(start: -30d)
                       |> distinct(column: "car")'''
 
-        cars_result = self._client.query_api().query(org=INFLUX_ORG, query=field_query)
+        cars_result = self._client.query_api().query(org=self._influx_org, query=field_query)
         cars = {record.get_value() for table in cars_result for record in table.records}
 
         return list(cars)
@@ -127,7 +135,7 @@ class InfluxClient:
 if __name__ == "__main__":
     start = "2024-07-07T02:23:57Z"
     stop = "2024-07-07T02:34:15Z"
-    client = InfluxClient()
+    client = DBClient()
 
     pack_voltage: TimeSeries = client.query_time_series(start, stop, "MotorCurrent", units="V", measurement="MCB")
     pack_current: TimeSeries = client.query_time_series(start, stop, "PackCurrent", units="A")

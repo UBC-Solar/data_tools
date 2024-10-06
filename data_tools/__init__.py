@@ -1,20 +1,17 @@
-from .flux_query_builder import (
+from .influxdb import (
     FluxQuery,
     FluxStatement,
-    FluxStatementTemplate
+    DBClient
 )
 
-from .time_series import TimeSeries
-
-from .influx_client import InfluxClient
+from .collections import TimeSeries
 
 from .fsgp_2024_laps import FSGPDayLaps
 
 __all__ = [
     "FluxQuery",
     "FluxStatement",
-    "FluxStatementTemplate",
     "TimeSeries",
-    "InfluxClient",
-    "FSGPDayLaps"
+    "DBClient",
+    "FSGPDayLaps",
 ]
