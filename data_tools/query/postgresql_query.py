@@ -5,26 +5,34 @@ from data_tools.query.data_schema import init_schema, CANLog, get_sensor_id, get
 from data_tools.collections.time_series import TimeSeries
 import matplotlib.pyplot as plt
 import numpy as np
-from typing import List, Type
+from typing import List, Type, Union
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+POSTGRESQL_USERNAME = os.getenv("POSTGRESQL_USERNAME")
+POSTGRESQL_PASSWORD = os.getenv("POSTGRESQL_PASSWORD")
+POSTGRESQL_DATABASE = os.getenv("POSTGRESQL_DATABASE")
+POSTGRESQL_ADDRESS  = os.getenv("POSTGRESQL_ADDRESS")
 
 
-DATABASE_URL = "100.120.36.75"  # strategy-bay's Influx IP
-
-
-def _get_db_url(db_name: str, username: str, password: str) -> str:
+def _get_db_url(db_name: str, ip_address: str, username: str, password: str) -> str:
     """
     Get the URL to a Postgres database.
 
-    :param db_name: the name of the database being connected to
-    :param username: the username of the user that is connecting
-    :param password: the password of the user that is connecting
+    :param str db_name: the name of the database being connected to
+    :param str ip_address: the IP Address of the machine running the PostgreSQL instance being connected to
+    :param str username: the username of the user that is connecting
+    :param str password: the password of the user that is connecting
     :return: the URL formatted as a string
     """
-    assert isinstance(db_name, str), "db_name must be a string!"
-    assert isinstance(username, str), "username must be a string!"
-    assert isinstance(password, str), "password must be a string!"
+    assert isinstance(db_name, Union[str, None]), "db_name must be a string!"
+    assert isinstance(username, Union[str, None]), "username must be a string!"
+    assert isinstance(ip_address, Union[str, None]), "ip_address must be a string!"
+    assert isinstance(password, Union[str, None]), "password must be a string!"
 
-    return f"postgresql://{username}:{password}@{DATABASE_URL}:5432/{db_name}"
+    return f"postgresql://{username}:{password}@{ip_address}:5432/{db_name}"
 
 
 class PostgresClient:
@@ -33,15 +41,24 @@ class PostgresClient:
     Connect to a PostgresSQL database and concisely make queries for time-series data.
 
     """
-    def __init__(self, db_name: str, username: str = "admin", password: str = "new_password"):
-        assert isinstance(db_name, str), "db_name must be a string!"
-        assert isinstance(username, str), "username must be a string!"
-        assert isinstance(password, str), "password must be a string!"
+    def __init__(self, db_name: str, ip_address: str = None, username: str = None, password: str = None):
+        assert isinstance(db_name, Union[str, None]), "db_name must be a string!"
+        assert isinstance(username, Union[str, None]), "username must be a string!"
+        assert isinstance(ip_address, Union[str, None]), "ip_address must be a string!"
+        assert isinstance(password, Union[str, None]), "password must be a string!"
 
-        url = _get_db_url(db_name, username, password)
+        if username is None:
+            username = POSTGRESQL_USERNAME
+        if ip_address is None:
+            ip_address = POSTGRESQL_ADDRESS
+        if password is None:
+            password = POSTGRESQL_PASSWORD
+
+        url = _get_db_url(db_name, ip_address, username, password)
         self._engine: Engine = create_engine(url)
 
-        self._session: Session = sessionmaker(bind=self._engine).__call__()
+        self._session_builder = sessionmaker(bind=self._engine)
+        self._session: Session = self._session_builder()
 
     def query(self, field: str, start_time: datetime, end_time: datetime, granularity: float = 1.0,) -> TimeSeries:
         """
@@ -109,10 +126,38 @@ class PostgresClient:
         """
         init_schema(self._engine)
 
+    def get_session(self) -> Session:
+        """
+        Obtain a new Session to make queries to this database.
+        :return: a new Session bound to this connection
+        """
+        return self._session_builder()
+
+    def write(self, session: Session, instance: Union[object, List[object]]) -> Union[None, Exception]:
+        """
+        Write some data ``instance`` to this database using ``session``.
+
+        :param session: the Session that will be used to write to the database
+        :param instance: the data that will be uploaded, can be a single object or an iterable of objects.
+        :return: None if the data was uploaded successfully, or the Exception that was raised otherwise
+        """
+        try:
+            # Upload data as a batch if it's a list
+            if isinstance(data, List):
+                session.add_all(instance)
+            else:
+                session.add(instance)
+
+            session.commit()
+
+        except Exception as e:
+            session.rollback()
+            return e
+
         
 if __name__ == "__main__":
     field = "VehicleVelocity"
-    client = PostgresClient("can_log_prod")
+    client = PostgresClient(POSTGRESQL_DATABASE, POSTGRESQL_ADDRESS, POSTGRESQL_USERNAME, POSTGRESQL_PASSWORD)
 
     start_time = datetime(2024, 7, 16, 15, 0, 0, tzinfo=timezone.utc)
     end_time = datetime(2024, 7, 16, 22, 0, 0, tzinfo=timezone.utc)
