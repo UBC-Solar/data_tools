@@ -16,7 +16,7 @@ python-dotenv = "^1.0.1"
 sqlalchemy = "^2.0.5"
 psycopg2-binary = "^2.9.9"
 pandas = "^2.2.3"
-numpy =  "^1.26.4"
+numpy =  "^2.0.1"
 scipy = "^1.14.1"
 matplotlib = "3.*"
 
