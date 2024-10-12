@@ -146,4 +146,3 @@ class FSGPDayLaps:
         """
         assert lap > 0, "Lap number must be greater than zero; first lap is lap 1"
         return self.df.loc[lap, 'DRVR Name']
-

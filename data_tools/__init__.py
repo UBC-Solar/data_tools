@@ -1,12 +1,15 @@
-from .influxdb import (
+from .query import (
     FluxQuery,
     FluxStatement,
-    DBClient
+    DBClient,
+    PostgresClient
 )
 
-from .collections import TimeSeries
+from .collections import (
+    TimeSeries,
+    FSGPDayLaps
+)
 
-from .fsgp_2024_laps import FSGPDayLaps
 
 __all__ = [
     "FluxQuery",
@@ -14,4 +17,5 @@ __all__ = [
     "TimeSeries",
     "DBClient",
     "FSGPDayLaps",
+    "PostgresClient"
 ]

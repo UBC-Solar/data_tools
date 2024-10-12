@@ -1,12 +1,10 @@
 import os
 
-from data_tools.influxdb.flux import FluxQuery
+from data_tools.query.flux import FluxQuery
 from data_tools.collections.time_series import TimeSeries
 from influxdb_client import InfluxDBClient
 from dotenv import load_dotenv
 import pandas as pd
-import numpy as np
-import math
 
 
 INFLUX_URL = "http://influxdb.telemetry.ubcsolar.com"
