@@ -10,18 +10,28 @@ packages = [
 version = "0.0.0"  # DO NOT MODIFY
 
 [tool.poetry.dependencies]
-python = "^3.9"
+python = "^3.10"
 influxdb-client = "^1.45.0"
 python-dotenv = "^1.0.1"
-numpy = "^2.0.1"
-pandas = "^2.2.2"
-matplotlib = "^3.9.2"
+sqlalchemy = "^2.0.5"
+psycopg2-binary = "^2.9.9"
+pandas = "^2.2.3"
+numpy =  "^1.26.4"
+scipy = "^1.14.1"
+matplotlib = "3.*"
 
 [tool.poetry.group.test]
 optional = true
 
+[tool.poetry.group.docs]
+optional = true
+
 [tool.poetry.group.test.dependencies]
 pytest = "^8.3.3"
+
+[tool.poetry.group.docs.dependencies]
+myst-parser = "^4.0.0"
+pydata-sphinx-theme = "^0.15.4"
 
 [tool.poetry-dynamic-versioning]
 enable = true

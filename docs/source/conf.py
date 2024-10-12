@@ -30,6 +30,8 @@ extensions = [
 
 html_theme = "pydata_sphinx_theme"
 
+autosummary_generate = True
+
 autodoc_mock_imports = ['core']
 source_suffix = ['.rst', '.md']
 

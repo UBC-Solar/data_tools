@@ -9,7 +9,7 @@ class FSGPDayLaps:
     def __init__(self, day: int):
         self.day: int = day
 
-        self.filepath: pathlib.Path = (pathlib.Path(__file__).parent.parent
+        self.filepath: pathlib.Path = (pathlib.Path(__file__).parent.parent.parent
                          / "static_data"
                          / "fsgp_timing_2024"
                          / f"fsgp_timing_day_{day}.csv")
@@ -146,4 +146,3 @@ class FSGPDayLaps:
         """
         assert lap > 0, "Lap number must be greater than zero; first lap is lap 1"
         return self.df.loc[lap, 'DRVR Name']
-
