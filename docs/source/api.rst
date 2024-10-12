@@ -9,3 +9,4 @@ API Reference
 
    Collections <collections/index>
    InfluxDB Tools <influxdb/index>
+   fsgp_laps
