@@ -13,12 +13,13 @@ version = "0.0.0"  # DO NOT MODIFY
 python = "^3.10"
 influxdb-client = "^1.45.0"
 python-dotenv = "^1.0.1"
-numpy = "=1.26.4"
-pandas = "^2.2.2"
-matplotlib = "^3.9.2"
 sqlalchemy = "^2.0.5"
-scipy = "^1.14.1"
 psycopg2-binary = "^2.9.9"
+pyarrow = "^17.0.0"
+pandas = "^2.2.3"
+numpy = "=1.26.4"
+scipy = "^1.14.1"
+matplotlib = "^3.9.2"
 
 [tool.poetry.group.test]
 optional = true
