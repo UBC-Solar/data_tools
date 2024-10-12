@@ -96,9 +96,6 @@ class PostgresClient:
         # Subtract off the first timestamp so every timestamp is delta-time from the first.
         timestamps -= timestamps[0]
 
-        plt.plot(timestamps, values)
-        plt.show()
-
         # Reform the x-axis as a homogenous array
         x_axis = np.arange(timestamps[0], timestamps[-1], granularity)
 
@@ -157,11 +154,11 @@ class PostgresClient:
         
 if __name__ == "__main__":
     field = "VehicleVelocity"
-    client = PostgresClient(POSTGRESQL_DATABASE, POSTGRESQL_ADDRESS, POSTGRESQL_USERNAME, POSTGRESQL_PASSWORD)
+    client = PostgresClient("can_log_prod")
 
     start_time = datetime(2024, 7, 16, 15, 0, 0, tzinfo=timezone.utc)
     end_time = datetime(2024, 7, 16, 22, 0, 0, tzinfo=timezone.utc)
 
-    data: TimeSeries = client.query(field, start_time, end_time)
+    data: TimeSeries = client.query(field, start_time, end_time, granularity=0.1)
 
     data.plot()
