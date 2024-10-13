@@ -1,20 +1,36 @@
-from datetime import datetime, timezone
-from sqlalchemy import create_engine, Engine
-from sqlalchemy.orm import sessionmaker, Session
 from data_tools.query.data_schema import init_schema, CANLog, get_sensor_id, get_data_units
 from data_tools.collections.time_series import TimeSeries
-import matplotlib.pyplot as plt
-import numpy as np
+from sqlalchemy.orm import sessionmaker, Session
+from sqlalchemy import create_engine, Engine
+from datetime import datetime, timezone
 from typing import List, Type, Union
-import os
+import matplotlib.pyplot as plt
 from dotenv import load_dotenv
+import numpy as np
+import logging
+import os
+
+logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO)
 
 load_dotenv()
 
-POSTGRESQL_USERNAME = os.getenv("POSTGRESQL_USERNAME")
-POSTGRESQL_PASSWORD = os.getenv("POSTGRESQL_PASSWORD")
-POSTGRESQL_DATABASE = os.getenv("POSTGRESQL_DATABASE")
-POSTGRESQL_ADDRESS  = os.getenv("POSTGRESQL_ADDRESS")
+_POSTGRESQL_USERNAME = os.getenv("POSTGRESQL_USERNAME")
+_POSTGRESQL_PASSWORD = os.getenv("POSTGRESQL_PASSWORD")
+_POSTGRESQL_DATABASE = os.getenv("POSTGRESQL_DATABASE")
+_POSTGRESQL_ADDRESS = os.getenv("POSTGRESQL_ADDRESS")
+
+if _POSTGRESQL_USERNAME is None:
+    logger.error(f"Could not find a POSTGRESQL_USERNAME in .env!")
+
+if _POSTGRESQL_PASSWORD is None:
+    logger.error(f"Could not find a POSTGRESQL_PASSWORD in .env!")
+
+if _POSTGRESQL_DATABASE is None:
+    logger.error(f"Could not find a POSTGRESQL_DATABASE in .env!")
+
+if _POSTGRESQL_ADDRESS is None:
+    logger.error(f"Could not find a POSTGRESQL_ADDRESS in .env!")
 
 
 def _get_db_url(db_name: str, ip_address: str, username: str, password: str) -> str:
@@ -27,12 +43,31 @@ def _get_db_url(db_name: str, ip_address: str, username: str, password: str) -> 
     :param str password: the password of the user that is connecting
     :return: the URL formatted as a string
     """
-    assert isinstance(db_name, Union[str, None]), "db_name must be a string!"
-    assert isinstance(username, Union[str, None]), "username must be a string!"
-    assert isinstance(ip_address, Union[str, None]), "ip_address must be a string!"
-    assert isinstance(password, Union[str, None]), "password must be a string!"
+    assert isinstance(db_name, str), f"db_name must be a string, not {type(db_name)}!"
+    assert isinstance(username, str), f"username must be a string, not {type(username)}!"
+    assert isinstance(ip_address, str), f"ip_address must be a string, not {type(ip_address)}!"
+    assert isinstance(password, str), f"password must be a string, not {type(password)}!"
 
     return f"postgresql://{username}:{password}@{ip_address}:5432/{db_name}"
+
+
+def _ensure_utc(dt: datetime) -> datetime:
+    """
+    Ensure that a datetime, ``dt`` is localized to UTC.
+
+    :param dt: the datetime that will be validated
+    :raises ValueError: if ``dt`` is not localized to ANY timezone.
+    :return:
+    """
+    # Check if ``dt`` is naive (not localized to a timezone), in that case we cannot safely proceed.
+    if dt.tzinfo is None:
+        raise ValueError("Datetime object must be timezone-aware.")
+
+    # Otherwise, we can re-localize the ``dt`` to UTC if it isn't already
+    if dt.tzinfo != timezone.utc:
+        dt = dt.astimezone(timezone.utc)
+
+    return dt
 
 
 class PostgresClient:
@@ -41,49 +76,61 @@ class PostgresClient:
     Connect to a PostgresSQL database and concisely make queries for time-series data.
 
     """
-    def __init__(self, db_name: str, ip_address: str = None, username: str = None, password: str = None):
-        assert isinstance(db_name, Union[str, None]), "db_name must be a string!"
-        assert isinstance(username, Union[str, None]), "username must be a string!"
-        assert isinstance(ip_address, Union[str, None]), "ip_address must be a string!"
-        assert isinstance(password, Union[str, None]), "password must be a string!"
-
+    def __init__(self, db_name: str = None, ip_address: str = None, username: str = None, password: str = None, timeout: float = 10):
         if username is None:
-            username = POSTGRESQL_USERNAME
+            username = _POSTGRESQL_USERNAME
+        if db_name is None:
+            db_name = _POSTGRESQL_DATABASE
         if ip_address is None:
-            ip_address = POSTGRESQL_ADDRESS
+            ip_address = _POSTGRESQL_ADDRESS
         if password is None:
-            password = POSTGRESQL_PASSWORD
+            password = _POSTGRESQL_PASSWORD
 
         url = _get_db_url(db_name, ip_address, username, password)
-        self._engine: Engine = create_engine(url)
+        self._engine: Engine = create_engine(url, connect_args={'connect_timeout': timeout})
 
         self._session_builder = sessionmaker(bind=self._engine)
         self._session: Session = self._session_builder()
 
-    def query(self, field: str, start_time: datetime, end_time: datetime, granularity: float = 1.0,) -> TimeSeries:
+    def query(self, field: str, start_time: datetime, end_time: datetime, granularity: float = 1.0) -> TimeSeries:
         """
         Query the database for time-series data matching ``field``, between ``start_time`` and ``end_time``.
 
         Undefined behaviour when timestamps provided are not in UTC!
 
+        PLEASE NOTE: If your data does not have a frequency of 1.0Hz, then you will be
+        decimating or up-sampling your data. Set ``granularity`` to control the temporal
+        granularity (time between measurements) of your data!
+
         :param str field: name of the field that will be queried
         :param datetime.datetime start_time: the UTC datetime of the beginning of the data to be queried
         :param datetime.datetime end_time: the UTC datetime of the end of the data to be queried
-        :param float granularity: the desired temporal granularity of the returned data
+        :param float granularity: the desired temporal granularity (time between measurements) of the returned data
         :return: successfully queried data formatted as a TimeSeries
-        :raises ValueError: if no data could be queried
+        :raises IndexError: if no data could be queried
+        :raises RuntimeError: if the query failed for any reason
+        :raises ValueError: if timestamps cannot be localized to UTC
         """
-        unix_start_time = start_time.timestamp()
-        unix_end_time = end_time.timestamp()
+        # Validate that the times provided are localized to UTC
+        utc_start_time = _ensure_utc(start_time)
+        utc_end_time = _ensure_utc(end_time)
 
-        queried_data: List[Type[CANLog]] = self._session.query(CANLog)\
-            .filter(CANLog.sensor_type == get_sensor_id(field),
-                    CANLog.timestamp >= unix_start_time,
-                    CANLog.timestamp <= unix_end_time)\
-            .order_by(CANLog.timestamp).all()
+        unix_start_time = utc_start_time.timestamp()
+        unix_end_time = utc_end_time.timestamp()
+
+        try:
+            queried_data: List[Type[CANLog]] = self._session.query(CANLog)\
+                .filter(CANLog.sensor_type == get_sensor_id(field),
+                        CANLog.timestamp >= unix_start_time,
+                        CANLog.timestamp <= unix_end_time)\
+                .order_by(CANLog.timestamp).all()
+
+        # Catch any error from querying and wrap it in a RuntimeError
+        except Exception as e:
+            raise RuntimeError(f"Error whilst querying data!") from e
 
         if len(queried_data) == 0:
-            raise ValueError("Query returned no data!")
+            raise IndexError("Query returned no data!")
 
         timestamps = np.fromiter([datum.timestamp for datum in queried_data], dtype=float)
         values = np.fromiter([datum.value for datum in queried_data], dtype=float)
@@ -130,14 +177,18 @@ class PostgresClient:
         """
         return self._session_builder()
 
-    def write(self, session: Session, instance: Union[object, List[object]]) -> Union[None, Exception]:
+    def write(self, instance: Union[object, List[object]], session: Session = None) -> None:
         """
         Write some data ``instance`` to this database using ``session``.
 
-        :param session: the Session that will be used to write to the database
         :param instance: the data that will be uploaded, can be a single object or an iterable of objects.
-        :return: None if the data was uploaded successfully, or the Exception that was raised otherwise
+        :param session: optionally specify the Session that will be used to write to the database
+        :raises RuntimeError: if the database write fails
         """
+        # Use the default session if none was specified
+        if session is None:
+            session = self._session
+
         try:
             # Upload data as a batch if it's a list
             if isinstance(data, List):
@@ -148,17 +199,20 @@ class PostgresClient:
             session.commit()
 
         except Exception as e:
+            # If the database write failed, ensure to roll back the commit
             session.rollback()
-            return e
+            raise RuntimeError("Failed to write to PostgreSQL!") from e
 
         
 if __name__ == "__main__":
     field = "VehicleVelocity"
-    client = PostgresClient("can_log_prod")
+    client = PostgresClient()
 
     start_time = datetime(2024, 7, 16, 15, 0, 0, tzinfo=timezone.utc)
     end_time = datetime(2024, 7, 16, 22, 0, 0, tzinfo=timezone.utc)
 
     data: TimeSeries = client.query(field, start_time, end_time, granularity=0.1)
 
-    data.plot()
+    x_axis = data.datetime_x_axis
+    plt.plot(x_axis, data)
+    plt.show()
