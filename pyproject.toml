@@ -19,6 +19,7 @@ pandas = "^2.2.3"
 numpy =  "^2.0.1"
 scipy = "^1.14.1"
 matplotlib = "3.*"
+pytz = "^2024.2"
 
 [tool.poetry.group.test]
 optional = true
