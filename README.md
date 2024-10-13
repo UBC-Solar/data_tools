@@ -28,6 +28,11 @@ This project uses Poetry for dependency management. Next, use Poetry to install 
 poetry install --no-root
 ```
 
+Optionally, you can install dependencies for building the documentation and running tests.
+```bash
+poetry install --no-root --with docs --with test
+```
+
 ## Getting Started
 
 Example of querying data and plotting it as a `TimeSeries`.
@@ -35,10 +40,10 @@ Example of querying data and plotting it as a `TimeSeries`.
 > When the `InfluxClient` class is imported, `data_tools` will attempt to locate a `.env` file in order to acquire an InfluxDB API token. If you do not have a `.env` or it is missing an API token, you will not be able to query data. UBC Solar members can acquire an API token by speaking to their Team Lead.
 
 ```python
-from data_tools.time_series import TimeSeries
-from data_tools.influx_client import InfluxClient
+from data_tools.collections.time_series import TimeSeries
+from data_tools.query.influxdb_query import DBClient
 
-client = InfluxClient()
+client = DBClient()
 
 # ISO 8601-compliant times corresponding to pre-competition testing
 start = "2024-07-07T02:23:57Z" 
@@ -61,12 +66,12 @@ Example of using the `FluxQuery` module to make a Flux query that selects and ag
 We will use the `FluxStatement` class to construct a custom Flux statement, as the `aggregateWindow` statement is not yet included by this API.
 
 ```python
-from data_tools.flux_query_builder import FluxQuery, FluxStatement
-from data_tools.influx_client import InfluxClient
-from data_tools.time_series import TimeSeries
+from data_tools.query.flux import FluxQuery, FluxStatement
+from data_tools.query.influxdb_query import DBClient
+from data_tools.collections.time_series import TimeSeries
 import pandas as pd
 
-client = InfluxClient()
+client = DBClient()
 
 # ISO 8601-compliant times corresponding to pre-competition testing
 start = "2024-07-07T02:23:57Z" 
