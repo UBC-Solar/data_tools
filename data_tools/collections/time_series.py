@@ -77,11 +77,10 @@ class TimeSeries(np.ndarray):
     @property
     def datetime_x_axis(self) -> np.ndarray:
         """
-        This wave's x–axis as ISO 8601 strings, in UTC.
+        This wave's x–axis as ``datetime``s, in UTC.
         """
-        timestamp_to_iso8601 = lambda timestamp: datetime.datetime.fromtimestamp(timestamp, tz=datetime.timezone.utc).strftime('%Y-%m-%dT%H:%M:%S.%fZ')
-        date_times = map(timestamp_to_iso8601, self.unix_x_axis)
-        x_axis_datetime = np.array(list(date_times))
+        timestamp_to_datetime = lambda timestamp: pd.to_datetime(timestamp, unit='s')
+        x_axis_datetime = np.fromiter(map(timestamp_to_datetime, self.unix_x_axis), dtype=datetime.datetime)
 
         return x_axis_datetime
 
@@ -192,7 +191,7 @@ class TimeSeries(np.ndarray):
         ax.set_title(f"{self.meta['measurement']}: {self.meta['field']}")
         ax.set_ylabel(self.units if self.units != "" else "Arbitrary Units")
         ax.set_xlabel("Time (s)")
-        ax.plot(self.x_axis, self, label=self.meta['field'])
+        ax.plot(self.datetime_x_axis, self, label=self.meta['field'])
 
         if show:
             plt.show()
