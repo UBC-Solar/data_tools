@@ -191,7 +191,7 @@ class PostgresClient:
 
         try:
             # Upload data as a batch if it's a list
-            if isinstance(data, List):
+            if isinstance(instance, List):
                 session.add_all(instance)
             else:
                 session.add(instance)
