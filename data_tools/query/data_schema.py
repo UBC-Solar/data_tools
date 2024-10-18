@@ -12,7 +12,11 @@ _data_id_encodings = {
     "VehicleVelocity": 3,
     "PackCurrent": 4,
     "BatteryCurrentDirection": 5,
-    "VoltageofLeast": 6}
+    "VoltageofLeast": 6,
+    "CurrentSensor1": 7,
+    "CurrentSensor2": 8,
+    "VoltageSensor1": 9,
+    "VoltageSensor2": 10}
 
 
 _data_units = {
@@ -22,7 +26,11 @@ _data_units = {
     3: "m/s",
     4: "A",
     5: "A.U.",
-    6: "V"
+    6: "V",
+    7: "A",
+    8: "A",
+    9: "V",
+    10: "V",
 }
 
 
