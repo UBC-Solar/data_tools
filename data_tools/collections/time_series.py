@@ -63,7 +63,7 @@ class TimeSeries(np.ndarray):
         """
         This wave's x–axis in relative seconds, such that the first element is ``t=0``.
         """
-        relative_x_axis = np.linspace(0, self.length, len(self))
+        relative_x_axis = np.linspace(0, len(self) * self.granularity, len(self))
 
         return relative_x_axis
 
@@ -79,10 +79,8 @@ class TimeSeries(np.ndarray):
         """
         This wave's x–axis as ``datetime``s, in UTC.
         """
-        timestamp_to_datetime = lambda timestamp: pd.to_datetime(timestamp, unit='s')
-        x_axis_datetime = np.fromiter(map(timestamp_to_datetime, self.unix_x_axis), dtype=datetime.datetime)
 
-        return x_axis_datetime
+        return pd.to_datetime(self.unix_x_axis, unit='s')
 
     @property
     def length(self) -> float:
