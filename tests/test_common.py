@@ -1,6 +1,7 @@
 from datetime import datetime, timezone
 from zoneinfo import ZoneInfo
 from data_tools.query.common import _ensure_utc
+import pytest
 
 
 def test_ensure_utc():
