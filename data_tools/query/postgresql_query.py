@@ -1,6 +1,7 @@
 from data_tools.query.data_schema import init_schema, CANLog, get_sensor_id, get_data_units
 from data_tools.collections.time_series import TimeSeries
 from sqlalchemy.orm import sessionmaker, Session
+from data_tools.query.common import _ensure_utc
 from sqlalchemy import create_engine, Engine
 from datetime import datetime, timezone
 from typing import List, Type, Union
@@ -49,25 +50,6 @@ def _get_db_url(db_name: str, ip_address: str, username: str, password: str) -> 
     assert isinstance(password, str), f"password must be a string, not {type(password)}!"
 
     return f"postgresql://{username}:{password}@{ip_address}:5432/{db_name}"
-
-
-def _ensure_utc(dt: datetime) -> datetime:
-    """
-    Ensure that a datetime, ``dt`` is localized to UTC.
-
-    :param dt: the datetime that will be validated
-    :raises ValueError: if ``dt`` is not localized to ANY timezone.
-    :return:
-    """
-    # Check if ``dt`` is naive (not localized to a timezone), in that case we cannot safely proceed.
-    if dt.tzinfo is None:
-        raise ValueError("Datetime object must be timezone-aware.")
-
-    # Otherwise, we can re-localize the ``dt`` to UTC if it isn't already
-    if dt.tzinfo != timezone.utc:
-        dt = dt.astimezone(timezone.utc)
-
-    return dt
 
 
 class PostgresClient:
@@ -205,11 +187,11 @@ class PostgresClient:
 
         
 if __name__ == "__main__":
-    field = "VehicleVelocity"
+    field = "BatteryCurrentDirection"
     client = PostgresClient()
 
-    start_time = datetime(2024, 7, 16, 15, 0, 0, tzinfo=timezone.utc)
-    end_time = datetime(2024, 7, 16, 22, 0, 0, tzinfo=timezone.utc)
+    start_time = datetime(2024, 6, 16, 10, 0, 0, tzinfo=timezone.utc)
+    end_time = datetime(2024, 8, 16, 23, 0, 0, tzinfo=timezone.utc)
 
     data: TimeSeries = client.query(field, start_time, end_time, granularity=0.1)
 

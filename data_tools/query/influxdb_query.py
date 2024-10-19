@@ -1,10 +1,11 @@
-import os
-
+from data_tools.query.common import _ensure_utc
 from data_tools.query.flux import FluxQuery
 from data_tools.collections.time_series import TimeSeries
 from influxdb_client import InfluxDBClient
 from dotenv import load_dotenv
+from datetime import datetime, timedelta, timezone
 import pandas as pd
+import os
 
 
 INFLUX_URL = "http://influxdb.telemetry.ubcsolar.com"
@@ -100,7 +101,7 @@ class DBClient:
 
         return self._client.query_api().query_data_frame(compiled_query)
 
-    def query_time_series(self, start: str, stop: str, field: str, bucket: str = "CAN_log", car: str = "Brightside", granularity: float = 0.1, units: str = "", measurement: str = None) -> TimeSeries:
+    def query_time_series(self, start: datetime, stop: datetime, field: str, bucket: str = "CAN_log", car: str = "Brightside", granularity: float = 0.1, units: str = "", measurement: str = None) -> TimeSeries:
         """
         Query the database for a specific field, over a certain time range.
         The data will be processed into a TimeSeries, which has homogenous and evenly-spaced (temporally) elements.
@@ -115,8 +116,19 @@ class DBClient:
         :param units: the units of the returned data, optional.
         :return: a TimeSeries of the resulting time-series data
         """
+        # InfluxDB has an issue where PST timestamps were interpreted as UTC. So, we need to mutate
+        # the timestamps to represent a time -7 hours to compensate for the UTC offset of +7.
+
+        utc_start = _ensure_utc(start) - timedelta(hours=7)
+        utc_end = _ensure_utc(stop) - timedelta(hours=7)
+
         # Make the query
-        query = FluxQuery().from_bucket("CAN_log").range(start=start, stop=stop).filter(field=field).car(car)
+        query = FluxQuery()\
+            .from_bucket("CAN_log")\
+            .range(start=utc_start.isoformat(), stop=utc_end.isoformat())\
+            .filter(field=field)\
+            .car(car)
+
         if measurement:
             query = query.filter(measurement=measurement)
         query_df = self.query_dataframe(query)
@@ -131,13 +143,11 @@ class DBClient:
 
 
 if __name__ == "__main__":
-    start = "2024-07-07T02:23:57Z"
-    stop = "2024-07-07T02:34:15Z"
+    start_time = datetime(2024, 6, 16, 10, 0, 0, tzinfo=timezone.utc)
+    end_time = datetime(2024, 8, 16, 23, 0, 0, tzinfo=timezone.utc)
+
     client = DBClient()
 
-    pack_voltage: TimeSeries = client.query_time_series(start, stop, "MotorCurrent", units="V", measurement="MCB")
-    pack_current: TimeSeries = client.query_time_series(start, stop, "PackCurrent", units="A")
-    vehicle_velocity: TimeSeries = client.query_time_series(start, stop, "VehicleVelocity", units="m/s")
-    pack_current, pack_voltage = TimeSeries.align(pack_current, pack_voltage)
+    pack_voltage: TimeSeries = client.query_time_series(start_time, end_time, "TotalPackVoltage", units="V", measurement="BMS")
 
-
+    pack_voltage.plot()
