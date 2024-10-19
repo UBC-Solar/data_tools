@@ -292,8 +292,8 @@ class TimeSeries(np.ndarray):
         meta: dict = {
             "start": query_df.index.to_numpy()[0].to_pydatetime(),
             "stop": query_df.index.to_numpy()[-1].to_pydatetime(),
-            "car": query_df["car"][0],
-            "measurement": query_df["_measurement"][0],
+            "car": query_df["car"].to_numpy()[0],
+            "measurement": query_df["_measurement"].to_numpy()[0],
             "field": field,
             "granularity": actual_granularity,
             "length": temporal_length,
