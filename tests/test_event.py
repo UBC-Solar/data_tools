@@ -80,12 +80,19 @@ def test_event_creation_from_dict(event_datetime):
         "name": "test_3"
     }
 
+    no_name_dict = {
+        "start": "2024-10-09T15:10:10Z",
+        "stop": datetime(2024, 10, 9, 16, 10, 10, tzinfo=timezone.utc),
+    }
+
     event_1 = Event.from_dict(str_dict)
     event_2 = Event.from_dict(datetime_dict)
     event_3 = Event.from_dict(mixed_dict)
+    event_4 = Event.from_dict(no_name_dict)
 
     assert event_1.start == event_2.start == event_3.start == datetime(2024, 10, 9, 15, 10, 10, tzinfo=timezone.utc)
     assert event_1.stop == event_2.stop == event_3.stop == datetime(2024, 10, 9, 16, 10, 10, tzinfo=timezone.utc)
+    assert event_4.name == "Unnamed Event"
 
 
 def test_event_to_dict(event_datetime):

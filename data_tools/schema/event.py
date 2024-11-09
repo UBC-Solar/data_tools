@@ -32,7 +32,7 @@ class Event:
         else:
             raise TypeError("start must be datetime or str!")
 
-        if not isinstance(name, str):
+        if not isinstance(name, str) and name is not None:
             raise TypeError("name must be str!")
 
         self._name = name if name is not None else "Unnamed Event"
