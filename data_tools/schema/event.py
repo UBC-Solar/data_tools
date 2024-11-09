@@ -7,16 +7,22 @@ type DateLike = Union[str, datetime.datetime]
 
 
 class Event:
-    def __init__(self, start: DateLike, stop: DateLike, name: str = None):
+    """
+    Represents an event that took place between `start` and `stop` (accessible as datetime.datetime objects or
+    as ISO 8601 formatted strings), with a `name` and optionally any additional `attributes` such as
+    `attributes["realtime"]` or `attributes["test"]`.
+    """
+    def __init__(self, start: DateLike, stop: DateLike, name: str = None, attributes: dict = None):
         """
         Create an Event from either ISO8601 strings or datetime.datetime objects.
         Any datetime.datetime objects or ISO8601 strings MUST contain timezone information.
 
-        Optionally, name the event with `name`.
+        Optionally, name the event with `name`, and with additional `attributes`.
 
         :param start: the start time of this Event
         :param stop: the end time of this Event
         :param name: the name of this event, optional, defaulted to "Unnamed Event"
+        :param dict attributes: a dictionary of any additional attributes and/or metadata for this Event
         """
         if isinstance(start, datetime.datetime):
             self._start = ensure_utc(start)
@@ -34,8 +40,20 @@ class Event:
 
         if not isinstance(name, str) and name is not None:
             raise TypeError("name must be str!")
+        else:
+            self._name = name if name is not None else "Unnamed Event"
 
-        self._name = name if name is not None else "Unnamed Event"
+        if not isinstance(attributes, dict) and attributes is not None:
+            raise TypeError("attributes must be dict!")
+        else:
+            self._attributes = attributes if attributes is not None else None
+
+    @property
+    def attributes(self) -> dict:
+        """
+        Obtain a dictionary of additional metadata or relevant attributes for this Event.
+                """
+        return self._attributes
 
     @property
     def start(self) -> datetime.datetime:
@@ -82,17 +100,24 @@ class Event:
         datetime.datetime objects and ISO8601 strings MUST contain timezone information.
 
         :param data_dict: valid dictionary containing data
-        :return: an Event with the
+        :return: an Event hydrated with the provided data
         """
-        try:
-            start_time = data_dict["start"]
-            end_time = data_dict["stop"]
-            name = data_dict["name"] if "name" in data_dict.keys() else None
+        data = data_dict.copy()
 
-            return Event(start_time, end_time, name)
+        start_time = data["start"]
+        del data["start"]
 
-        except KeyError as e:
-            raise KeyError("Dictionary must contain ") from e
+        end_time = data["stop"]
+        del data["stop"]
+
+        if "name" in data.keys():
+            name = data["name"]
+            del data["name"]
+
+        else:
+            name = None
+
+        return Event(start_time, end_time, name, data)
 
     def to_dict(self) -> dict:
         """
@@ -100,9 +125,14 @@ class Event:
 
         :return: the representation of this Event as a dictionary
         """
-        return {
+        ret_dict = {
             "start": self.start_as_iso_str,
             "stop": self.stop_as_iso_str,
             "name": self.name
         }
 
+        if self._attributes is not None:
+            for key, value in self._attributes.items():
+                ret_dict[key] = value
+
+        return ret_dict

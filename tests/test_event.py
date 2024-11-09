@@ -85,31 +85,60 @@ def test_event_creation_from_dict(event_datetime):
         "stop": datetime(2024, 10, 9, 16, 10, 10, tzinfo=timezone.utc),
     }
 
+    attribute_dict = {
+        "start": "2024-10-09T15:10:10Z",
+        "stop": datetime(2024, 10, 9, 16, 10, 10, tzinfo=timezone.utc),
+        "name": "test_3",
+        "realtime": True,
+        "test_id": 42
+    }
+
     event_1 = Event.from_dict(str_dict)
     event_2 = Event.from_dict(datetime_dict)
     event_3 = Event.from_dict(mixed_dict)
     event_4 = Event.from_dict(no_name_dict)
+    event_5 = Event.from_dict(attribute_dict)
 
     assert event_1.start == event_2.start == event_3.start == datetime(2024, 10, 9, 15, 10, 10, tzinfo=timezone.utc)
     assert event_1.stop == event_2.stop == event_3.stop == datetime(2024, 10, 9, 16, 10, 10, tzinfo=timezone.utc)
     assert event_4.name == "Unnamed Event"
+    assert event_5.attributes["realtime"] is True
+    assert event_5.attributes["test_id"] == 42
 
 
 def test_event_to_dict(event_datetime):
     _, _, aware_datetime_1, aware_datetime_2 = event_datetime
 
-    event = Event(aware_datetime_1, aware_datetime_2, "test_1")
+    event_1 = Event(aware_datetime_1, aware_datetime_2, "test_1")
 
-    desired_dict = {
+    desired_dict_1 = {
         "start": "2024-10-09T22:10:10Z",
         "stop": "2024-10-09T23:10:10Z",
         "name": "test_1"
     }
 
-    event_dict = event.to_dict()
+    event_dict_1 = event_1.to_dict()
 
-    for key, value in event_dict.items():
-        assert value == desired_dict[key]
+    for key, value in event_dict_1.items():
+        assert value == desired_dict_1[key]
+
+    event_2 = Event(aware_datetime_1, aware_datetime_2, "test_1", {
+        "realtime": True,
+        "test_event": True
+    })
+
+    desired_dict_2 = {
+        "start": "2024-10-09T22:10:10Z",
+        "stop": "2024-10-09T23:10:10Z",
+        "name": "test_1",
+        "realtime": True,
+        "test_event": True
+    }
+
+    event_dict_2 = event_2.to_dict()
+
+    for key, value in event_dict_2.items():
+        assert value == desired_dict_2[key]
 
 
 def test_event_creation_failure(event_datetime, event_strs):
@@ -125,3 +154,9 @@ def test_event_creation_failure(event_datetime, event_strs):
         Event(naive_str_1, naive_str_1, "test_2")
 
 
+def test_event_attributes(event_datetime):
+    _, _, aware_datetime_1, aware_datetime_2 = event_datetime
+
+    event = Event(aware_datetime_1, aware_datetime_2, "test_1", {"realtime": True})
+
+    assert event.attributes["realtime"] is True
