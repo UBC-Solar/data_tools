@@ -22,9 +22,6 @@ class DBClient:
             influxdb_token = os.getenv("INFLUX_TOKEN")
             influxdb_org = os.getenv("INFLUX_ORG")
 
-        print(f"Creating client with API Token: {influxdb_token}")
-        print(f"Creating client with Org: {influxdb_org}")
-
         self._influx_org = influxdb_org
 
         self._client = InfluxDBClient(url=INFLUX_URL, org=influxdb_org, token=influxdb_token)
