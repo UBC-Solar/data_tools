@@ -1,5 +1,5 @@
-from data_tools.query.common import _ensure_utc
 from data_tools.query.flux import FluxQuery
+from data_tools.utils.times import ensure_utc
 from data_tools.collections.time_series import TimeSeries
 from influxdb_client import InfluxDBClient
 from dotenv import load_dotenv
@@ -119,8 +119,8 @@ class DBClient:
         # InfluxDB has an issue where PST timestamps were interpreted as UTC. So, we need to mutate
         # the timestamps to represent a time -7 hours to compensate for the UTC offset of +7.
 
-        utc_start = _ensure_utc(start) - timedelta(hours=7)
-        utc_end = _ensure_utc(stop) - timedelta(hours=7)
+        utc_start = ensure_utc(start) - timedelta(hours=7)
+        utc_end = ensure_utc(stop) - timedelta(hours=7)
 
         # Make the query
         query = FluxQuery()\

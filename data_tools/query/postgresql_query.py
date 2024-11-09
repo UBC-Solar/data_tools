@@ -1,7 +1,7 @@
 from data_tools.query.data_schema import init_schema, CANLog, get_sensor_id, get_data_units
 from data_tools.collections.time_series import TimeSeries
 from sqlalchemy.orm import sessionmaker, Session
-from data_tools.query.common import _ensure_utc
+from data_tools.utils.times import ensure_utc
 from sqlalchemy import create_engine, Engine
 from datetime import datetime, timezone
 from typing import List, Type, Union
@@ -94,8 +94,8 @@ class PostgresClient:
         :raises ValueError: if timestamps cannot be localized to UTC
         """
         # Validate that the times provided are localized to UTC
-        utc_start_time = _ensure_utc(start_time)
-        utc_end_time = _ensure_utc(end_time)
+        utc_start_time = ensure_utc(start_time)
+        utc_end_time = ensure_utc(end_time)
 
         unix_start_time = utc_start_time.timestamp()
         unix_end_time = utc_end_time.timestamp()
@@ -187,11 +187,11 @@ class PostgresClient:
 
         
 if __name__ == "__main__":
-    field = "BatteryCurrentDirection"
+    field = "TotalPackVoltage"
     client = PostgresClient()
 
     start_time = datetime(2024, 6, 16, 10, 0, 0, tzinfo=timezone.utc)
-    end_time = datetime(2024, 8, 16, 23, 0, 0, tzinfo=timezone.utc)
+    end_time = datetime(2024, 8, 21, 23, 0, 0, tzinfo=timezone.utc)
 
     data: TimeSeries = client.query(field, start_time, end_time, granularity=0.1)
 
