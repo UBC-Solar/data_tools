@@ -5,6 +5,9 @@ from typing import Union, List, Any
 from functools import reduce
 
 
+type StringCollection = Union[str, List[str]]
+
+
 class UnwrappedError(Exception):
     pass
 
@@ -72,15 +75,15 @@ class File:
     An atomic unit of data, described by data, a file type describing the data stored, and a canonical
     path denoting its location in some filesystem-like storage.
     """
-    def __init__(self, data, file_type: FileType, origin: str, path: Union[str, List[str]], name: str) -> None:
+    def __init__(self, data, file_type: FileType, origin: str, path: StringCollection, name: str) -> None:
         """
         Construct a File.
 
         :param Any data: the data stored by this File
         :param FileType file_type: the type of data stored by this File, must be a supported type.
         :param str origin: identifies the origin (code) of this data, usually the data pipeline version.
-        :param Union[str, List[str]] path: any remaining path elements. Must include the stage that produced this data as the first or only element!
         :param str name: the name of this data
+        :param Union[str, List[str]] path: any remaining path elements. Must include the stage that produced this data as the first or only element!
         """
         self.data: Any = data
         self.type: FileType = file_type
@@ -90,12 +93,24 @@ class File:
 
         assert len(self.path) > 0, "`path` must contain at least one element!"
 
+    @staticmethod
+    def make_canonical_path(origin: str, path: StringCollection, name: str) -> str:
+        """
+        Create a canonical path from subatomic elements.
+
+        :param str origin: should always be a reference to the origin (code) that produced this data.
+        :param name: should always be the name of this data
+        :param StringCollection path: any remaining path elements. Must include the stage that produced this data as the first or only element!
+        :return: the canonical path created from the provided elements
+        """
+        return f"{origin}/" + reduce(lambda x, y: x + "/" + y, path) + "/" + name
+
     @property
     def canonical_path(self) -> str:
         """
         Obtain the canonical path of this `File`.
         """
-        return f"{self.origin}/" + reduce(lambda x, y: x + "/" + y, self.path) + "/" + self.name
+        return File.make_canonical_path(self.origin, self.path, self.name)
 
     @staticmethod
     def unwrap_canonical_path(canonical_path: str) -> List[str]:
