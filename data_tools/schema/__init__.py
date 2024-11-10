@@ -7,7 +7,8 @@ from .data_source import (
     File,
     FileType,
     FileLoader,
-    Result
+    Result,
+    UnwrappedError
 )
 
 __all__ = [
@@ -15,5 +16,6 @@ __all__ = [
     "File",
     "FileType",
     "FileLoader",
-    "Result"
+    "Result",
+    "UnwrappedError"
 ]
