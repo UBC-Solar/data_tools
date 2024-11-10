@@ -60,6 +60,9 @@ class Result:
         elif self._result_type == self.ResultType.Err:
             raise UnwrappedError from self._result
 
+    def __bool__(self):
+        return True if self._result_type == self.ResultType.Ok else False
+
 
 class FileType(StrEnum):
     """
