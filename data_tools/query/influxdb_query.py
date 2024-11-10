@@ -1,6 +1,7 @@
 from data_tools.query.flux import FluxQuery
 from data_tools.utils.times import ensure_utc
 from data_tools.collections.time_series import TimeSeries
+from pydantic import BaseModel, Field
 from influxdb_client import InfluxDBClient
 from dotenv import load_dotenv
 from datetime import datetime, timedelta, timezone
@@ -9,6 +10,15 @@ import os
 
 
 INFLUX_URL = "http://influxdb.telemetry.ubcsolar.com"
+
+
+class TimeSeriesTarget(BaseModel):
+    field: str
+    measurement: str
+    frequency: float = Field(gt=0)
+    units: str
+    car: str
+    bucket: str
 
 
 class DBClient:

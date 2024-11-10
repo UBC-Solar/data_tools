@@ -32,7 +32,7 @@ PostgreSQL Tools
 
 
 from .flux import FluxQuery, FluxStatement
-from .influxdb_query import DBClient
+from .influxdb_query import DBClient, TimeSeriesTarget
 from .postgresql_query import PostgresClient
 from .data_schema import get_sensor_id, get_data_units, CANLog, init_schema
 
