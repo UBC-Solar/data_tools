@@ -6,5 +6,14 @@ from .data_source import (
     DataSource,
     File,
     FileType,
-    FileLoader
+    FileLoader,
+    Result
 )
+
+__all__ = [
+    "DataSource",
+    "File",
+    "FileType",
+    "FileLoader",
+    "Result"
+]
