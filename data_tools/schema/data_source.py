@@ -44,10 +44,10 @@ class File:
         """
         return f"{self.origin}/" + reduce(lambda x, y: x + "/" + y, self.path) + "/" + self.name
 
-    @property
-    def unwrapped_canonical_path(self) -> List[str]:
+    @staticmethod
+    def unwrap_canonical_path(canonical_path: str) -> List[str]:
         """
-        Unwrap this `File`'s canonical path into its elements.
+        Unwrap a canonical path into its elements.
 
         For example, `"pipeline_2024_11_01/ingest/TotalPackVoltage"` would be
         unwrapped to `["pipeline_2024_11_01", "ingest", "TotalPackVoltage"]`.
@@ -56,9 +56,10 @@ class File:
         The second element should always refer to the stage (processing step) that produced this data.
         The last element should always be the name of this data.
 
+        :param canonical_path: the path to be decomposed
         :return: a List[str] of path elements
         """
-        return self.canonical_path.split("/")
+        return canonical_path.split("/")
 
 
 class FileLoader:
