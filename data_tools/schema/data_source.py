@@ -1,6 +1,8 @@
 from enum import StrEnum
 from collections.abc import Callable
 from abc import ABC, abstractmethod
+from typing import Union, List, Any
+from functools import reduce
 
 
 class FileType(StrEnum):
@@ -17,18 +19,20 @@ class File:
     An atomic unit of data, described by data, a file type describing the data stored, and a canonical
     path denoting its location in some filesystem-like storage.
     """
-    def __init__(self, data, file_type: FileType, origin: str, stage: str, name: str) -> None:
-        self.data = data
-        self.type = file_type
-        self.origin = origin
-        self.stage = stage
-        self.name = name
+    def __init__(self, data, file_type: FileType, origin: str, path: Union[str, List[str]], name: str) -> None:
+        self.data: Any = data
+        self.type: FileType = file_type
+        self.origin: str = origin
+        self.path: List[str] = path if isinstance(path, list) else [path]
+        self.name: str = name
+
+        assert len(self.path) > 0, "`path` must contain at least one element!"
 
     def canonical_path(self) -> str:
         """
         Obtain the canonical path of this `File`.
         """
-        return f"{self.origin}/{self.stage}/{self.name}"
+        return f"{self.origin}/" + reduce(lambda x, y: x + "/" + y, self.path) + "/" + self.name
 
 
 class FileLoader:
