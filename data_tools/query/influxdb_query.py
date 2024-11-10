@@ -13,6 +13,10 @@ INFLUX_URL = "http://influxdb.telemetry.ubcsolar.com"
 
 
 class TimeSeriesTarget(BaseModel):
+    """
+    Encapsulates the data required to completely query a specific time series from InfluxDB.
+    """
+    name: str
     field: str
     measurement: str
     frequency: float = Field(gt=0)
