@@ -5,5 +5,6 @@ from .event import (
 from .data_source import (
     DataSource,
     File,
-    FileType
+    FileType,
+    FileLoader
 )
