@@ -20,6 +20,15 @@ class File:
     path denoting its location in some filesystem-like storage.
     """
     def __init__(self, data, file_type: FileType, origin: str, path: Union[str, List[str]], name: str) -> None:
+        """
+        Construct a File.
+
+        :param Any data: the data stored by this File
+        :param FileType file_type: the type of data stored by this File, must be a supported type.
+        :param str origin: identifies the origin (code) of this data, usually the data pipeline version.
+        :param Union[str, List[str]] path: any remaining path elements. Must include the stage that produced this data as the first or only element!
+        :param str name: the name of this data
+        """
         self.data: Any = data
         self.type: FileType = file_type
         self.origin: str = origin
@@ -28,24 +37,28 @@ class File:
 
         assert len(self.path) > 0, "`path` must contain at least one element!"
 
+    @property
     def canonical_path(self) -> str:
         """
         Obtain the canonical path of this `File`.
         """
         return f"{self.origin}/" + reduce(lambda x, y: x + "/" + y, self.path) + "/" + self.name
 
-    @staticmethod
-    def unwrap_canonical_path(canonical_path: str) -> List[str]:
+    @property
+    def unwrapped_canonical_path(self) -> List[str]:
         """
-        Unwrap a canonical path into its elements.
+        Unwrap this `File`'s canonical path into its elements.
 
         For example, `"pipeline_2024_11_01/ingest/TotalPackVoltage"` would be
         unwrapped to `["pipeline_2024_11_01", "ingest", "TotalPackVoltage"]`.
 
-        :param canonical_path: the path to be decomposed
+        The first element should always be a reference to the origin (code) that produced this data.
+        The second element should always refer to the stage (processing step) that produced this data.
+        The last element should always be the name of this data.
+
         :return: a List[str] of path elements
         """
-        return canonical_path.split("/")
+        return self.canonical_path.split("/")
 
 
 class FileLoader:
