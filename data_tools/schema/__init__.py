@@ -1,14 +1,23 @@
-from .event import (
+from ._event import (
     Event
 )
 
-from .data_source import (
-    DataSource,
-    File,
+from ._result import (
+    UnwrappedError,
+    Result
+)
+
+from ._file import (
     FileType,
-    FileLoader,
-    Result,
-    UnwrappedError
+    File,
+)
+
+from ._file_loader import (
+    FileLoader
+)
+
+from ._data_source import (
+    DataSource
 )
 
 __all__ = [
