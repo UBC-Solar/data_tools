@@ -1,5 +1,5 @@
 import pytest
-from data_tools.schema.event import Event
+from data_tools.schema import Event
 from datetime import datetime, timezone
 
 
