@@ -12,7 +12,12 @@ import logging
 import os
 
 logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO)
+logger.setLevel(logging.DEBUG)  # Set the logger to the lowest level (DEBUG)
+
+# Create a handler for terminal output
+console_handler = logging.StreamHandler()
+console_handler.setLevel(logging.INFO)  # Show INFO and ERROR on the terminal
+logger.addHandler(console_handler)
 
 load_dotenv()
 
