@@ -14,7 +14,8 @@ from .schema import (
     FileType,
     File,
     Event,
-    DataSource
+    DataSource,
+    FileLoader
 )
 
 from .utils import (
@@ -37,5 +38,6 @@ __all__ = [
     "FileType",
     "File",
     "Event",
-    "DataSource"
+    "DataSource",
+    "FileLoader",
 ]

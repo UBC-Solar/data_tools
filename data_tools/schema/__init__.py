@@ -26,5 +26,6 @@ __all__ = [
     "FileType",
     "FileLoader",
     "Result",
-    "UnwrappedError"
+    "UnwrappedError",
+    "Event"
 ]
