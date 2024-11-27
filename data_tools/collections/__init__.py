@@ -20,9 +20,11 @@ Race Tools
 """
 from .time_series import TimeSeries
 from .fsgp_2024_laps import FSGPDayLaps
+from .lap_query import collect_lap_data
 
 
 __all__ = [
     "TimeSeries",
-    "FSGPDayLaps"
+    "FSGPDayLaps",
+    "collect_lap_data"
 ]
