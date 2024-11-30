@@ -4,7 +4,7 @@ import pathlib
 from logging.handlers import RotatingFileHandler
 
 
-def configure_logger(logger, log_file_path: pathlib.Path, max_log_file_size_mb: int = 5) -> None:
+def configure_logger(logger: logging.Logger, log_file_path: pathlib.Path, max_log_file_size_mb: int = 5) -> None:
     """
     Configure a Logger to use stdout for INFO logs, and STDERR for error logs, and put DEBUG logs
     into a log file.
@@ -35,6 +35,8 @@ def configure_logger(logger, log_file_path: pathlib.Path, max_log_file_size_mb: 
     file_handler.setLevel(logging.DEBUG)  # Log DEBUG and higher to the file
     file_formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
     file_handler.setFormatter(file_formatter)
+
+    logger.handlers.clear()
 
     # Add handlers to the logger
     logger.addHandler(stdout_handler)
