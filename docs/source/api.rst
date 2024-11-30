@@ -9,3 +9,4 @@ API Reference
 
    Collections <collections/index>
    Querying Tools <query/index>
+   Lap Tools <lap_tools/index>
