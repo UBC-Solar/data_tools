@@ -6,9 +6,9 @@ import numpy as np
 def collect_lap_data(query_func: Callable, client: DBClient, include_day_2=False,
                      verbose=False) -> np.ndarray:
     """
-    Higher order function - computes `query_func` for each lap in FSGP 2024 and returns the resulting array.
+    Higher order function - computes ``query_func`` for each lap in FSGP 2024 and returns the resulting array.
 
-    Set `include_day_2` to True to include the day 2 laps, which were driven slowly & under heavy rain.
+    Set ``include_day_2`` to True to include the day 2 laps, which were driven slowly & under heavy rain.
 
     Example usage:
 
@@ -24,11 +24,17 @@ def collect_lap_data(query_func: Callable, client: DBClient, include_day_2=False
         client = DBClient()
         average_speeds = collect_lap_data(get_average_speed, client)
 
-    :param Callable query_func: must take in parameters (lap_start: datetime, lap_end:datetime, data_client:DBClient)
+    :param Callable query_func:
+            must take in the following parameters:
+            ::
+                lap_start: datetime
+                lap_end: datetime
+                data_client: DBClient
+            ``query_func`` will be passed in the above parameters for each specified lap and may return an arbitrary output to be stored in the output array.
     :param DBClient client: client to use for querying
     :param include_day_2: flag to include the three day 2 laps, driven slowly & under heavy rain
-    :param verbose: if True, print out queried data during execution
-    :return: a NumPy ndarray of `query_func` results for all laps
+    :param verbose: if ``True``, print out queried data during execution
+    :return: a NumPy ndarray of ``query_func`` results for all laps
     """
 
     if include_day_2:
