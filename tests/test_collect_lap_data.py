@@ -1,4 +1,4 @@
-from data_tools.collections import collect_lap_data, TimeSeries, FSGPDayLaps
+from data_tools.lap_tools import FSGPDayLaps, collect_lap_data
 from data_tools.query import DBClient
 import datetime
 import numpy as np

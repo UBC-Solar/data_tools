@@ -1,9 +1,9 @@
-from .fsgp_2024_laps import FSGPDayLaps
+from data_tools.lap_tools.fsgp_2024_laps import FSGPDayLaps
+from data_tools.query.influxdb_query import DBClient
 from typing import Callable
 import numpy as np
 
-# Note: cannot add type annotation `client: DBClient` due to circular import
-def collect_lap_data(query_func: Callable, client, include_day_2=False,
+def collect_lap_data(query_func: Callable, client: DBClient, include_day_2=False,
                      verbose=False) -> np.ndarray:
     """
     Higher order function - computes `query_func` for each lap in FSGP 2024 and returns the resulting array.

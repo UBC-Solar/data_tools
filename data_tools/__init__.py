@@ -7,15 +7,20 @@ from .query import (
 
 from .collections import (
     TimeSeries,
-    FSGPDayLaps
+)
+
+from .lap_tools import (
+    FSGPDayLaps,
+    collect_lap_data
 )
 
 
 __all__ = [
     "FluxQuery",
     "FluxStatement",
-    "TimeSeries",
+    "PostgresClient",
     "DBClient",
+    "TimeSeries",
     "FSGPDayLaps",
-    "PostgresClient"
+    "collect_lap_data",
 ]
