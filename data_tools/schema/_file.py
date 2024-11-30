@@ -13,6 +13,7 @@ class FileType(StrEnum):
     """
     TimeSeries = "TimeSeries"
     Scalar = "Scalar"
+    Empty = "Empty"
 
 
 class File:
