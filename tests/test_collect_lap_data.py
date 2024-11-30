@@ -15,19 +15,18 @@ def test_example_usage():
 
     Since the query function's validity is the client's responsibility, we only test that the values match
     the output of the function.
-
-    Ensure .env contains correct API key and device is connected to TailNet before running tests
     """
 
-    def get_average_speed(start_time: datetime.datetime, end_time: datetime.datetime, data_client: DBClient):
-        lap_speed: TimeSeries = data_client.query_time_series(start_time, end_time, "VehicleVelocity")
-        return np.mean(lap_speed)
+    def get_middle_lap_time(start_time: datetime.datetime, end_time: datetime.datetime, data_client: DBClient):
+        start: float = start_time.timestamp()
+        end: float = end_time.timestamp()
+        return np.mean([start, end])
 
-    average_speeds = collect_lap_data(get_average_speed, client, verbose=True)
+    average_speeds = collect_lap_data(get_middle_lap_time, client, verbose=True)
 
     assert len(average_speeds) == DAY_1_LAP_COUNT + DAY_3_LAP_COUNT, "incorrect number of values queried"
 
-    average_speeds_all_days = collect_lap_data(get_average_speed, client, include_day_2=True, verbose=True)
+    average_speeds_all_days = collect_lap_data(get_middle_lap_time, client, include_day_2=True, verbose=True)
     assert len(average_speeds_all_days) == DAY_1_LAP_COUNT + DAY_2_LAP_COUNT + DAY_3_LAP_COUNT, \
         "incorrect number of values queried"
 
@@ -39,29 +38,29 @@ def test_example_usage():
     ), "day 3 query results should match"
 
     day_1_laps = FSGPDayLaps(1)
-    assert average_speeds[4] == get_average_speed(
+    assert average_speeds[4] == get_middle_lap_time(
         day_1_laps.get_start_utc(5),
         day_1_laps.get_finish_utc(5),
         client
     )
-    assert average_speeds[10] == get_average_speed(
+    assert average_speeds[10] == get_middle_lap_time(
         day_1_laps.get_start_utc(11),
         day_1_laps.get_finish_utc(11),
         client
     )
-    assert average_speeds[44] == get_average_speed(
+    assert average_speeds[44] == get_middle_lap_time(
         day_1_laps.get_start_utc(45),
         day_1_laps.get_finish_utc(45),
         client
     )
 
     day_3_laps = FSGPDayLaps(3)
-    assert average_speeds[DAY_1_LAP_COUNT] == get_average_speed(
+    assert average_speeds[DAY_1_LAP_COUNT] == get_middle_lap_time(
         day_3_laps.get_start_utc(1),
         day_3_laps.get_finish_utc(1),
         client
     )
-    assert average_speeds[DAY_1_LAP_COUNT + 21] == get_average_speed(
+    assert average_speeds[DAY_1_LAP_COUNT + 21] == get_middle_lap_time(
         day_3_laps.get_start_utc(22),
         day_3_laps.get_finish_utc(22),
         client
