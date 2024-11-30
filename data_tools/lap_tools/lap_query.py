@@ -12,22 +12,17 @@ def collect_lap_data(query_func: Callable, client: DBClient, include_day_2=False
 
     Example usage:
 
-    ```python
-    from data_tools.collections import collect_lap_data, TimeSeries
-    from data_tools.query import DBClient
-    import datetime
-    import numpy as np
+    ::
 
-
-    def get_average_speed(start_time: datetime.datetime, end_time: datetime.datetime, data_client: DBClient):
-        lap_speed: TimeSeries = data_client.query_time_series(start_time, end_time, "VehicleVelocity")
-        return np.mean(lap_speed)
-
-
-    client = DBClient()
-
-    average_speeds = collect_lap_data(get_average_speed, client)
-    ```
+        from data_tools.collections import collect_lap_data, TimeSeries
+        from data_tools.query import DBClient
+        import datetime
+        import numpy as np
+        def get_average_speed(start_time: datetime.datetime, end_time: datetime.datetime, data_client: DBClient):
+           lap_speed: TimeSeries = data_client.query_time_series(start_time, end_time, "VehicleVelocity")
+           return np.mean(lap_speed)
+        client = DBClient()
+        average_speeds = collect_lap_data(get_average_speed, client)
 
     :param Callable query_func: must take in parameters (lap_start: datetime, lap_end:datetime, data_client:DBClient)
     :param DBClient client: client to use for querying
