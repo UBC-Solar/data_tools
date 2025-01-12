@@ -10,6 +10,7 @@ from ._result import (
 from ._file import (
     FileType,
     File,
+    CanonicalPath
 )
 
 from ._file_loader import (
@@ -25,6 +26,7 @@ __all__ = [
     "File",
     "FileType",
     "FileLoader",
+    "CanonicalPath",
     "Result",
     "UnwrappedError",
     "Event"

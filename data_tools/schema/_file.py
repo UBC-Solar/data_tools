@@ -1,6 +1,8 @@
 from enum import StrEnum
 from typing import Union, List, Any
 from functools import reduce
+from pydantic import BaseModel
+import pathlib
 
 
 type StringCollection = Union[str, List[str]]
@@ -16,47 +18,59 @@ class FileType(StrEnum):
     Empty = "Empty"
 
 
-class File:
-    """
-    An atomic unit of data, described by data, a file type describing the data stored, and a canonical
-    path denoting its location in some filesystem-like storage.
-    """
-    def __init__(self, data, file_type: FileType, origin: str, path: StringCollection, name: str) -> None:
+class CanonicalPath:
+    def __init__(self, origin: str, source: str, path: StringCollection, name: str):
         """
-        Construct a File.
+        Construct a canonical path representing a path to a file in any abstract data source
 
-        :param Any data: the data stored by this File
-        :param FileType file_type: the type of data stored by this File, must be a supported type.
         :param str origin: identifies the origin (code) of this data, usually the data pipeline version.
+        :param str source: the producer of the data pointed to by this canonical path, usually a pipeline stage
+        :param Union[str, List[str]] path: any remaining path elements from the producer to the file pointed to
         :param str name: the name of this data
-        :param Union[str, List[str]] path: any remaining path elements. Must include the stage that produced this data as the first or only element!
         """
-        self.data: Any = data
-        self.type: FileType = file_type
-        self.origin: str = origin
-        self.path: List[str] = path if isinstance(path, list) else [path]
-        self.name: str = name
+        self._origin = origin
+        self._source = source
+        self._path = path
+        self._name = name
 
-        assert len(self.path) > 0, "`path` must contain at least one element!"
-
-    @staticmethod
-    def make_canonical_path(origin: str, path: StringCollection, name: str) -> str:
+    def to_string(self) -> str:
         """
-        Create a canonical path from subatomic elements.
+        Obtain the string representation of this canonical path
 
-        :param str origin: should always be a reference to the origin (code) that produced this data.
-        :param name: should always be the name of this data
-        :param StringCollection path: any remaining path elements. Must include the stage that produced this data as the first or only element!
-        :return: the canonical path created from the provided elements
+        :return: str
         """
-        return f"{origin}/" + reduce(lambda x, y: x + "/" + y, path) + "/" + name
+        return "/".join([self._origin] + self._path + [self._source, self._name])
+
+    def to_path(self) -> pathlib.Path:
+        return reduce(lambda x, y: x / pathlib.Path(y), self.unwrap())
 
     @property
-    def canonical_path(self) -> str:
+    def origin(self) -> str:
+        return self._origin
+
+    @property
+    def source(self) -> str:
+        return self._source
+
+    @property
+    def path(self) -> StringCollection:
+        return self._path
+
+    @property
+    def name(self) -> str:
+        return self._name
+
+    def __str__(self):
+        return self.to_string()
+
+    def __repr__(self):
+        return self.to_string()
+
+    def unwrap(self) -> List[str]:
         """
-        Obtain the canonical path of this `File`.
+        Decompose this CanonicalPath into its subatomic elements
         """
-        return File.make_canonical_path(self.origin, self.path, self.name)
+        return self.to_string().split("/")
 
     @staticmethod
     def unwrap_canonical_path(canonical_path: str) -> List[str]:
@@ -74,3 +88,16 @@ class File:
         :return: a List[str] of path elements
         """
         return canonical_path.split("/")
+
+
+class File(BaseModel):
+    """
+    An atomic unit of data, described by data, a file type describing the data stored, and a canonical
+    path denoting its location in some filesystem-like storage.
+    """
+    data: Any                       # The data contained by this file
+    file_type: FileType             # The type of data contained by this file
+    canonical_path: CanonicalPath   # The path to this file within the data source where it is stored
+
+    class Config:
+        arbitrary_types_allowed = True

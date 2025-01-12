@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from data_tools.schema import Result, File, FileLoader
+from data_tools.schema import Result, File, FileLoader, CanonicalPath
 
 
 class DataSource(ABC):
@@ -11,5 +11,5 @@ class DataSource(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def get(self, canonical_path: str, **kwargs) -> Result:
+    def get(self, canonical_path: CanonicalPath, **kwargs) -> Result:
         raise NotImplementedError
