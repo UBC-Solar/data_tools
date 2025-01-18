@@ -7,7 +7,7 @@ from .query import (
 
 from .collections import (
     TimeSeries,
-    FSGPDayLaps
+    FSGPDayLaps,
 )
 
 from .schema import (
@@ -24,6 +24,11 @@ from .utils import (
     iso_string_from_datetime
 )
 
+from .lap_tools import (
+    FSGPDayLaps,
+    collect_lap_data
+)
+
 
 __all__ = [
     "FluxQuery",
@@ -31,6 +36,8 @@ __all__ = [
     "TimeSeries",
     "DBClient",
     "FSGPDayLaps",
+    "FSGPDayLaps",
+    "collect_lap_data",
     "PostgresClient",
     "parse_iso_datetime",
     "ensure_utc",
