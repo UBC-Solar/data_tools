@@ -7,7 +7,6 @@ from .query import (
 
 from .collections import (
     TimeSeries,
-    FSGPDayLaps,
 )
 
 from .schema import (
