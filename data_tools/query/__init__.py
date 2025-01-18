@@ -41,5 +41,9 @@ __all__ = [
     "FluxQuery",
     "FluxStatement",
     "DBClient",
-    "PostgresClient"
+    "PostgresClient",
+    "TimeSeriesTarget",
+    "get_sensor_id",
+    "get_data_units",
+    "init_schema"
 ]
