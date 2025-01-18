@@ -1,5 +1,5 @@
 import pytest
-from data_tools.query.postgresql_query import _get_db_url, PostgresClient
+from data_tools.query.postgresql_query import _get_db_url
 
 
 def test_db_url():
