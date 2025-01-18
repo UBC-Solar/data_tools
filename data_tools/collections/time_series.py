@@ -3,6 +3,7 @@ import datetime
 from dateutil import parser
 import matplotlib.pyplot as plt
 import math
+from warnings import warn
 import pandas as pd
 import re
 
@@ -32,7 +33,7 @@ class TimeSeries(np.ndarray):
         self._stop = getattr(obj, '_stop', None)
         self._units = getattr(obj, '_units', None)
         self._length = getattr(obj, '_length', None)
-        self._granularity = getattr(obj, '_granularity', None)
+        self._period = getattr(obj, '_period', None)
         self._meta = getattr(obj, '_meta', None)
 
     def __init__(self, input_array, meta: dict):
@@ -50,8 +51,14 @@ class TimeSeries(np.ndarray):
         self._units: str = meta["units"]
         del meta["units"]
 
-        self._granularity: float = meta["granularity"]
-        del meta["granularity"]
+        if "period" in meta.keys():
+            self._period: float = meta["period"]
+            del meta["period"]
+
+        else:
+            warn("Please set `period` and not granularity. It will be removed in the future.", DeprecationWarning)
+            self._period: float = meta["granularity"]
+            del meta["granularity"]
 
         self._length: float = meta["length"]
         del meta["length"]
@@ -63,7 +70,7 @@ class TimeSeries(np.ndarray):
         """
         This wave's x–axis in relative seconds, such that the first element is ``t=0``.
         """
-        relative_x_axis = np.linspace(0, len(self) * self.granularity, len(self))
+        relative_x_axis = np.linspace(0.0, self._length, len(self))
 
         return relative_x_axis
 
@@ -95,7 +102,17 @@ class TimeSeries(np.ndarray):
         """
         Temporal granularity (delta t) between each element of this wave's data in seconds
         """
-        return self._granularity
+        warn("Please use TimeSeries.period instead of TimeSeries.granularity", DeprecationWarning, stacklevel=2)
+        return self._period
+
+    @property
+    def period(self) -> float:
+        """
+        Get the period, in seconds, between data points of this TimeSeries.
+
+        :return: period, in seconds.
+        """
+        return self._period
 
     @property
     def units(self) -> str:
@@ -145,7 +162,7 @@ class TimeSeries(np.ndarray):
 
             unix_x_axis = data_to_slice.unix_x_axis
             new_start_timestamp: float = unix_x_axis[start_index]
-            new_stop_timestamp: float = unix_x_axis[stop_index]
+            new_stop_timestamp: float = unix_x_axis[stop_index - 1]
 
             new_start: datetime.datetime = datetime.datetime.fromtimestamp(new_start_timestamp)
             new_stop: datetime.datetime = datetime.datetime.fromtimestamp(new_stop_timestamp)
@@ -157,7 +174,7 @@ class TimeSeries(np.ndarray):
                 "car": data_to_slice.meta["car"],
                 "measurement": data_to_slice.meta["measurement"],
                 "field": data_to_slice.meta["field"],
-                "granularity": data_to_slice.granularity,
+                "period": data_to_slice.period,
                 "length": new_length,
                 "units": data_to_slice.units,
             })
@@ -234,7 +251,7 @@ class TimeSeries(np.ndarray):
             "car": self.meta["car"],
             "measurement": self.meta["measurement"],
             "field": self.meta["field"],
-            "granularity": self.granularity,
+            "period": self.period,
             "length": self.length,
             "units": self.units,
         }
@@ -243,25 +260,27 @@ class TimeSeries(np.ndarray):
 
     @staticmethod
     def align(*args) -> list:
-        start_time = np.max([arg.start.timestamp() for arg in args])
-        end_time = np.min([arg.stop.timestamp() for arg in args])
-        granularity = np.max([arg.granularity for arg in args])
-        new_length = end_time - start_time
+        start_time = max(arg.start.timestamp() for arg in args)
+        end_time = min(arg.stop.timestamp() for arg in args)
+        period = min(arg.period for arg in args)
 
-        new_x_axis = np.linspace(0, new_length, math.ceil(new_length / granularity))
+        new_length = end_time - start_time
+        num_points = math.ceil(new_length / period) + 1
+        new_x_axis = np.linspace(start_time, end_time, num_points)
 
         new_args = []
         for array in args:
             start_index = array.index_of(array.relative_time(start_time))
             stop_index = array.index_of(array.relative_time(end_time))
 
-            new_array = array[start_index:stop_index]
+            new_array = array[start_index:stop_index + 1]
             new_array._start = datetime.datetime.fromtimestamp(start_time)
             new_array._stop = datetime.datetime.fromtimestamp(end_time)
-            new_array._granularity = granularity
+            new_array._period = period
             new_array._length = new_length
 
-            new_array_interpolated = new_array.promote(np.interp(new_x_axis, new_array.x_axis, new_array))
+            interpolated_values = np.interp(new_x_axis, new_array.unix_x_axis, new_array)
+            new_array_interpolated = new_array.promote(interpolated_values)
 
             new_args.append(new_array_interpolated)
 
@@ -295,7 +314,7 @@ class TimeSeries(np.ndarray):
             "car": query_df["car"].to_numpy()[0],
             "measurement": query_df["_measurement"].to_numpy()[0],
             "field": field,
-            "granularity": actual_granularity,
+            "period": actual_granularity,
             "length": temporal_length,
             "units": units,
         }

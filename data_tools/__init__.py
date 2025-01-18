@@ -9,6 +9,20 @@ from .collections import (
     TimeSeries,
 )
 
+from .schema import (
+    FileType,
+    File,
+    Event,
+    DataSource,
+    FileLoader
+)
+
+from .utils import (
+    parse_iso_datetime,
+    ensure_utc,
+    iso_string_from_datetime
+)
+
 from .lap_tools import (
     FSGPDayLaps,
     collect_lap_data
@@ -18,9 +32,18 @@ from .lap_tools import (
 __all__ = [
     "FluxQuery",
     "FluxStatement",
-    "PostgresClient",
-    "DBClient",
     "TimeSeries",
+    "DBClient",
+    "FSGPDayLaps",
     "FSGPDayLaps",
     "collect_lap_data",
+    "PostgresClient",
+    "parse_iso_datetime",
+    "ensure_utc",
+    "iso_string_from_datetime",
+    "FileType",
+    "File",
+    "Event",
+    "DataSource",
+    "FileLoader",
 ]

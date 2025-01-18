@@ -1,29 +1,40 @@
-from data_tools.query.common import _ensure_utc
 from data_tools.query.flux import FluxQuery
+from data_tools.utils.times import ensure_utc
 from data_tools.collections.time_series import TimeSeries
+from pydantic import BaseModel, Field
 from influxdb_client import InfluxDBClient
 from dotenv import load_dotenv
 from datetime import datetime, timedelta, timezone
 import pandas as pd
 import os
 
-
 INFLUX_URL = "http://influxdb.telemetry.ubcsolar.com"
+
+
+class TimeSeriesTarget(BaseModel):
+    """
+    Encapsulates the data required to completely query a specific time series from InfluxDB.
+    """
+    name: str
+    field: str
+    measurement: str
+    frequency: float = Field(gt=0)
+    units: str
+    car: str
+    bucket: str
 
 
 class DBClient:
     """
     This class encapsulates a connection to an InfluxDB database.
     """
+
     def __init__(self, influxdb_org=None, influxdb_token=None):
         if influxdb_token is None or influxdb_org is None:
             load_dotenv()
 
             influxdb_token = os.getenv("INFLUX_TOKEN")
             influxdb_org = os.getenv("INFLUX_ORG")
-
-        print(f"Creating client with API Token: {influxdb_token}")
-        print(f"Creating client with Org: {influxdb_org}")
 
         self._influx_org = influxdb_org
 
@@ -101,7 +112,47 @@ class DBClient:
 
         return self._client.query_api().query_data_frame(compiled_query)
 
-    def query_time_series(self, start: datetime, stop: datetime, field: str, bucket: str = "CAN_log", car: str = "Brightside", granularity: float = 0.1, units: str = "", measurement: str = None) -> TimeSeries:
+    def query_series(self, start: datetime, stop: datetime, field: str, bucket: str = "CAN_log",
+                     car: str = "Brightside", measurement: str = None):
+        """
+        Query the database for a specific field, over a certain time range.
+        The data will be returned as a DataFrame.
+
+        :param start: the start time of the query as an ISO 8601-compliant string, such as "2024-06-30T23:00:00Z".
+        :param stop: the end time of the query as an ISO 8601-compliant string, such as "2024-06-30T23:00:00Z".
+        :param field: the field which is to be queried.
+        :param str bucket: the bucket which will be queried
+        :param car: the car which data is being queried for, default is "Brightside".
+        :return: a TimeSeries of the resulting time-series data
+        """
+        # InfluxDB has an issue where PST timestamps were interpreted as UTC. So, we need to mutate
+        # the timestamps to represent a time -7 hours to compensate for the UTC offset of +7.
+
+        utc_start = ensure_utc(start) - timedelta(hours=7)
+        utc_end = ensure_utc(stop) - timedelta(hours=7)
+
+        # Make the query
+        query = FluxQuery() \
+            .from_bucket(bucket) \
+            .range(start=utc_start.isoformat(), stop=utc_end.isoformat()) \
+            .filter(field=field) \
+            .car(car)
+
+        if measurement:
+            query = query.filter(measurement=measurement)
+        query_df = self.query_dataframe(query)
+
+        if isinstance(query_df, list):
+            raise ValueError("Query returned multiple fields! Please refine your query.")
+
+        if len(query_df) == 0:
+            raise ValueError("Query is empty! Verify that the data is visible on InfluxDB for the queried bucket.")
+
+        return query_df
+
+    def query_time_series(self, start: datetime, stop: datetime, field: str, bucket: str = "CAN_log",
+                          car: str = "Brightside", granularity: float = 0.1, units: str = "",
+                          measurement: str = None) -> TimeSeries:
         """
         Query the database for a specific field, over a certain time range.
         The data will be processed into a TimeSeries, which has homogenous and evenly-spaced (temporally) elements.
@@ -116,28 +167,7 @@ class DBClient:
         :param units: the units of the returned data, optional.
         :return: a TimeSeries of the resulting time-series data
         """
-        # InfluxDB has an issue where PST timestamps were interpreted as UTC. So, we need to mutate
-        # the timestamps to represent a time -7 hours to compensate for the UTC offset of +7.
-
-        utc_start = _ensure_utc(start) - timedelta(hours=7)
-        utc_end = _ensure_utc(stop) - timedelta(hours=7)
-
-        # Make the query
-        query = FluxQuery()\
-            .from_bucket("CAN_log")\
-            .range(start=utc_start.isoformat(), stop=utc_end.isoformat())\
-            .filter(field=field)\
-            .car(car)
-
-        if measurement:
-            query = query.filter(measurement=measurement)
-        query_df = self.query_dataframe(query)
-
-        if isinstance(query_df, list):
-            raise ValueError("Query returned multiple fields! Please refine your query.")
-
-        if len(query_df) == 0:
-            raise ValueError("Query is empty! Verify that the data is visible on InfluxDB for the queried bucket.")
+        query_df = self.query_series(start, stop, field, bucket, car, measurement)
 
         return TimeSeries.from_query_dataframe(query_df, granularity, field, units)
 
@@ -148,6 +178,7 @@ if __name__ == "__main__":
 
     client = DBClient()
 
-    pack_voltage: TimeSeries = client.query_time_series(start_time, end_time, "TotalPackVoltage", units="V", measurement="BMS")
+    pack_voltage: TimeSeries = client.query_time_series(start_time, end_time, "TotalPackVoltage", units="V",
+                                                        measurement="BMS")
 
     pack_voltage.plot()
