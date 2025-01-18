@@ -22,7 +22,7 @@ def test_align_with_same_granularity():
             "car": "",
             "measurement": "",
             "field": "",
-            "granularity": 1.0,
+            "period": 1.0,
             "length": x_data_1[-1] - x_data_1[0],
             "units": "",
         })
@@ -33,7 +33,7 @@ def test_align_with_same_granularity():
             "car": "",
             "measurement": "",
             "field": "",
-            "granularity": 1.0,
+            "period": 1.0,
             "length": x_data_2[-1] - x_data_2[0],
             "units": "",
         })
@@ -57,7 +57,7 @@ def test_align_with_different_granularity():
             "car": "",
             "measurement": "",
             "field": "",
-            "granularity": 1.0,
+            "period": 1.0,
             "length": x_data_1[-1] - x_data_1[0],
             "units": "",
         })
@@ -68,7 +68,7 @@ def test_align_with_different_granularity():
             "car": "",
             "measurement": "",
             "field": "",
-            "granularity": 0.5,
+            "period": 0.5,
             "length": x_data_2[-1] - x_data_2[0],
             "units": "",
         })
