@@ -10,11 +10,11 @@ def create_time_series():
 
 def test_align_with_same_granularity():
     y_data_1 = [1, 2, 3, 3, 3, 2, 4, 4, 4, 1]
-    x_data_1 = [4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
+    x_data_1 = np.array([4, 5, 6, 7, 8, 9, 10, 11, 12, 13]) + 946684800.0
     # x_data_1 = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
 
     y_data_2 = [1, 2, 1, 2, 7, 8, 3, 2, 4, 4, 4, 1, 4, 3]
-    x_data_2 = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
+    x_data_2 = np.array([2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]) + 946684800.0
 
     time_series_1 = TimeSeries(y_data_1, meta={
             "start": datetime.datetime.fromtimestamp(x_data_1[0]),
@@ -46,10 +46,10 @@ def test_align_with_same_granularity():
 
 def test_align_with_different_granularity():
     y_data_1 = [1, 2, 3, 3, 3, 2, 4,  4,  4,  1]
-    x_data_1 = [4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
+    x_data_1 = np.array([4, 5, 6, 7, 8, 9, 10, 11, 12, 13]) + 946684800.0  # January 1st, 2000 in UNIX time
 
     y_data_2 = [1, 2,   1, 2,   7, 8,   3, 2,   4, 4,   4, 1,   4, 3,   1, 2,   1,  2,    7,  8,    3,  2,    4,  4,    4,  1,    1]
-    x_data_2 = [2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5, 10, 10.5, 11, 11.5, 12, 12.5, 13, 13.5, 14, 14.5, 15]
+    x_data_2 = np.array([2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5, 10, 10.5, 11, 11.5, 12, 12.5, 13, 13.5, 14, 14.5, 15]) + 946684800.0
 
     time_series_1 = TimeSeries(y_data_1, meta={
             "start": datetime.datetime.fromtimestamp(x_data_1[0]),
