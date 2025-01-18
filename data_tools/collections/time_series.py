@@ -70,7 +70,7 @@ class TimeSeries(np.ndarray):
         """
         This wave's x–axis in relative seconds, such that the first element is ``t=0``.
         """
-        relative_x_axis = np.linspace(0, len(self) * self.granularity, len(self))
+        relative_x_axis = np.linspace(0.0, self._length, len(self))
 
         return relative_x_axis
 
@@ -162,7 +162,7 @@ class TimeSeries(np.ndarray):
 
             unix_x_axis = data_to_slice.unix_x_axis
             new_start_timestamp: float = unix_x_axis[start_index]
-            new_stop_timestamp: float = unix_x_axis[stop_index]
+            new_stop_timestamp: float = unix_x_axis[stop_index - 1]
 
             new_start: datetime.datetime = datetime.datetime.fromtimestamp(new_start_timestamp)
             new_stop: datetime.datetime = datetime.datetime.fromtimestamp(new_stop_timestamp)
@@ -260,25 +260,27 @@ class TimeSeries(np.ndarray):
 
     @staticmethod
     def align(*args) -> list:
-        start_time = np.max([arg.start.timestamp() for arg in args])
-        end_time = np.min([arg.stop.timestamp() for arg in args])
-        granularity = np.max([arg.granularity for arg in args])
-        new_length = end_time - start_time
+        start_time = max(arg.start.timestamp() for arg in args)
+        end_time = min(arg.stop.timestamp() for arg in args)
+        period = min(arg.period for arg in args)
 
-        new_x_axis = np.linspace(0, new_length, math.ceil(new_length / granularity))
+        new_length = end_time - start_time
+        num_points = math.ceil(new_length / period) + 1
+        new_x_axis = np.linspace(start_time, end_time, num_points)
 
         new_args = []
         for array in args:
             start_index = array.index_of(array.relative_time(start_time))
             stop_index = array.index_of(array.relative_time(end_time))
 
-            new_array = array[start_index:stop_index]
+            new_array = array[start_index:stop_index + 1]
             new_array._start = datetime.datetime.fromtimestamp(start_time)
             new_array._stop = datetime.datetime.fromtimestamp(end_time)
             new_array._period = period
             new_array._length = new_length
 
-            new_array_interpolated = new_array.promote(np.interp(new_x_axis, new_array.x_axis, new_array))
+            interpolated_values = np.interp(new_x_axis, new_array.unix_x_axis, new_array)
+            new_array_interpolated = new_array.promote(interpolated_values)
 
             new_args.append(new_array_interpolated)
 
