@@ -3,6 +3,7 @@ import datetime
 from dateutil import parser
 import matplotlib.pyplot as plt
 import math
+from warnings import warn
 import pandas as pd
 import re
 
@@ -32,7 +33,7 @@ class TimeSeries(np.ndarray):
         self._stop = getattr(obj, '_stop', None)
         self._units = getattr(obj, '_units', None)
         self._length = getattr(obj, '_length', None)
-        self._granularity = getattr(obj, '_granularity', None)
+        self._period = getattr(obj, '_period', None)
         self._meta = getattr(obj, '_meta', None)
 
     def __init__(self, input_array, meta: dict):
@@ -50,8 +51,14 @@ class TimeSeries(np.ndarray):
         self._units: str = meta["units"]
         del meta["units"]
 
-        self._granularity: float = meta["granularity"]
-        del meta["granularity"]
+        if "period" in meta.keys():
+            self._period: float = meta["period"]
+            del meta["period"]
+
+        else:
+            warn("Please set `period` and not granularity. It will be removed in the future.", DeprecationWarning)
+            self._period: float = meta["granularity"]
+            del meta["granularity"]
 
         self._length: float = meta["length"]
         del meta["length"]
@@ -95,7 +102,17 @@ class TimeSeries(np.ndarray):
         """
         Temporal granularity (delta t) between each element of this wave's data in seconds
         """
-        return self._granularity
+        warn("Please use TimeSeries.period instead of TimeSeries.granularity", DeprecationWarning, stacklevel=2)
+        return self._period
+
+    @property
+    def period(self) -> float:
+        """
+        Get the period, in seconds, between data points of this TimeSeries.
+
+        :return: period, in seconds.
+        """
+        return self._period
 
     @property
     def units(self) -> str:
@@ -157,7 +174,7 @@ class TimeSeries(np.ndarray):
                 "car": data_to_slice.meta["car"],
                 "measurement": data_to_slice.meta["measurement"],
                 "field": data_to_slice.meta["field"],
-                "granularity": data_to_slice.granularity,
+                "period": data_to_slice.period,
                 "length": new_length,
                 "units": data_to_slice.units,
             })
@@ -234,7 +251,7 @@ class TimeSeries(np.ndarray):
             "car": self.meta["car"],
             "measurement": self.meta["measurement"],
             "field": self.meta["field"],
-            "granularity": self.granularity,
+            "period": self.period,
             "length": self.length,
             "units": self.units,
         }
@@ -258,7 +275,7 @@ class TimeSeries(np.ndarray):
             new_array = array[start_index:stop_index]
             new_array._start = datetime.datetime.fromtimestamp(start_time)
             new_array._stop = datetime.datetime.fromtimestamp(end_time)
-            new_array._granularity = granularity
+            new_array._period = period
             new_array._length = new_length
 
             new_array_interpolated = new_array.promote(np.interp(new_x_axis, new_array.x_axis, new_array))
@@ -295,7 +312,7 @@ class TimeSeries(np.ndarray):
             "car": query_df["car"].to_numpy()[0],
             "measurement": query_df["_measurement"].to_numpy()[0],
             "field": field,
-            "granularity": actual_granularity,
+            "period": actual_granularity,
             "length": temporal_length,
             "units": units,
         }
