@@ -30,7 +30,7 @@ class CanonicalPath:
         """
         self._origin = origin
         self._source = source
-        self._path = path
+        self._path = path if isinstance(path, list) else [path]
         self._name = name
 
     def to_string(self) -> str:
