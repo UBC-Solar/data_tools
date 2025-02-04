@@ -1,11 +1,8 @@
 from enum import StrEnum
 from typing import Union, List, Any
 from functools import reduce
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 import pathlib
-
-
-type StringCollection = Union[str, List[str]]
 
 
 class FileType(StrEnum):
@@ -19,18 +16,18 @@ class FileType(StrEnum):
 
 
 class CanonicalPath:
-    def __init__(self, origin: str, source: str, path: StringCollection, name: str):
+    def __init__(self, origin: str, source: str, event: str, name: str):
         """
         Construct a canonical path representing a path to a file in any abstract data source
 
         :param str origin: identifies the origin (code) of this data, usually the data pipeline version.
         :param str source: the producer of the data pointed to by this canonical path, usually a pipeline stage
-        :param Union[str, List[str]] path: any remaining path elements from the producer to the file pointed to
+        :param str event: the event that this data belongs to
         :param str name: the name of this data
         """
         self._origin = origin
         self._source = source
-        self._path = path if isinstance(path, list) else [path]
+        self._event = event
         self._name = name
 
     def to_string(self) -> str:
@@ -39,7 +36,7 @@ class CanonicalPath:
 
         :return: str
         """
-        return "/".join([self._origin] + self._path + [self._source, self._name])
+        return "/".join([self._origin, self._event, self._source, self._name])
 
     def to_path(self) -> pathlib.Path:
         return reduce(lambda x, y: x / pathlib.Path(y), self.unwrap())
@@ -53,8 +50,8 @@ class CanonicalPath:
         return self._source
 
     @property
-    def path(self) -> StringCollection:
-        return self._path
+    def event(self) -> str:
+        return self._event
 
     @property
     def name(self) -> str:
@@ -95,9 +92,11 @@ class File(BaseModel):
     An atomic unit of data, described by data, a file type describing the data stored, and a canonical
     path denoting its location in some filesystem-like storage.
     """
-    data: Any                       # The data contained by this file
-    file_type: FileType             # The type of data contained by this file
-    canonical_path: CanonicalPath   # The path to this file within the data source where it is stored
+    data: Any                                       # The data contained by this file
+    file_type: FileType                             # The type of data contained by this file
+    canonical_path: CanonicalPath                   # The path to this file within the data source where it is stored
+    metadata: dict = Field(default_factory=dict)    # Any additional metadata that this file should hold
+    description: str = Field(default_factory=str)   # A description of what this file is
 
     class Config:
         arbitrary_types_allowed = True
