@@ -2,7 +2,8 @@ from .query import (
     FluxQuery,
     FluxStatement,
     DBClient,
-    PostgresClient
+    PostgresClient,
+    SunbeamClient
 )
 
 from .collections import (
@@ -46,4 +47,5 @@ __all__ = [
     "Event",
     "DataSource",
     "FileLoader",
+    "SunbeamClient"
 ]

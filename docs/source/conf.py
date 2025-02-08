@@ -28,6 +28,13 @@ extensions = [
     'myst_parser',           # For Markdown support if needed
 ]
 
+autodoc_default_options = {
+    'members': True,
+    'undoc-members': True,  # Ensure methods without docstrings are also listed
+    'show-inheritance': True,
+}
+
+
 html_theme = "pydata_sphinx_theme"
 
 autosummary_generate = True

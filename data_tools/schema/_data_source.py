@@ -3,6 +3,9 @@ from data_tools.schema import Result, File, FileLoader, CanonicalPath
 
 
 class DataSource(ABC):
+    """
+    Abstract base class for data sources.
+    """
     def __init__(self, *args, **kwargs) -> None:
         pass
 
