@@ -22,6 +22,7 @@ class TimeSeriesTarget(BaseModel):
     units: str
     car: str
     bucket: str
+    description: str = Field(default_factory=str)
 
 
 class DBClient:
