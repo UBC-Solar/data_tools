@@ -59,7 +59,3 @@ class Result[T]:
 
     def __bool__(self):
         return True if self._result_type == self.ResultType.Ok else False
-
-
-data = [10, 2, 4, 6]
-res = Result.Ok(data)
