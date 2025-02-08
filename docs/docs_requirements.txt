@@ -55,5 +55,4 @@ sphinxcontrib-serializinghtml==2.0.0
 SQLAlchemy==2.0.38
 typing_extensions==4.12.2
 tzdata==2025.1
--e git+https://github.com/UBC-Solar/data_tools.git@c1b45ad4d56115becb850d26e52f181e1585c411#egg=ubc_solar_data_tools
 urllib3==2.3.0
