@@ -12,7 +12,7 @@ Flux Tools
    FluxStatement      -- Atomic component of FluxQuery
    FluxQuery          -- Query composed of FluxStatements
 
-InfluxDB Tools
+Database Tools
 ==============
 
 .. autosummary::
@@ -20,14 +20,7 @@ InfluxDB Tools
 
    DBClient           -- Powerful and simple InfluxDB client
    SunbeamClient      -- A simple client for accessing Sunbeam's API, UBC Solar's custom data pipeline
-
-PostgreSQL Tools
-================
-
-.. autosummary::
-   :toctree: generated/
-
-   PostgresClient    -- Powerful and simple PostgreSQL client
+   PostgresClient     -- Powerful and simple PostgreSQL client
 
 """
 

@@ -9,6 +9,11 @@ load_dotenv()
 
 
 class SunbeamClient:
+    """
+
+    Encapsulate a client connection to the Sunbeam API, UBC Solar's custom data pipeline.
+
+    """
     def __init__(self, api_url: str = None):
         """
         Create a client to connect to the Sunbeam API.
