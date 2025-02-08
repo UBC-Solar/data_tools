@@ -1,12 +1,15 @@
 from enum import StrEnum
-from typing import Any
+from typing import TypeVar
+
+
+T = TypeVar("T")
 
 
 class UnwrappedError(Exception):
     pass
 
 
-class Result:
+class Result[T]:
     """
     Algebraic datatype that can either represent a successful result of some operation,
     or a failure.
@@ -17,12 +20,12 @@ class Result:
         Ok = "Ok"
         Err = "Err"
 
-    def __init__(self, result: Any, result_type: ResultType):
+    def __init__(self, result: T, result_type: ResultType):
         self._result = result
         self._result_type = result_type
 
     @staticmethod
-    def Ok(result: Any):
+    def Ok(result: T):
         """
         Wrap a successful result in a `Result`.
 
@@ -41,7 +44,7 @@ class Result:
         """
         return Result(error, Result.ResultType.Err)
 
-    def unwrap(self):
+    def unwrap(self) -> T | UnwrappedError:
         """
         Unwrap this `Result` to reveal a successful result or an error.
 
@@ -56,3 +59,7 @@ class Result:
 
     def __bool__(self):
         return True if self._result_type == self.ResultType.Ok else False
+
+
+data = [10, 2, 4, 6]
+res = Result.Ok(data)
