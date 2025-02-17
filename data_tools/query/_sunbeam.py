@@ -57,7 +57,7 @@ class SunbeamCache:
 
     def __setitem__(self, key, value):
         url = self._build_url("set")
-        serialized_data = dill.dumps(value)
+        serialized_data = dill.dumps(value, protocol=dill.HIGHEST_PROTOCOL)
         encoded_data = base64.b64encode(serialized_data).decode("utf-8")
         response = requests.get(url, params={"key": key, "value": encoded_data})
 
@@ -117,6 +117,37 @@ class SunbeamClient:
         Acquire an interface to the Sunbeam Cache API, descended from this client.
         """
         return SunbeamCache(self._base_url + "/cache")
+
+    def distinct(self, key: str, filter: dict[str, str]) -> list[str]:
+        """
+        Obtain the distinct values of a given key, subject to a filter.
+
+        For example, if you want to see the distinct events processed by a certain pipeline,
+        you can set `key` to `"event"` and `filter` to `{"origin": "your_pipeline"}`.
+
+        As another example, if you wanted to see the events processed by a certain pipeline where the "power" stage
+        was processed, you can set `key` to `"event"` and `filter` to `{"origin": "your_pipeline", "source": "power"}`.
+
+        :param key: name of the field for which we want to get the distinct values
+        :param filter: a mapping which filters the query to have items match this filter's values by field
+        :return: the values corresponding the `key` field of matching items
+        """
+        url_components: list[str] = [self._base_url, "files", "distinct"]
+        url = "http://" + "/".join(url_components)
+        data = {"key": key}
+        data.update(filter)
+
+        response = requests.post(url, data=data)
+
+        if response.status_code == 200:
+            return json.loads(response.text)
+
+        # Otherwise, acquire and wrap the error
+        else:
+            # Try to extract the error and capture it
+            response.raise_for_status()
+
+
 
     def get_file(self, origin: str = None, event: str = None, source: str = None, name: str = None, path: CanonicalPath = None) -> Result[File | Exception]:
         """
