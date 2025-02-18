@@ -29,7 +29,7 @@ from .flux import FluxQuery, FluxStatement
 from .influxdb_query import DBClient, TimeSeriesTarget
 from .postgresql_query import PostgresClient
 from .data_schema import get_sensor_id, get_data_units, CANLog, init_schema
-from ._sunbeam import SunbeamClient
+from ._sunbeam import SunbeamClient, SunbeamCache
 
 __all__ = [
     "FluxQuery",
@@ -40,5 +40,6 @@ __all__ = [
     "get_sensor_id",
     "get_data_units",
     "init_schema",
-    "SunbeamClient"
+    "SunbeamClient",
+    "SunbeamCache"
 ]
