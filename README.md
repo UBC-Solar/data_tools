@@ -14,6 +14,12 @@ Versions for dependencies (except Python) indicated are recommended
 * Python >=3.9 [^2]
 * Poetry >=1.8.3 [^3]
 
+### System Requirements
+
+To use the `data_tools.query` module, you'll need access to the appropriate endpoints. UBC Solar members can ask their Lead to join the UBC Solar VPN which will allow them to access the pre-configured (default) endpoints. 
+
+Otherwise, you'll need to configure relevant URLs (ex. set the InfluxDB URL when creating a `DBClient` to the appropriate endpoint).
+
 ## Installation
 
 First, clone this repository.
@@ -34,8 +40,34 @@ poetry install --no-root --with docs --with test
 ```
 
 ## Getting Started
+An example of querying data from Sunbeam (along with the involved data types)
+```python
+from data_tools.query import SunbeamClient
+from data_tools.schema import CanonicalPath, Result, UnwrappedError
+from data_tools.collections import TimeSeries
 
-Example of querying data and plotting it as a `TimeSeries`.
+# CanonicalPath represents a path in the Sunbeam filesystem
+motor_power_path = CanonicalPath(   
+    origin="production",              # Use the production pipeline
+    event="FSGP_2024_Day_1",          # Get from Day 1
+    source="power",                   # Power Stage contains power calculations
+    name="MotorPower"                 # Get MotorPower from the Power Stage
+)
+motor_power_day_one_result: Result = SunbeamClient().get_file(path=motor_power_path)
+
+# The Result type can contain an error or the data, so unwrap it to reveal the data (if the query worked!)
+# MotorPower is a TimeSeries
+try:
+    motor_power_day_one: TimeSeries = motor_power_day_one_result.unwrap()
+
+# If `unwrap` is to reveal an error, it will raise an `UnwrappedError`.
+except UnwrappedError as e:
+    print("Query failed!")
+    raise e
+
+```
+
+Example of querying data from InfluxDB and plotting it as a `TimeSeries`.
 
 > When the `InfluxClient` class is imported, `data_tools` will attempt to locate a `.env` file in order to acquire an InfluxDB API token. If you do not have a `.env` or it is missing an API token, you will not be able to query data. UBC Solar members can acquire an API token by speaking to their Team Lead.
 
