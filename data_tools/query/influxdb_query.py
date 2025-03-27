@@ -8,7 +8,7 @@ from datetime import datetime, timedelta, timezone
 import pandas as pd
 import os
 
-INFLUX_URL = "http://influxdb.telemetry.ubcsolar.com"
+DEFAULT_INFLUXDB_URL = "http://influxdb.telemetry.ubcsolar.com"
 
 
 class TimeSeriesTarget(BaseModel):
@@ -30,7 +30,14 @@ class DBClient:
     This class encapsulates a connection to an InfluxDB database.
     """
 
-    def __init__(self, influxdb_org=None, influxdb_token=None):
+    def __init__(self, influxdb_org=None, influxdb_token=None, url=None):
+        """
+        Create a connection to the InfluxDB database.
+
+        :param influxdb_org: The name of the InfluxDB organization.
+        :param influxdb_token: The API Token to the InfluxDB database.
+        :param url: The URL to the InfluxDB database, default is "http://influxdb.telemetry.ubcsolar.com"
+        """
         if influxdb_token is None or influxdb_org is None:
             load_dotenv()
 
@@ -38,8 +45,9 @@ class DBClient:
             influxdb_org = os.getenv("INFLUX_ORG")
 
         self._influx_org = influxdb_org
+        url = DEFAULT_INFLUXDB_URL if url is None else url
 
-        self._client = InfluxDBClient(url=INFLUX_URL, org=influxdb_org, token=influxdb_token)
+        self._client = InfluxDBClient(url=url, org=influxdb_org, token=influxdb_token)
 
     def get_buckets(self) -> list[str]:
         """
