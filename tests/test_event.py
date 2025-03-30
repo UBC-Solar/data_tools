@@ -176,3 +176,6 @@ def test_invalid_event(event_datetime, event_strs):
 
     with pytest.raises(TypeError):
         Event(aware_datetime_1, aware_datetime_2, {"name": "not_a_string!"})
+
+    with pytest.raises(TypeError):
+        Event(aware_datetime_1, aware_datetime_2, "name", attributes="not a dictionary!")
