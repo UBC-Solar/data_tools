@@ -1,3 +1,4 @@
 ignore:
   - "tests/"
   - "**/__init__.py"
+  - "data_tools/query/"   # `query` module cannot be tested in a CI runner because it cannot access the databases
