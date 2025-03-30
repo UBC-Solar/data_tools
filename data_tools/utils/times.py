@@ -1,5 +1,4 @@
 from datetime import datetime, timezone
-from zoneinfo import ZoneInfo
 
 
 def ensure_utc(dt: datetime) -> datetime:

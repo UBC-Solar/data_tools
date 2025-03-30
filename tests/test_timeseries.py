@@ -1,4 +1,3 @@
-import pytest
 from data_tools import TimeSeries
 import numpy as np
 import datetime

@@ -21,7 +21,7 @@ class FluxStatement:
     """
     def __init__(self, statement: str, priority: int):
         assert isinstance(statement, str), f"Statement must be of type `str`, not {type(statement)}!"
-        assert (isinstance(priority, int) and priority >= 0), f"Priority must be a non-negative integer!"
+        assert (isinstance(priority, int) and priority >= 0), "Priority must be a non-negative integer!"
 
         self._statement: str = statement
         self._priority: int = priority
@@ -56,8 +56,8 @@ class ParameterizedFluxStatement:
         :param FluxFormatter formatter: must be a ``Callable`` that takes in a ``List[str]``, the parameters to the Flux query, and returns a ``str``, which is the Flux query injected with parameters.
         :param int priority: must be a non-negative integer that indicates the priority of the Flux statement encapsulated by this class.
         """
-        assert isinstance(formatter, Callable), f"formatter must have signature `Callable[[List[str]], str]`!"
-        assert (isinstance(priority, int) and priority >= 0), f"Priority must be a non-negative integer!"
+        assert isinstance(formatter, Callable), "formatter must have signature `Callable[[List[str]], str]`!"
+        assert (isinstance(priority, int) and priority >= 0), "Priority must be a non-negative integer!"
 
         self._formatter: FluxFormatter = formatter
         self._priority: int = priority

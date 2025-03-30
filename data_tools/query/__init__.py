@@ -41,5 +41,6 @@ __all__ = [
     "get_data_units",
     "init_schema",
     "SunbeamClient",
-    "SunbeamCache"
+    "SunbeamCache",
+    "CANLog"
 ]

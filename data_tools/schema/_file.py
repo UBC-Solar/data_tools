@@ -1,5 +1,5 @@
 from enum import StrEnum
-from typing import Union, List, Any
+from typing import List, Any
 from functools import reduce
 from pydantic import BaseModel, Field
 import pathlib

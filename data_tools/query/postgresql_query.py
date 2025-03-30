@@ -27,16 +27,16 @@ _POSTGRESQL_DATABASE = os.getenv("POSTGRESQL_DATABASE")
 _POSTGRESQL_ADDRESS = os.getenv("POSTGRESQL_ADDRESS")
 
 if _POSTGRESQL_USERNAME is None:
-    logger.error(f"Could not find a POSTGRESQL_USERNAME in .env!")
+    logger.error("Could not find a POSTGRESQL_USERNAME in .env!")
 
 if _POSTGRESQL_PASSWORD is None:
-    logger.error(f"Could not find a POSTGRESQL_PASSWORD in .env!")
+    logger.error("Could not find a POSTGRESQL_PASSWORD in .env!")
 
 if _POSTGRESQL_DATABASE is None:
-    logger.error(f"Could not find a POSTGRESQL_DATABASE in .env!")
+    logger.error("Could not find a POSTGRESQL_DATABASE in .env!")
 
 if _POSTGRESQL_ADDRESS is None:
-    logger.error(f"Could not find a POSTGRESQL_ADDRESS in .env!")
+    logger.error("Could not find a POSTGRESQL_ADDRESS in .env!")
 
 
 def _get_db_url(db_name: str, ip_address: str, username: str, password: str) -> str:
@@ -114,7 +114,7 @@ class PostgresClient:
 
         # Catch any error from querying and wrap it in a RuntimeError
         except Exception as e:
-            raise RuntimeError(f"Error whilst querying data!") from e
+            raise RuntimeError("Error whilst querying data!") from e
 
         if len(queried_data) == 0:
             raise IndexError("Query returned no data!")
