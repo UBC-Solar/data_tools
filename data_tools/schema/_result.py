@@ -70,8 +70,8 @@ class Result[T]:
         if self._result_type == self.ResultType.Ok:
             return self._result
 
-        elif self._result_type == self.ResultType.Err:
-            raise UnwrappedError from self._result
+        # We must have self._result_type == Result.ResultType.Err
+        raise UnwrappedError from self._result
 
     def __bool__(self):
         return True if self._result_type == self.ResultType.Ok else False

@@ -160,3 +160,19 @@ def test_event_attributes(event_datetime):
     event = Event(aware_datetime_1, aware_datetime_2, "test_1", {"realtime": True})
 
     assert event.attributes["realtime"] is True
+
+
+def test_invalid_event(event_datetime, event_strs):
+    _, _, aware_datetime_1, aware_datetime_2 = event_datetime
+    _, _, aware_str_1, aware_str_2 = event_strs
+
+    # Test that Event creation fails with invalid parameters
+
+    with pytest.raises(TypeError):
+        Event({"date": "not a datetime!"}, aware_datetime_2, "test_1")
+
+    with pytest.raises(TypeError):
+        Event(aware_datetime_1, {"date": "not a datetime!"}, "test_1")
+
+    with pytest.raises(TypeError):
+        Event(aware_datetime_1, aware_datetime_2, {"name": "not_a_string!"})
