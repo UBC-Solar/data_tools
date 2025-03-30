@@ -3,6 +3,7 @@ import pytest
 import pathlib
 from pydantic import ValidationError
 
+
 @pytest.fixture
 def canonical_path_elements():
     event = "event"
@@ -34,7 +35,8 @@ def test_canonical_path(canonical_path_elements):
     assert CanonicalPath.unwrap_canonical_path(canonical_path.to_string()) == canonical_path.unwrap()
 
 
-def test_file(canonical_path_elements):
+@pytest.fixture
+def file(canonical_path_elements):
     event, origin, source, name = canonical_path_elements
     data = {
         "some_data": 10,
@@ -45,6 +47,12 @@ def test_file(canonical_path_elements):
     canonical_path = CanonicalPath(origin=origin, event=event, source=source, name=name)
     metadata = {"test": True}
     description = "This is a fake File, if you didn't already know. Oops."
+
+    return data, file_type, metadata, description, canonical_path
+
+
+def test_file(file):
+    data, file_type, metadata, description, canonical_path = file
 
     # Ensure successful creation
     file = File(
