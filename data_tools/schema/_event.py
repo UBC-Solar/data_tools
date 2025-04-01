@@ -1,6 +1,6 @@
 import datetime
 from data_tools.utils.times import parse_iso_datetime, ensure_utc
-from typing import Union
+from typing import Union, List
 
 
 type DateLike = Union[str, datetime.datetime]
@@ -12,17 +12,24 @@ class Event:
     as ISO 8601 formatted strings), with a `name` and optionally any additional `attributes` such as
     `attributes["realtime"]` or `attributes["test"]`.
     """
-    def __init__(self, start: DateLike, stop: DateLike, name: str = None, attributes: dict = None):
+    def __init__(
+            self,
+            start: DateLike,
+            stop: DateLike, name: str = None,
+            attributes: dict = None,
+            flags: List[str] = None
+    ):
         """
         Create an Event from either ISO8601 strings or datetime.datetime objects.
         Any datetime.datetime objects or ISO8601 strings MUST contain timezone information.
 
         Optionally, name the event with `name`, and with additional `attributes`.
 
-        :param start: the start time of this Event
-        :param stop: the end time of this Event
-        :param name: the name of this event, optional, defaulted to "Unnamed Event"
-        :param dict attributes: a dictionary of any additional attributes and/or metadata for this Event
+        :param start: The start time of this Event
+        :param stop: The end time of this Event
+        :param name: The name of this event, optional, defaulted to "Unnamed Event"
+        :param flags: A list of strings that indicate flags that are present.
+        :param dict attributes: A dictionary of any additional attributes and/or metadata for this Event
         """
         if isinstance(start, datetime.datetime):
             self._start = ensure_utc(start)
@@ -48,6 +55,11 @@ class Event:
         else:
             self._attributes = attributes if attributes is not None else None
 
+        if not isinstance(flags, list) and flags is not None:
+            raise TypeError("flags must be list!")
+        else:
+            self._flags = flags if flags is not None else None
+
     @property
     def attributes(self) -> dict:
         """
@@ -61,6 +73,13 @@ class Event:
         Obtain the end time of this Event as a datetime.datetime object.
         """
         return self._start
+
+    @property
+    def flags(self) -> List[str]:
+        """
+        Obtain the flags of this event as a list. May be empty.
+        """
+        return self._flags
 
     @property
     def stop(self) -> datetime.datetime:

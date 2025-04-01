@@ -161,6 +161,14 @@ def test_event_attributes(event_datetime):
 
     assert event.attributes["realtime"] is True
 
+def test_event_flags(event_datetime):
+    _, _, aware_datetime_1, aware_datetime_2 = event_datetime
+
+    event = Event(aware_datetime_1, aware_datetime_2, "test_1", flags=["this_is_a_flag"])
+
+    assert "this_is_a_flag" in event.flags
+    assert "this_is_not_a_flag" not in event.flags
+
 
 def test_invalid_event(event_datetime, event_strs):
     _, _, aware_datetime_1, aware_datetime_2 = event_datetime
@@ -179,3 +187,6 @@ def test_invalid_event(event_datetime, event_strs):
 
     with pytest.raises(TypeError):
         Event(aware_datetime_1, aware_datetime_2, "name", attributes="not a dictionary!")
+
+    with pytest.raises(TypeError):
+        Event(aware_datetime_1, aware_datetime_2, "name", flags={"not_a_list": "this is not a list"})
