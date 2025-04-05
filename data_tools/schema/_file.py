@@ -1,7 +1,7 @@
 from enum import StrEnum
-from typing import Union, List, Any
+from typing import List, Any
 from functools import reduce
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 import pathlib
 
 
@@ -11,30 +11,30 @@ class FileType(StrEnum):
     All `DataSource` implementations can be expected to satisfy each supported file type for all applicable methods.
     """
     TimeSeries = "TimeSeries"
+    NDArray = "NDArray"
     Scalar = "Scalar"
     Empty = "Empty"
+    Any = "Any"
 
 
 class CanonicalPath:
     def __init__(self, origin: str, source: str, event: str, name: str):
         """
-        Construct a canonical path representing a path to a file in any abstract data source
+        Construct a canonical path representing a path to a file in any abstract data source.
 
-        :param str origin: identifies the origin (code) of this data, usually the data pipeline version.
-        :param str source: the producer of the data pointed to by this canonical path, usually a pipeline stage
-        :param str event: the event that this data belongs to
-        :param str name: the name of this data
+        :param str origin: Identifies the origin (code) of this data, usually the data pipeline version.
+        :param str source: The producer of the data pointed to by this canonical path, usually a pipeline stage
+        :param str event: The event that this data belongs to
+        :param str name: The name of this data
         """
-        self._origin = origin
-        self._source = source
-        self._event = event
-        self._name = name
+        self._origin: str = origin
+        self._source: str = source
+        self._event: str = event
+        self._name: str = name
 
     def to_string(self) -> str:
         """
         Obtain the string representation of this canonical path
-
-        :return: str
         """
         return "/".join([self._origin, self._event, self._source, self._name])
 
@@ -65,7 +65,7 @@ class CanonicalPath:
 
     def unwrap(self) -> List[str]:
         """
-        Decompose this CanonicalPath into its subatomic elements
+        Decompose this `CanonicalPath` into its constituent elements. Equivalent to `os.path.split`.
         """
         return self.to_string().split("/")
 
@@ -81,8 +81,8 @@ class CanonicalPath:
         The second element should always refer to the stage (processing step) that produced this data.
         The last element should always be the name of this data.
 
-        :param canonical_path: the path to be decomposed
-        :return: a List[str] of path elements
+        :param canonical_path: The path to be decomposed
+        :return: A List[str] of path elements
         """
         return canonical_path.split("/")
 
@@ -98,5 +98,4 @@ class File(BaseModel):
     metadata: dict = Field(default_factory=dict)    # Any additional metadata that this file should hold
     description: str = Field(default_factory=str)   # A description of what this file is
 
-    class Config:
-        arbitrary_types_allowed = True
+    model_config = ConfigDict(arbitrary_types_allowed=True, frozen=True)

@@ -1,0 +1,5 @@
+ignore:
+  - "tests/"
+  - "**/__init__.py"
+  - "data_tools/query/"   # `query` module cannot be tested in a CI runner because it cannot access the databases
+  - "data_tools/schema/_data_source.py"   # DataSource is an abstract base class and cannot be tested
