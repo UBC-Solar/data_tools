@@ -107,10 +107,7 @@ class SolcastClient:
             return ceil(num_hours_fp)
 
     @staticmethod
-    def _parse_num_hours(start_time: datetime, end_time: datetime) -> tuple[int, int]:
-        start_time_utc = ensure_utc(start_time)
-        end_time_utc = ensure_utc(end_time)
-
+    def _parse_num_hours(start_time_utc: datetime, end_time_utc: datetime) -> tuple[int, int]:
         now: datetime.datetime = datetime.now(UTC)
 
         if not end_time_utc > start_time_utc:
@@ -120,15 +117,9 @@ class SolcastClient:
         num_past_seconds = past_diff.total_seconds()
         num_past_hours = SolcastClient._round_to_hour(num_past_seconds)
 
-        if num_past_hours > 24 * 7:
-            raise ValueError("Cannot query weather further than 7 days into the past!")
-
         future_diff = end_time_utc - now
         num_future_seconds = future_diff.total_seconds()
         num_future_hours = SolcastClient._round_to_hour(num_future_seconds)
-
-        if num_past_hours > 24 * 14:
-            raise ValueError("Cannot query weather further than 14 days into the future!")
 
         return num_past_hours, num_future_hours
 
@@ -163,7 +154,16 @@ class SolcastClient:
             end_time: datetime,
             return_dataframe: bool = False
     ) -> tuple[NDArray, ...] | pd.DataFrame:
-        num_past_hours, num_future_hours = SolcastClient._parse_num_hours(start_time, end_time)
+        start_time_utc = ensure_utc(start_time)
+        end_time_utc = ensure_utc(end_time)
+
+        num_past_hours, num_future_hours = SolcastClient._parse_num_hours(start_time_utc, end_time_utc)
+
+        if num_past_hours > 24 * 7:
+            raise ValueError("Cannot query weather further than 7 days into the past!")
+
+        if num_past_hours > 24 * 14:
+            raise ValueError("Cannot query weather further than 14 days into the future!")
 
         output_parameter_strings_forecast = list(map(lambda parameter: str(parameter), output_parameters))
         output_parameter_strings_live = filter(

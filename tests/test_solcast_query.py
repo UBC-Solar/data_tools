@@ -34,18 +34,18 @@ def solcast_client():
 
 
 @pytest.mark.parametrize("input_seconds, expected_hours", [
-    (0, 0),             # Less than a minute
-    (59, 0),            # Still less than a minute
-    (60, 1),            # Exactly one minute, still rounds down
-    (3599, 1),          # 1 second before 1 hour, within threshold
-    (3600, 1),          # Exactly 1 hour
-    (3601, 1),          # Just 1 second past 1 hour, but > threshold, round up
-    (3659, 1),          # Just under threshold, still rounds down
-    (3660, 1),          # Just under threshold, still rounds down
-    (3661, 2),          # Exactly threshold: 1 minute into next hour, round up
-    (7199, 2),          # 1 second before 2 hours
-    (7200, 2),          # Exactly 2 hours
-    (7260, 2),          # 1 minute past 2 hours, round up
+    (0, 0),  # Less than a minute
+    (59, 0),  # Still less than a minute
+    (60, 1),  # Exactly one minute, still rounds down
+    (3599, 1),  # 1 second before 1 hour, within threshold
+    (3600, 1),  # Exactly 1 hour
+    (3601, 1),  # Just 1 second past 1 hour, but > threshold, round up
+    (3659, 1),  # Just under threshold, still rounds down
+    (3660, 1),  # Just under threshold, still rounds down
+    (3661, 2),  # Exactly threshold: 1 minute into next hour, round up
+    (7199, 2),  # 1 second before 2 hours
+    (7200, 2),  # Exactly 2 hours
+    (7260, 2),  # 1 minute past 2 hours, round up
 ])
 def test_round_to_hour(input_seconds, expected_hours):
     assert SolcastClient._round_to_hour(input_seconds) == expected_hours
@@ -87,3 +87,12 @@ def test_solcast_query():
         start_time=start_time,
         end_time=end_time,
     )
+
+    assert len(time) == len(ghi) == len(ghi10) == 1 + 3 + 3  # Number of forecasts = 1 + future hours + past hours
+
+    # The first four forecasts will be live, so no ghi10
+    assert np.all(np.isnan(ghi10[0:4]))
+
+    # Everything should be non-null
+    assert np.all(~np.isnan(ghi10[4:]))
+    assert np.all(~np.isnan(ghi))
