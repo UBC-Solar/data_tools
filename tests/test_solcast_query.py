@@ -90,9 +90,9 @@ def test_solcast_query():
 
     assert len(time) == len(ghi) == len(ghi10) == 1 + 3 + 3  # Number of forecasts = 1 + future hours + past hours
 
-    # The first four forecasts will be live, so no ghi10
-    assert np.all(np.isnan(ghi10[0:4]))
+    # The first three forecasts will be live, so no ghi10
+    assert np.all(np.isnan(ghi10[0:3]))
 
     # Everything should be non-null
-    assert np.all(~np.isnan(ghi10[4:]))
+    assert np.all(~np.isnan(ghi10[3:]))
     assert np.all(~np.isnan(ghi))

@@ -41,6 +41,8 @@ jobs:
         python -m poetry install --with test
 
     - name: Run Tests
+      env:
+        SOLCAST_API_KEY: ${{ secrets.SOLCAST_API_KEY }}
       run: |
         python -m poetry run pytest --cov --cov-branch --cov-report=xml
 

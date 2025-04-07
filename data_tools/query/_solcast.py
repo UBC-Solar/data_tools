@@ -1,5 +1,4 @@
-import os
-from enum import Enum, StrEnum
+from enum import StrEnum
 from solcast import forecast, live
 import pandas as pd
 from dotenv import load_dotenv
@@ -7,15 +6,16 @@ from datetime import datetime, UTC
 import numpy as np
 from numpy.typing import NDArray
 from data_tools.utils import ensure_utc
-from typing import Optional
 from math import ceil
 
 
 load_dotenv()
 
 
-# Class to represent the temporal granularity of Solcast Radiation and Weather API
 class SolcastPeriod(StrEnum):
+    """
+    Represents the temporal granularity of Solcast Radiation and Weather API
+    """
     PT5M = "PT5M"
     PT10M = "PT10M"
     PT15M = "PT15M"
@@ -25,15 +25,24 @@ class SolcastPeriod(StrEnum):
 
     def as_frequency(self) -> int:
         match self:
-            case SolcastPeriod.PT5M: return 12
-            case SolcastPeriod.PT10M: return 6
-            case SolcastPeriod.PT15M: return 4
-            case SolcastPeriod.PT20M: return 3
-            case SolcastPeriod.PT30M: return 2
-            case SolcastPeriod.PT60M: return 1
+            case SolcastPeriod.PT5M:
+                return 12
+            case SolcastPeriod.PT10M:
+                return 6
+            case SolcastPeriod.PT15M:
+                return 4
+            case SolcastPeriod.PT20M:
+                return 3
+            case SolcastPeriod.PT30M:
+                return 2
+            case SolcastPeriod.PT60M:
+                return 1
 
 
 class SolcastOutput(StrEnum):
+    """
+    Discretize the possible outputs that the Solcast Radiation and Weather API may provide
+    """
     air_temperature = "air_temp"
     albedo = "albedo"
     azimuth = "azimuth"
@@ -79,7 +88,18 @@ _FORECAST_ONLY = ["dhi10", "dhi90", "dni10", "dni90", "ghi10", "ghi90", "gti10",
 
 
 class SolcastClient:
+    """
+    Represents high-level access to the Solcast Radiation and Weather API
+    """
     def __init__(self, api_key: str = None):
+        """
+        Instantiate a client for access to the Solcast API.
+
+        Requires an API key to the Solcast Toolkit.
+        `SolcastClient` will try to use environment variable `SOLCAST_API_KEY` if not provided as an argument.
+
+        :param str api_key: A string containing a valid Solcast API key.
+        """
         self._api_key = api_key if api_key else os.getenv("SOLCAST_API_KEY")
 
     @staticmethod
@@ -108,6 +128,14 @@ class SolcastClient:
 
     @staticmethod
     def _parse_num_hours(start_time_utc: datetime, end_time_utc: datetime) -> tuple[int, int]:
+        """
+        Determine the number of hours that `start_time_utc` and `end_time_UTC`, which must be UTC-localized datetimes,
+        are in the past and future, respectively, from the current time.
+
+        :param datetime start_time_utc: UTC-localized start time
+        :param datetime end_time_utc: UTC-localized end time
+        :return: the number of hours in the past and the number of hours in the future, as a 2-tuple in that order
+        """
         now: datetime.datetime = datetime.now(UTC)
 
         if not end_time_utc > start_time_utc:
@@ -139,6 +167,10 @@ class SolcastClient:
                 raise ConnectionRefusedError(f"API request usage limits have been "
                                              f"exceeded! Additional Exception Details: {exception}")
 
+            case 500:
+                raise RuntimeError(f"The Solcast server has encountered an error. Additional "
+                                   f"Exception Details: {exception}")
+
             case _:
                 raise RuntimeError(f"An unknown error has been encountered! Additional Exception Details: {exception}")
 
@@ -149,13 +181,75 @@ class SolcastClient:
             period: SolcastPeriod,
             output_parameters: list[SolcastOutput],
             tilt: float,
-            azimuth: float,
             start_time: datetime,
             end_time: datetime,
-            return_dataframe: bool = False
+            azimuth: float = 0,
+            return_dataframe: bool = False,
+            return_datetime: bool = False,
     ) -> tuple[NDArray, ...] | pd.DataFrame:
+        """
+        Make a query to the Solcast Radiation and Weather API for a specific coordinate and time rnage
+
+        Solcast query time ranges are expanded to fit hour boundaries, so a query between 6:13AM and 8:27AM will be
+        actually result in a query with forecasts for 6:00AM and 9:00AM.
+        Additionally, if the weather averaging period is less than an hour, for example five minutes, the elements
+        will go like 6:00AM, 6:05AM, 6:10AM, and such, instead of incrementing from 6:13AM.
+
+        The query will return a tuple of one-dimensional `ndarray`s where each `ndarray` has length `N` where `N` is
+        the number of weather averaging periods contained within the hours encompassed by `start_time`
+        and `end_time`.
+
+        For example, if a query is between 6:13AM and 10:45AM with a weather averaging period of 10 minutes, there will
+        be (5 hours) * (6 forecasts per hour) = 30 elements, as the query will be between 6:00AM and 11:00AM.
+
+        The first `ndarray` contains POSIX timestamps where the “i”th element describes the beginning of the forecast
+        window described by the “i”th element of each of the data `ndarray`s.
+
+        All `ndarray`s after the first are data, and are returned in the order that they were requested in
+        `output_parameters`.
+        Each datapoint of a data `ndarray` describes that data type for the forecast window.
+
+        For example,
+
+        >>> time, ghi = SolcastClient().query(output_parameters=[SolcastOutput.ghi], period=SolcastPeriod.PT10M, ...)
+
+        and then if time[5] = 9:10AM, then ghi[5] represents the GHI between 9:10AM and 9:20AM.
+
+        Probabilistic data like ghi10 and dti90 are only available for the future and present.
+        If you request these
+        outputs, ny times in the past will be NaN such that `np.isnan()` is `True` for those times.
+
+        If `return_dataframe` is `True`, a Pandas DataFrame will be returned containing the query.
+        If `return_datetime` is `True`, a the time x-axis will contain datetime objects localized to UTC instead of
+        POSIX timestamps.
+
+        :param latitude: The latitude of the queried coordinate.
+        :param longitude: The longitude of the queried coordinate.
+        :param period: The weather forecast averaging period.
+        :param output_parameters: A list of the output parameters that should be queried
+        :param tilt: The tilt angle 0–90 in degrees of the solar collector from the horizontal
+            where 90 is vertical.
+        :param start_time: The time at which weather forecasts should begin.
+            It must be in the past and no greater than 7 days in the past.
+            It must be timezone-aware.
+        :param end_time: The time at which weather forecasts should end.
+            It must be in the future and no greater than 14 days in the future.
+            It must be after `start_time`.
+            It must be timezone-aware.
+        :param return_dataframe: Return a Pandas DataFrame instead of tuple of `ndarray`s.
+        :param bool return_datetime: Return datetime objects instead of UNIX timestamps in the time x-axis.
+        :param azimuth: The azimuth (-180–180, compass direction) in degrees, in which the arrays are
+            tilted where 0 is true north.
+            Default is 0.
+        """
         start_time_utc = ensure_utc(start_time)
         end_time_utc = ensure_utc(end_time)
+
+        if not 0 <= tilt <= 90:
+            raise ValueError("Tilt must be between 0 and 90 degrees!")
+
+        if not end_time_utc > start_time_utc:
+            raise ValueError("End time must be after start time!")
 
         num_past_hours, num_future_hours = SolcastClient._parse_num_hours(start_time_utc, end_time_utc)
 
@@ -213,6 +307,11 @@ class SolcastClient:
         else:
             forecast_df = None
 
+        # We need to build a unified `weather_df` dataset.
+        # If we only have `live_df`, use that.
+        # If we only have `forecast_df`, then we just use that.
+        # Otherwise, we need to combine them.
+
         if forecast_df is not None and live_df is None:
             weather_df: pd.DataFrame = forecast_df
 
@@ -221,10 +320,10 @@ class SolcastClient:
 
         if forecast_df is not None and live_df is not None:
             # We will probably have data from both APIs for the current time,
-            # and if that is the case, we want to discard the Forecast and preserve the Live
-            # API since it is probably more accurate.
+            # and if that is the case, we want to discard the Live and preserve the Forecast
+            # API since we may want probabilistic data for the present.
             if live_df.index[-1] == forecast_df.index[0]:
-                forecast_df = forecast_df.iloc[1:]
+                live_df = live_df.iloc[1:]
 
             weather_df: pd.DataFrame = pd.concat([live_df, forecast_df])
 
@@ -238,9 +337,12 @@ class SolcastClient:
         if return_dataframe:
             return weather_df
 
-        time: NDArray = np.fromiter(map(lambda timestamp: timestamp.timestamp(), weather_df.index), dtype=float)
+        # If we want to return datetimes, parse pandas.Timestamp to datetime, otherwise parse into POSIX timestamp
+        time_parser = lambda timestamp: timestamp.timestamp() if not return_datetime else timestamp.to_pydatetime()
+
+        time_axis: NDArray = np.fromiter(map(time_parser, weather_df.index), dtype=float)
         data_arrays: list[NDArray] = [
             weather_df[str(output_parameter)].to_numpy() for output_parameter in output_parameters
         ]
 
-        return time, *data_arrays
+        return time_axis, *data_arrays
