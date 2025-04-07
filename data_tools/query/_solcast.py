@@ -192,7 +192,7 @@ class SolcastClient:
         Make a query to the Solcast Radiation and Weather API for a specific coordinate and time rnage
 
         Solcast query time ranges are expanded to fit hour boundaries, so a query between 6:13AM and 8:27AM will be
-        actually result in a query with forecasts for 6:00AM and 9:00AM.
+        actually result in a query with forecasts for 6:00AM to 9:00AM.
         Additionally, if the weather averaging period is less than an hour, for example five minutes, the elements
         will go like 6:00AM, 6:05AM, 6:10AM, and such, instead of incrementing from 6:13AM.
 
