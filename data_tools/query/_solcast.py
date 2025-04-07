@@ -348,35 +348,3 @@ class SolcastClient:
         ]
 
         return time_axis, *data_arrays
-
-
-if __name__ == "__main__":
-    from solcast.unmetered_locations import UNMETERED_LOCATIONS
-    import os
-    import datetime
-    from datetime import datetime, timedelta, UTC
-    from dotenv import load_dotenv
-
-    client = SolcastClient("SdnWXmaOmW_KdLXQjBCdFZL27P22Qq2t")
-
-    test_location = UNMETERED_LOCATIONS["Stonehenge"]
-
-    start_time = datetime.now(UTC) - timedelta(minutes=10)
-    end_time = datetime.now(UTC) + timedelta(hours=3)
-
-    desired_outputs = [SolcastOutput(output) for output in ["ghi", "ghi10"]]
-
-    time, ghi, ghi10 = client.query(
-        latitude=test_location["latitude"],
-        longitude=test_location["longitude"],
-        period=SolcastPeriod.PT5M,
-        output_parameters=desired_outputs,
-        tilt=0,
-        azimuth=0,
-        start_time=start_time,
-        end_time=end_time,
-    )
-
-    print(time)
-    print(ghi)
-    print(ghi10)
