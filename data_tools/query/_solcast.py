@@ -260,17 +260,16 @@ class SolcastClient:
         if num_past_hours > 24 * 14:
             raise ValueError("Cannot query weather further than 14 days into the future!")
 
-        output_parameter_strings_forecast = list(map(lambda parameter: str(parameter), output_parameters))
-        output_parameter_strings_live = filter(
-            lambda parameter: parameter not in _FORECAST_ONLY,
-            output_parameter_strings_forecast,
-        )
+        output_parameter_strings_forecast = [str(parameter) for parameter in output_parameters]
+        output_parameter_strings_live = [
+            parameter for parameter in output_parameter_strings_forecast if parameter not in _FORECAST_ONLY
+        ]
 
         if num_past_hours > 0:
             live_data = live.radiation_and_weather(
                 latitude=latitude,
                 longitude=longitude,
-                output_parameters=list(output_parameter_strings_live),
+                output_parameters=output_parameter_strings_live,
                 hours=num_past_hours,
                 tilt=tilt,
                 azimuth=azimuth,
@@ -291,7 +290,7 @@ class SolcastClient:
             forecast_data = forecast.radiation_and_weather(
                 latitude=latitude,
                 longitude=longitude,
-                output_parameters=list(output_parameter_strings_forecast),
+                output_parameters=output_parameter_strings_forecast,
                 hours=num_future_hours,
                 tilt=tilt,
                 azimuth=azimuth,
@@ -316,10 +315,10 @@ class SolcastClient:
         if forecast_df is not None and live_df is None:
             weather_df: pd.DataFrame = forecast_df
 
-        if forecast_df is None and live_df is not None:
+        elif forecast_df is None and live_df is not None:
             weather_df: pd.DataFrame = live_df
 
-        if forecast_df is not None and live_df is not None:
+        elif forecast_df is not None and live_df is not None:
             # We will probably have data from both APIs for the current time,
             # and if that is the case, we want to discard the Live and preserve the Forecast
             # API since we may want probabilistic data for the present.
