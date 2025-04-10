@@ -154,7 +154,7 @@ class SolcastClient:
     def _parse_num_hours(
             start_time_utc: datetime,
             end_time_utc: datetime,
-            now: datetime = Optional[None]
+            now: Optional[datetime] = None
     ) -> tuple[int, int]:
         """
         Given `start_time_utc` and `end_time_UTC`, which must be UTC-localized datetimes, determine how many hours
