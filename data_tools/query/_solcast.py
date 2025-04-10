@@ -226,7 +226,7 @@ class SolcastClient:
         For example, if a query is between 6:13AM and 10:45AM with a weather averaging period of 10 minutes, there will
         be (5 hours) * (6 forecasts per hour) = 30 elements, as the query will be between 6:00AM and 11:00AM.
 
-        The first `ndarray` contains POSIX timestamps where the “i”th element describes the beginning of the forecast
+        The first `ndarray` contains POSIX timestamps where the “i”th element describes the end of the forecast
         window described by the “i”th element of each of the data `ndarray`s.
 
         All `ndarray`s after the first are data, and are returned in the order that they were requested in
@@ -237,7 +237,7 @@ class SolcastClient:
 
         >>> time, ghi = SolcastClient().query(output_parameters=[SolcastOutput.ghi], period=SolcastPeriod.PT10M, ...)
 
-        And then if time[5] = 9:10AM, then ghi[5] represents the GHI between 9:10AM and 9:20AM.
+        And then if time[5] = 9:10AM, then ghi[5] represents the GHI between 9:00AM and 9:10AM.
 
         Probabilistic data like ghi10 and dti90 are only available for the future and present.
         If you request these
