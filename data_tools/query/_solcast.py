@@ -1,4 +1,5 @@
 from enum import StrEnum
+from typing import Optional
 from solcast import forecast, live
 import pandas as pd
 from dotenv import load_dotenv
@@ -150,7 +151,11 @@ class SolcastClient:
             return ceil(num_hours_fp)
 
     @staticmethod
-    def _parse_num_hours(start_time_utc: datetime, end_time_utc: datetime) -> tuple[int, int]:
+    def _parse_num_hours(
+            start_time_utc: datetime,
+            end_time_utc: datetime,
+            now: datetime = Optional[None]
+    ) -> tuple[int, int]:
         """
         Given `start_time_utc` and `end_time_UTC`, which must be UTC-localized datetimes, determine how many hours
          `start_time_utc` is in the past from the current time, and determine how many hours in the future
@@ -158,9 +163,11 @@ class SolcastClient:
 
         :param datetime start_time_utc: UTC-localized start time
         :param datetime end_time_utc: UTC-localized end time
-        :return: the number of hours in the past and the number of hours in the future, as a 2-tuple in that order
+        :param datetime now: UTC-localized current time
+        :return: The number of hours in the past and the number of hours in the future, as a 2-tuple in that order
         """
-        now: datetime = datetime.now(UTC)
+        if now is None:
+            now: datetime = datetime.now(UTC)
 
         if not end_time_utc > start_time_utc:
             raise ValueError("End time must be after start time!")
@@ -205,8 +212,8 @@ class SolcastClient:
             period: SolcastPeriod,
             output_parameters: list[SolcastOutput],
             tilt: float,
-            start_time: datetime,
-            end_time: datetime,
+            start_time: datetime | timedelta,
+            end_time: datetime | timedelta,
             azimuth: float = 0,
             return_dataframe: bool = False,
             return_datetime: bool = False,
@@ -269,10 +276,16 @@ class SolcastClient:
             Default is 0.
         """
         current_time = datetime.now(UTC)
+
         if start_time is None:
             start_time = current_time
         if end_time is None:
             end_time = current_time
+
+        if isinstance(start_time, timedelta):
+            start_time = current_time + start_time
+        if isinstance(end_time, timedelta):
+            end_time = current_time + end_time
 
         start_time_utc = ensure_utc(start_time)
         end_time_utc = ensure_utc(end_time)
@@ -283,7 +296,7 @@ class SolcastClient:
         if not end_time_utc > start_time_utc:
             raise ValueError("End time must be after start time!")
 
-        num_past_hours, num_future_hours = SolcastClient._parse_num_hours(start_time_utc, end_time_utc)
+        num_past_hours, num_future_hours = SolcastClient._parse_num_hours(start_time_utc, end_time_utc, current_time)
 
         if num_past_hours > 24 * 7:
             raise ValueError("Cannot query weather further than 7 days into the past!")
