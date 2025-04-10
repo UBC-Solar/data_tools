@@ -1768,6 +1768,21 @@ files = [
 ]
 
 [[package]]
+name = "solcast"
+version = "1.3.0"
+description = "a simple Python SDK for the Solcast API"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "solcast-1.3.0-py3-none-any.whl", hash = "sha256:34c222d22e5dd86cdc4f85da7e84d4965de93e404877b952f5b35aacedb19053"},
+    {file = "solcast-1.3.0.tar.gz", hash = "sha256:a72c0895ef072b67b0c4265b35456a4a25871a7fc1ad40dd46059fd3f9045829"},
+]
+
+[package.extras]
+all = ["black", "kaleido", "matplotlib", "mkdocs", "mkdocs-jupyter", "mkdocs-material", "mkdocstrings[python] (==0.22)", "notebook", "pandas", "pytest"]
+docs = ["kaleido", "mkdocs", "mkdocs-jupyter", "mkdocs-material", "mkdocstrings[python] (==0.22)", "pytest"]
+
+[[package]]
 name = "soupsieve"
 version = "2.6"
 description = "A modern CSS selector implementation for Beautiful Soup."
@@ -2085,4 +2100,4 @@ zstd = ["zstandard (>=0.18.0)"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "395153ce228e3aea56d0918ced003057c7444e3b6de2fec76a475dd2040c0f6f"
+content-hash = "5c649bcd9c889ffadf4d16a80580a4bf4dc64777e97acbc5f2d0e95b048658cd"

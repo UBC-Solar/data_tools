@@ -23,6 +23,7 @@ class TimeSeriesTarget(BaseModel):
     car: str
     bucket: str
     description: str = Field(default_factory=str)
+    meta: dict = Field(default_factory=dict)
 
 
 class DBClient:
