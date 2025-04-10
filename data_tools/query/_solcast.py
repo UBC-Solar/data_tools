@@ -2,7 +2,7 @@ from enum import StrEnum
 from solcast import forecast, live
 import pandas as pd
 from dotenv import load_dotenv
-from datetime import datetime, UTC
+from datetime import datetime, UTC, timedelta
 import numpy as np
 from numpy.typing import NDArray
 from data_tools.utils import ensure_utc
@@ -41,6 +41,25 @@ class SolcastPeriod(StrEnum):
                 return 2
             case SolcastPeriod.PT60M:
                 return 1
+
+    def to_timedelta(self) -> timedelta:
+        """
+        Return a `timedelta` object representing the amount of time that
+        will be covered by a forecast using this period.
+        """
+        match self:
+            case SolcastPeriod.PT5M:
+                return timedelta(minutes=5)
+            case SolcastPeriod.PT10M:
+                return timedelta(minutes=10)
+            case SolcastPeriod.PT15M:
+                return timedelta(minutes=15)
+            case SolcastPeriod.PT20M:
+                return timedelta(minutes=20)
+            case SolcastPeriod.PT30M:
+                return timedelta(minutes=30)
+            case SolcastPeriod.PT60M:
+                return timedelta(minutes=60)
 
 
 class SolcastOutput(StrEnum):
@@ -237,16 +256,24 @@ class SolcastClient:
         :param start_time: The time at which weather forecasts should begin.
             It must be in the past and no greater than 7 days in the past.
             It must be timezone-aware.
+            Use `None` to denote the current time to ensure expected behaviour.
         :param end_time: The time at which weather forecasts should end.
             It must be in the future and no greater than 14 days in the future.
             It must be after `start_time`.
             It must be timezone-aware.
+            Use `None` to denote the current time to ensure expected behaviour.
         :param return_dataframe: Return a Pandas DataFrame instead of tuple of `ndarray`s.
         :param bool return_datetime: Return datetime objects instead of UNIX timestamps in the time x-axis.
         :param azimuth: The azimuth (-180–180, compass direction) in degrees, in which the arrays are
             tilted where 0 is true north.
             Default is 0.
         """
+        current_time = datetime.now(UTC)
+        if start_time is None:
+            start_time = current_time
+        if end_time is None:
+            end_time = current_time
+
         start_time_utc = ensure_utc(start_time)
         end_time_utc = ensure_utc(end_time)
 
@@ -261,7 +288,7 @@ class SolcastClient:
         if num_past_hours > 24 * 7:
             raise ValueError("Cannot query weather further than 7 days into the past!")
 
-        if num_past_hours > 24 * 14:
+        if num_future_hours > 24 * 14:
             raise ValueError("Cannot query weather further than 14 days into the future!")
 
         output_parameter_strings_forecast = [str(parameter) for parameter in output_parameters]
@@ -337,6 +364,12 @@ class SolcastClient:
             raise ValueError("Weather forecast query is empty!")
 
         weather_df.sort_index(inplace=True)
+
+        index = weather_df.index                      # The index values are the END of the forecast period
+        index_begin = index - period.to_timedelta()   # Now, we have the BEGINNING of the period
+
+        # Disregard rows that are before the start time or after the end time
+        weather_df = weather_df[(index >= start_time) & (index_begin <= end_time)]
 
         if return_dataframe:
             return weather_df
