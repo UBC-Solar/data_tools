@@ -25,6 +25,9 @@ class SolcastPeriod(StrEnum):
     PT60M = "PT60M"
 
     def as_frequency(self) -> int:
+        """
+        Return the forecast frequency in hour^(-1) units. 
+        """
         match self:
             case SolcastPeriod.PT5M:
                 return 12
@@ -130,14 +133,15 @@ class SolcastClient:
     @staticmethod
     def _parse_num_hours(start_time_utc: datetime, end_time_utc: datetime) -> tuple[int, int]:
         """
-        Determine the number of hours that `start_time_utc` and `end_time_UTC`, which must be UTC-localized datetimes,
-        are in the past and future, respectively, from the current time.
+        Given `start_time_utc` and `end_time_UTC`, which must be UTC-localized datetimes, determine how many hours
+         `start_time_utc` is in the past from the current time, and determine how many hours in the future
+        `end_time_UTC` is from the current time.
 
         :param datetime start_time_utc: UTC-localized start time
         :param datetime end_time_utc: UTC-localized end time
         :return: the number of hours in the past and the number of hours in the future, as a 2-tuple in that order
         """
-        now: datetime.datetime = datetime.now(UTC)
+        now: datetime = datetime.now(UTC)
 
         if not end_time_utc > start_time_utc:
             raise ValueError("End time must be after start time!")
@@ -189,7 +193,7 @@ class SolcastClient:
             return_datetime: bool = False,
     ) -> tuple[NDArray, ...] | pd.DataFrame:
         """
-        Make a query to the Solcast Radiation and Weather API for a specific coordinate and time rnage
+        Make a query to the Solcast Radiation and Weather API for a specific coordinate and time range
 
         Solcast query time ranges are expanded to fit hour boundaries, so a query between 6:13AM and 8:27AM will be
         actually result in a query with forecasts for 6:00AM to 9:00AM.
@@ -214,14 +218,14 @@ class SolcastClient:
 
         >>> time, ghi = SolcastClient().query(output_parameters=[SolcastOutput.ghi], period=SolcastPeriod.PT10M, ...)
 
-        and then if time[5] = 9:10AM, then ghi[5] represents the GHI between 9:10AM and 9:20AM.
+        And then if time[5] = 9:10AM, then ghi[5] represents the GHI between 9:10AM and 9:20AM.
 
         Probabilistic data like ghi10 and dti90 are only available for the future and present.
         If you request these
-        outputs, ny times in the past will be NaN such that `np.isnan()` is `True` for those times.
+        outputs, any times in the past will be NaN such that `np.isnan()` is `True` for those times.
 
         If `return_dataframe` is `True`, a Pandas DataFrame will be returned containing the query.
-        If `return_datetime` is `True`, a the time x-axis will contain datetime objects localized to UTC instead of
+        If `return_datetime` is `True`, the time x-axis will contain datetime objects localized to UTC instead of
         POSIX timestamps.
 
         :param latitude: The latitude of the queried coordinate.
