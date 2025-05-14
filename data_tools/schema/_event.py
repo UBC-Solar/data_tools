@@ -3,7 +3,7 @@ from data_tools.utils.times import parse_iso_datetime, ensure_utc
 from typing import Union, List
 
 
-type DateLike = Union[str, datetime.datetime]
+DateLike = Union[str, datetime.datetime]
 
 
 class Event:
