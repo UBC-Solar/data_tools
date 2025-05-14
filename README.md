@@ -72,8 +72,8 @@ Example of querying data from InfluxDB and plotting it as a `TimeSeries`.
 > When the `InfluxClient` class is imported, `data_tools` will attempt to locate a `.env` file in order to acquire an InfluxDB API token. If you do not have a `.env` or it is missing an API token, you will not be able to query data. UBC Solar members can acquire an API token by speaking to their Team Lead.
 
 ```python
-from data_tools.collections.time_series import TimeSeries
-from data_tools.query.influxdb_query import DBClient
+from data_tools.collections import TimeSeries
+from data_tools.query import DBClient
 
 client = DBClient()
 
@@ -98,9 +98,8 @@ Example of using the `FluxQuery` module to make a Flux query that selects and ag
 We will use the `FluxStatement` class to construct a custom Flux statement, as the `aggregateWindow` statement is not yet included by this API.
 
 ```python
-from data_tools.query.flux import FluxQuery, FluxStatement
-from data_tools.query.influxdb_query import DBClient
-from data_tools.collections.time_series import TimeSeries
+from data_tools.query import FluxQuery, FluxStatement, DBClient
+from data_tools.collections import TimeSeries
 import pandas as pd
 
 client = DBClient()
