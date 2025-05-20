@@ -26,17 +26,6 @@ _POSTGRESQL_PASSWORD = os.getenv("POSTGRESQL_PASSWORD")
 _POSTGRESQL_DATABASE = os.getenv("POSTGRESQL_DATABASE")
 _POSTGRESQL_ADDRESS = os.getenv("POSTGRESQL_ADDRESS")
 
-if _POSTGRESQL_USERNAME is None:
-    logger.error("Could not find a POSTGRESQL_USERNAME in .env!")
-
-if _POSTGRESQL_PASSWORD is None:
-    logger.error("Could not find a POSTGRESQL_PASSWORD in .env!")
-
-if _POSTGRESQL_DATABASE is None:
-    logger.error("Could not find a POSTGRESQL_DATABASE in .env!")
-
-if _POSTGRESQL_ADDRESS is None:
-    logger.error("Could not find a POSTGRESQL_ADDRESS in .env!")
 
 
 def _get_db_url(db_name: str, ip_address: str, username: str, password: str) -> str:
