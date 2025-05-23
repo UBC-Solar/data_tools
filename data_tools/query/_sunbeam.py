@@ -147,8 +147,6 @@ class SunbeamClient:
             # Try to extract the error and capture it
             response.raise_for_status()
 
-
-
     def get_file(self, origin: str = None, event: str = None, source: str = None, name: str = None, path: CanonicalPath = None) -> Result[File | Exception]:
         """
         Get a File from the Sunbeam API.
@@ -201,3 +199,26 @@ class SunbeamClient:
                 reason = response.reason
 
             return Result.Err(RuntimeError(reason))
+
+    def is_alive(self, timeout=0.5):
+        """
+        Verify if the Sunbeam API is available.
+
+        :param timeout: The time to wait for a response.
+        :return: `True` if the Sunbeam API is available, and `False` otherwise.
+        """
+        url_components: list[str] = [self._base_url, "health"]
+        url = "http://" + "/".join(url_components)
+
+        try:
+            response = requests.get(url, timeout=timeout)
+
+        except requests.exceptions.RequestException:  # Base class for exceptions from `requests`
+            return False
+
+        # Check the status code.
+        # If the health check responds with an error code, something odd is going on.
+        if response.status_code == 200:
+            return True
+        else:
+            return False
