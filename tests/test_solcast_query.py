@@ -96,3 +96,29 @@ def test_solcast_query():
     # Everything should be non-null
     assert np.all(~np.isnan(ghi10[3:]))
     assert np.all(~np.isnan(ghi))
+
+def test_datetime_x_axis():
+    api_key = os.getenv("SOLCAST_API_KEY")
+    client = SolcastClient(api_key)
+
+    test_location = UNMETERED_LOCATIONS["Sydney Opera House"]
+
+    start_time = datetime.now(UTC) - timedelta(hours=3)
+    end_time = datetime.now(UTC) + timedelta(hours=3)
+
+    desired_outputs = [SolcastOutput(output) for output in ["ghi", "ghi10"]]
+
+    time, ghi, ghi10 = client.query(
+        latitude=test_location["latitude"],
+        longitude=test_location["longitude"],
+        period=SolcastPeriod.PT60M,
+        output_parameters=desired_outputs,
+        tilt=0,
+        azimuth=0,
+        start_time=start_time,
+        end_time=end_time,
+        return_datetime=True,
+    )
+
+    assert len(time) == len(ghi) == len(ghi10) == 1 + 3 + 3  # Number of forecasts = 1 + future hours + past hours
+    assert isinstance(time[0], datetime)
