@@ -118,7 +118,7 @@ class SunbeamClient:
         """
         return SunbeamCache(self._base_url + "/cache")
 
-    def distinct(self, key: str, filter: dict[str, str]) -> list[str]:
+    def distinct(self, key: str, filters: dict[str, str], timeout: float = 5) -> list[str]:
         """
         Obtain the distinct values of a given key, subject to a filter.
 
@@ -128,16 +128,18 @@ class SunbeamClient:
         As another example, if you wanted to see the events processed by a certain pipeline where the "power" stage
         was processed, you can set `key` to `"event"` and `filter` to `{"origin": "your_pipeline", "source": "power"}`.
 
-        :param key: name of the field for which we want to get the distinct values
-        :param filter: a mapping which filters the query to have items match this filter's values by field
-        :return: the values corresponding the `key` field of matching items
+        :param key: Name of the field for which we want to get the distinct values.
+        :param filters: A mapping which filters the query to have items match this filter's values by field.
+        :param timeout: The amount of time to wait for a request to return.
+        :raises requests.exceptions.Timeout: If the request times out.
+        :return: The values corresponding the `key` field of matching items.
         """
         url_components: list[str] = [self._base_url, "files", "distinct"]
         url = "http://" + "/".join(url_components)
         data = {"key": key}
-        data.update(filter)
+        data.update(filters)
 
-        response = requests.post(url, data=data)
+        response = requests.post(url, data=data, timeout=timeout)
 
         if response.status_code == 200:
             return json.loads(response.text)
@@ -147,15 +149,17 @@ class SunbeamClient:
             # Try to extract the error and capture it
             response.raise_for_status()
 
-    def get_file(self, origin: str = None, event: str = None, source: str = None, name: str = None, path: CanonicalPath = None) -> Result[File | Exception]:
+    def get_file(self, origin: str = None, event: str = None, source: str = None, name: str = None, path: CanonicalPath = None, timeout: float = 5) -> Result[File | Exception]:
         """
         Get a File from the Sunbeam API.
 
         You must provide either a ``CanonicalPath`` object directory by setting ``path``, OR provide ALL the
         individual path elements ``origin``, ``event``, ``source``, and ``name``.
 
-        :return: a ``Result`` wrapping a ``File`` or an ``Exception``
-        :raises AssertionError: if ``path`` was not provided and any of ``origin``, ``event``, ``source``, ``name`` are None.
+        :return: A ``Result`` wrapping a ``File`` or an ``Exception``
+        :param timeout: The amount of time to wait for a request to return.
+        :raises requests.exceptions.Timeout: If the request times out.
+        :raises AssertionError: If ``path`` was not provided and any of ``origin``, ``event``, ``source``, ``name`` are None.
         """
         # Start the url as api.sunbeam.ubcsolar.com/files
         url_components: list[str] = [self._base_url, "files"]
@@ -175,7 +179,7 @@ class SunbeamClient:
         url = "http://" + "/".join(url_components)
         params = {'file_type': "bin"}
 
-        response = requests.get(url, params=params)
+        response = requests.get(url, params=params, timeout=timeout)
 
         # If we got the File successfully, wrap and return the deserialized File object
         if response.status_code == 200:
@@ -200,7 +204,7 @@ class SunbeamClient:
 
             return Result.Err(RuntimeError(reason))
 
-    def is_alive(self, timeout=0.5):
+    def is_alive(self, timeout: float = 0.5):
         """
         Verify if the Sunbeam API is available.
 
