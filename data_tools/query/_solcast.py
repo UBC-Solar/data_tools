@@ -388,10 +388,11 @@ class SolcastClient:
             return weather_df
 
         # If we want to return datetimes, parse pandas.Timestamp to datetime, otherwise parse into POSIX timestamp
-        def time_parser(timestamp: pd.Timestamp) -> float | datetime:
-            return timestamp.timestamp() if not return_datetime else timestamp.to_pydatetime()
+        if return_datetime:
+            time_axis: NDArray = np.array([ts.to_pydatetime() for ts in weather_df.index])
+        else:
+            time_axis: NDArray = np.array([ts.timestamp() for ts in weather_df.index])
 
-        time_axis: NDArray = np.fromiter(map(time_parser, weather_df.index), dtype=float)
         data_arrays: list[NDArray] = [
             weather_df[str(output_parameter)].to_numpy() for output_parameter in output_parameters
         ]
