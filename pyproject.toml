@@ -10,7 +10,7 @@ packages = [
 version = "0.0.0"  # DO NOT MODIFY
 
 [tool.poetry.dependencies]
-python = "^3.12"
+python = "^3.10"
 influxdb-client = "^1.45.0"
 python-dotenv = "^1.0.1"
 sqlalchemy = "^2.0.5"
