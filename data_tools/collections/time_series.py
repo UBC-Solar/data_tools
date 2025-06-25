@@ -274,8 +274,14 @@ class TimeSeries(np.ndarray):
             stop_index = array.index_of(array.relative_time(end_time))
 
             new_array = array[start_index:stop_index + 1]
-            new_array._start = datetime.datetime.fromtimestamp(start_time)
-            new_array._stop = datetime.datetime.fromtimestamp(end_time)
+            if array.start.tzinfo is not None:
+                tz = array.start.tzinfo
+                new_array._start = datetime.datetime.fromtimestamp(start_time, tz)
+                new_array._stop = datetime.datetime.fromtimestamp(end_time, tz)
+            else:
+                new_array._start = datetime.datetime.fromtimestamp(start_time)
+                new_array._stop = datetime.datetime.fromtimestamp(end_time)
+
             new_array._period = period
             new_array._length = new_length
 
