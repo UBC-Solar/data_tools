@@ -1,58 +1,60 @@
-[tool.poetry]
+[project]
 name = "ubc-solar-data-tools"
 description = "UBC Solar's data analysis and querying tools"
-authors = ["Joshua Riefman <joshuariefman@gmail.com>"]
-license = "MIT"
 readme = "README.md"
-packages = [
-    { include = "data_tools" }
+requires-python = ">=3.11,<4.0"
+license = { text = "MIT" }
+authors = [{ name = "Joshua Riefman", email = "joshuariefman@gmail.com" }]
+
+# Keep your placeholder version if something else injects it.
+# If you use dynamic versioning (recommended), see [project] dynamic section below.
+dynamic = ["version"]
+
+dependencies = [
+  "influxdb-client>=1.45.0,<2.0.0",
+  "python-dotenv>=1.0.1,<2.0.0",
+  "sqlalchemy>=2.0.5,<3.0.0",
+  "psycopg2-binary>=2.9.9,<3.0.0",
+  "pandas>=2.2.3,<3.0.0",
+  "numpy>=2.0.1,<3.0.0",
+  "scipy>=1.14.1,<2.0.0",
+  "matplotlib>=3.0.0,<4.0.0",
+  "pytz>=2024.2,<2025.0",
+  "pydantic>=2.9.2,<3.0.0",
+  "dill>=0.3.9,<1.0.0",
+  "requests>=2.32.3,<3.0.0",
+  "solcast[pandas]>=1.3.0,<2.0.0",
 ]
-version = "0.0.0"  # DO NOT MODIFY
 
-[tool.poetry.dependencies]
-python = "^3.10"
-influxdb-client = "^1.45.0"
-python-dotenv = "^1.0.1"
-sqlalchemy = "^2.0.5"
-psycopg2-binary = "^2.9.9"
-pandas = "^2.2.3"
-numpy =  "^2.0.1"
-scipy = "^1.14.1"
-matplotlib = "3.*"
-pytz = "^2024.2"
-pydantic = "^2.9.2"
-dill = "^0.3.9"
-requests = "^2.32.3"
-solcast = {extras = ["pandas"], version = "^1.3.0"}
 
-[tool.poetry.group.test]
-optional = true
 
-[tool.poetry.group.docs]
-optional = true
+[build-system]
+requires = ["setuptools>=68", "wheel", "setuptools_scm>=8"]
+build-backend = "setuptools.build_meta"
 
-[tool.poetry.group.test.dependencies]
-pytest = "^8.3.3"
-pytest-cov = "^6.0.0"
-ruff = "^0.11.2"
+[tool.setuptools_scm]
+version_file = "data_tools/_version.py"
 
-[tool.poetry.group.docs.dependencies]
-myst-parser = "^4.0.0"
-pydata-sphinx-theme = "^0.15.4"
+[project.optional-dependencies]
+test = [
+  "pytest>=8.3.3,<9.0.0",
+  "pytest-cov>=6.0.0,<7.0.0",
+  "ruff>=0.11.2,<0.12.0",
+]
+docs = [
+  "myst-parser>=4.0.0,<5.0.0",
+  "pydata-sphinx-theme>=0.15.4,<0.16.0",
+]
 
-[tool.poetry-dynamic-versioning]
-enable = true
-vcs = "git"
-style = "semver"
+# This replaces Poetry's `packages = [{ include = "data_tools" }]`
+# and tells build backends what to include.
+[tool.setuptools.packages.find]
+include = ["data_tools*"]
 
 [tool.cibuildwheel]
-archs = "auto"  # Automatically detects architectures (e.g., x86, ARM)
-skip = ["pp*", "*-musllinux_*", "*-win32"]  # Skip PyPy (only want CPython), Musllinux, win32 wheels
-build = ["cp39-*", "cp310-*", "cp311-*", "cp312-*"]
+archs = "auto"
+skip = ["pp*", "*-musllinux_*", "*-win32"]
+build = ["cp311-*", "cp312-*", "cp313-*", "cp314-*"]
 manylinux-x86_64-image = "manylinux2014"
 manylinux-i686-image = "manylinux2014"
 manylinux-aarch64-image = "manylinux2014"
-
-[build-system]
-requires = ["poetry-core>=1.0.0", "poetry-dynamic-versioning>=1.0.1"]
-build-backend = "poetry_dynamic_versioning.backend"
