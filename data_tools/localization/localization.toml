@@ -1,0 +1,7 @@
+[2024-01-01]
+VehicleSpeed = ["VehicleVelocity", "m/s"]
+BatteryVoltage = ["TotalPackVoltage", "V"]
+
+[2025-01-01]
+VehicleSpeed = ["MotorRotatingSpeed", "km/h"]
+BatteryVoltage = ["TotalPackVoltage", "V"]
