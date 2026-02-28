@@ -6,6 +6,8 @@ import math
 from warnings import warn
 import pandas as pd
 import re
+import warnings
+import pint
 
 
 class TimeSeries(np.ndarray):
@@ -36,35 +38,51 @@ class TimeSeries(np.ndarray):
         self._period = getattr(obj, '_period', None)
         self._meta = getattr(obj, '_meta', None)
 
-    def __init__(self, input_array, meta: dict):
-        assert isinstance(meta["start"], type(meta["stop"])), "Start and stop times are not of same type!"
-        if isinstance(meta["start"], datetime.datetime) and isinstance(meta["stop"], datetime.datetime):
-            self._start: datetime.datetime = meta["start"]
-            self._stop: datetime.datetime = meta["stop"]
+    def __init__(self, input_array, 
+                 start_time: datetime.datetime = None, 
+                 stop_time: datetime.datetime = None,
+                 units = None,
+                 period: float = None,
+                 length: float = None,
+                 meta: dict = None):
+        
+        self.ureg = pint.UnitRegistry() # Unit Registry for Pint
+
+        # Check if the start and stop are not naive
+        if start_time.tzinfo is None:
+            warnings.warn("Start time does not have a listed timezone, defaulting to UTC")
+            start_time = start_time.replace(tzinfo=datetime.timezone.utc)
+        
+        if stop_time.tzinfo is None:
+            warnings.warn("Stop time does not have a listed timezone, defaulting to UTC")
+            stop_time = stop_time.replace(tzinfo=datetime.timezone.utc)
+
+        self._start: datetime.datetime = start_time
+        self._stop: datetime.datetime = stop_time
+
+        # Setting units
+        if isinstance(units, None):
+            self._units = units
+        elif isinstance(units, str): # Eg. "meter/second**2" or "J"
+            self._units = self.ureg.parse_units(units)
+        elif isinstance(units, self.ureg.Unit):
+            self._units = units
+
+        self._period: float = period
+
+        self._length: float = length
+
+        self._meta = meta
+
+    def __add__(self, other):
+        if isinstance(other, TimeSeries):
+            self_aligned, other_aligned = TimeSeries.align(self, other)
+            sum = self_aligned + other_aligned
+            sum = self_aligned.promote(sum)
         else:
-            print(meta["start"])
-            self._start: datetime.datetime = parser.parse(meta["start"])
-            self._stop: datetime.datetime = parser.parse(meta["stop"])
-        del meta["start"]
-        del meta["stop"]
+            print("wow")
 
-        self._units: str = meta["units"]
-        del meta["units"]
-
-        if "period" in meta.keys():
-            self._period: float = meta["period"]
-            del meta["period"]
-
-        else:
-            warn("Please set `period` and not granularity. It will be removed in the future.", DeprecationWarning)
-            self._period: float = meta["granularity"]
-            del meta["granularity"]
-
-        self._length: float = meta["length"]
-        del meta["length"]
-
-        self._meta: dict = meta
-
+        return 0
     @property
     def x_axis(self) -> np.ndarray:
         """
@@ -181,6 +199,32 @@ class TimeSeries(np.ndarray):
 
             data_to_slice = new_time_series
 
+        elif isinstance(item, datetime.datetime):
+            unix_x_axis = data_to_slice.unix_x_axis
+            item_ts = item.timestamp()
+
+            start_timestamp: float = unix_x_axis[0]
+            stop_timestamp: float = unix_x_axis[-1]
+
+            if item_ts > stop_timestamp or item_ts < start_timestamp:
+                raise IndexError(
+                    f"Datetime {item} is out of bounds! "
+                    f"Range: [{datetime.datetime.fromtimestamp(start_timestamp)}, "
+                    f"{datetime.datetime.fromtimestamp(stop_timestamp)}]"
+                )
+            
+            if item.tzinfo is None:
+                raise ValueError(f"The index does not have an assigned timezone!")
+
+            dt = stop_timestamp - start_timestamp
+
+            if dt == 0:
+                return data_to_slice[0]
+
+            interpolation_index = (item_ts - start_timestamp) * (len(data_to_slice) - 1)/dt
+
+            return data_to_slice.interpolate_indices(interpolation_index)
+
         return super(TimeSeries, data_to_slice).__getitem__(item)
 
     @property
@@ -235,7 +279,7 @@ class TimeSeries(np.ndarray):
 
     def promote(self, array: np.ndarray):
         """
-        Promote a plain ndarray, ``array``, to a TimeSeries with the same metadata
+        Promote a plain ndarray, ``array``, to a TimeSeries with the same properties
         as this TimeSeries.
 
         This method is particularly useful for interfacing
@@ -243,20 +287,87 @@ class TimeSeries(np.ndarray):
         given a TimeSeries.
 
         :param array: plain ndarray to be promoted
-        :return: new, promoted TimeSeries with the same metadata as this TimeSeries
+        :return: new, promoted TimeSeries with the same properties as this TimeSeries
         """
         meta: dict = {
-            "start": self.start,
-            "stop": self.stop,
             "car": self.meta["car"],
             "measurement": self.meta["measurement"],
             "field": self.meta["field"],
-            "period": self.period,
-            "length": self.length,
-            "units": self.units,
         }
 
-        return TimeSeries(array, meta)
+        return TimeSeries(array, self.start, self.stop, self.units, self.period, self.length, meta)
+    
+    def interpolate_indices(self, i: float) -> float:
+        """
+        Takes in a float which represents a value between indices and iterpolates those indices to return an interpolated value
+        """
+        i1 = math.floor(i)
+        i2 = math.ceil(i)
+
+        inter = i - i1
+
+        value1 = self[i1]
+        value2 = self[i2]
+
+        return value1*(1-inter) + value2*inter
+    
+    def slice_datetime(self, start_time: datetime.datetime, end_time: datetime.datetime):
+        """
+        Returns all values in a time series between the requested start and end time.
+        
+        The output has the same period and the function does not generate any new values
+        """
+
+        if (start_time.tzinfo is None) or (end_time.tzinfo is None): # Throw error if start or stop time is naive
+            raise ValueError(f"The start or end time does not have an assigned timezone!")
+
+        if (end_time < start_time): # Throw error if the end time is before stop time
+            raise ValueError(f"Start time {start_time} is after stop time {end_time}!")
+        
+        if (end_time < self.start):
+            raise ValueError(f"Slice ends before timeseries starts!")
+        
+        if (start_time > self.stop):
+            raise ValueError(f"Slice starts after timeseries ends!")
+
+        dt = self.stop - self.start
+
+        # Values used for indexxing
+        relative_start = start_time - self.start
+        relative_stop = end_time - self.start
+
+        if (relative_start < datetime.timedelta(0)):
+            relative_start = datetime.timedelta(0)
+
+        if (relative_stop > dt):
+            relative_stop = dt
+
+        # Finding indexes to slice with
+        start_index = math.ceil((relative_start/self.period).total_seconds()) 
+        stop_index = math.floor((relative_stop/self.period).total_seconds())
+
+        # Find new start and end time
+        new_start_time = datetime.timedelta(seconds = start_index * self.period) + self.start
+        new_stop_time = datetime.timedelta(seconds = stop_index * self.period) + self.start
+
+        new_series: TimeSeries = []
+        y_data = []
+        for i in range(start_index, stop_index + 1):
+            y_data.append(self[i])
+        
+        if self.start.tzinfo is not None:
+            new_start_time = new_start_time.replace(tzinfo = self.start.tzinfo)
+            new_stop_time = new_stop_time.replace(tzinfo = self.stop.tzinfo)
+
+        new_series = TimeSeries(y_data, new_start_time,
+                                new_stop_time,
+                                self._period,
+                                length = (new_stop_time - new_start_time).total_seconds(),
+                                units = self.units)
+        return new_series
+    
+    def shift(self, milliseconds):
+        return 0
 
     @staticmethod
     def align(*args) -> list:
@@ -273,7 +384,7 @@ class TimeSeries(np.ndarray):
             start_index = array.index_of(array.relative_time(start_time))
             stop_index = array.index_of(array.relative_time(end_time))
 
-            new_array = array[start_index:stop_index + 1]
+            new_array: TimeSeries = array[start_index:stop_index + 1]
             if array.start.tzinfo is not None:
                 tz = array.start.tzinfo
                 new_array._start = datetime.datetime.fromtimestamp(start_time, tz)
