@@ -38,7 +38,6 @@ def test_align_with_same_granularity():
     assert np.allclose(time_series_1_aligned, [1, 2, 3, 3, 3, 2, 4, 4, 4, 1])
     assert np.allclose(time_series_2_aligned, [1, 2, 7, 8, 3, 2, 4, 4, 4, 1])
 
-
 def test_align_with_different_granularity():
     y_data_1 = [1, 2, 3, 3, 3, 2, 4,  4,  4,  1]
     x_data_1 = np.array([4, 5, 6, 7, 8, 9, 10, 11, 12, 13]) + 946684800.0  # January 1st, 2000 in UNIX time
@@ -77,7 +76,6 @@ def test_interpolate_index():
     assert time_series_1.interpolate_indices(2.4) == 3
     assert math.isclose(time_series_1.interpolate_indices(8.8), y_data_1[8] * 0.2 + y_data_1[9] * 0.8)
 
-
 def test_datetime_index(): 
     epsilon = 0.0001
     y_data_1 = [1, 2, 3, 3, 3, 2, 4,  5,  4,  1]
@@ -105,7 +103,6 @@ def test_datetime_index():
 
     with pytest.raises(IndexError): 
         _ = time_series_1[time5]
-
 
 def test_datetime_slice(): 
     y_data_1 = [1, 2, 3, 3, 3, 2, 4, 5, 4, 1, 3, 4, 6, 7, 3, 4]
@@ -264,5 +261,3 @@ def test_time_shift_behavior():
 
     assert shifted_meta.period == ts3.period
     assert shifted_meta.meta["units"] == "m"
-
-test_datetime_index()

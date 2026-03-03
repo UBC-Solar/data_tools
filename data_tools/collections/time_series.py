@@ -26,9 +26,9 @@ class TimeSeries(np.ndarray):
     def __new__(cls, input_array, 
                 start_time: datetime.datetime = None, 
                 stop_time: datetime.datetime = None,
-                units = None,
                 period: float = None,
                 length: float = None,
+                units = None,
                 meta: dict = None):
         obj = np.asarray(input_array).view(cls)
         obj._start = start_time
@@ -52,9 +52,9 @@ class TimeSeries(np.ndarray):
     def __init__(self, input_array, 
                  start_time: datetime.datetime = None, 
                  stop_time: datetime.datetime = None,
-                 units = None,
                  period: float = None,
                  length: float = None,
+                 units = None,
                  meta: dict = None):
         
         self.ureg = pint.UnitRegistry() # Unit Registry for Pint
@@ -365,7 +365,8 @@ class TimeSeries(np.ndarray):
             new_start_time = new_start_time.replace(tzinfo = self.start.tzinfo)
             new_stop_time = new_stop_time.replace(tzinfo = self.stop.tzinfo)
 
-        new_series = TimeSeries(y_data, new_start_time,
+        new_series = TimeSeries(y_data, 
+                                new_start_time,
                                 new_stop_time,
                                 self._period,
                                 length = (new_stop_time - new_start_time).total_seconds(),
