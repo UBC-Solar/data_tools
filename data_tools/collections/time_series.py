@@ -23,8 +23,19 @@ class TimeSeries(np.ndarray):
 
     # __new__ and __array_finalize__ are mandatory to ensure that
     # `TimeSeries` properly acts like a ndarray when necessary.
-    def __new__(cls, input_array, meta):
+    def __new__(cls, input_array, 
+                start_time: datetime.datetime = None, 
+                stop_time: datetime.datetime = None,
+                units = None,
+                period: float = None,
+                length: float = None,
+                meta: dict = None):
         obj = np.asarray(input_array).view(cls)
+        obj._start = start_time
+        obj._stop = stop_time
+        obj._units = units
+        obj._period = period
+        obj._length = length
         obj._meta = meta
         return obj
 
@@ -61,7 +72,7 @@ class TimeSeries(np.ndarray):
         self._stop: datetime.datetime = stop_time
 
         # Setting units
-        if isinstance(units, None):
+        if units is None:
             self._units = units
         elif isinstance(units, str): # Eg. "meter/second**2" or "J"
             self._units = self.ureg.parse_units(units)
@@ -186,16 +197,15 @@ class TimeSeries(np.ndarray):
             new_stop: datetime.datetime = datetime.datetime.fromtimestamp(new_stop_timestamp)
             new_length: float = new_stop_timestamp - new_start_timestamp
 
-            new_time_series = TimeSeries(self, {
-                "start": new_start,
-                "stop": new_stop,
-                "car": data_to_slice.meta["car"],
-                "measurement": data_to_slice.meta["measurement"],
-                "field": data_to_slice.meta["field"],
-                "period": data_to_slice.period,
-                "length": new_length,
-                "units": data_to_slice.units,
-            })
+            new_meta = data_to_slice.meta
+            
+            new_time_series = TimeSeries(self,
+                                         new_start,
+                                         new_stop,
+                                         data_to_slice.units,
+                                         data_to_slice.period,
+                                         new_length,
+                                         new_meta)
 
             data_to_slice = new_time_series
 
@@ -289,11 +299,7 @@ class TimeSeries(np.ndarray):
         :param array: plain ndarray to be promoted
         :return: new, promoted TimeSeries with the same properties as this TimeSeries
         """
-        meta: dict = {
-            "car": self.meta["car"],
-            "measurement": self.meta["measurement"],
-            "field": self.meta["field"],
-        }
+        meta: dict = self.meta
 
         return TimeSeries(array, self.start, self.stop, self.units, self.period, self.length, meta)
     
