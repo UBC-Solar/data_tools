@@ -190,6 +190,7 @@ def test_multiplication_auto_align_different_granularity():
     # Should align to min period = 0.5
     assert len(result) == 7
     assert np.allclose(result, np.array(result))  # sanity: numeric output
+    assert np.allclose(result, [10, 20*1.5, 2*30, 2.5*40, 3*50, 3.5*60, 4*70])
  
 def test_units_and_operations():
     # Addition with same units

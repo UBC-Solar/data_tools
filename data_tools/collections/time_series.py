@@ -88,12 +88,29 @@ class TimeSeries(np.ndarray):
     def __add__(self, other):
         if isinstance(other, TimeSeries):
             self_aligned, other_aligned = TimeSeries.align(self, other)
-            sum = self_aligned + other_aligned
-            sum = self_aligned.promote(sum)
-        else:
-            print("wow")
 
-        return 0
+            # Call ndarray's add directly to avoid recursion
+            raw_sum = np.ndarray.__add__(self_aligned, other_aligned)
+
+            return self_aligned.promote(raw_sum)
+        
+        else:
+            raw_sum = np.ndarray.__add__(self, other)
+            return self.promote(raw_sum)
+        
+    def __mul__(self, other):
+        if isinstance(other, TimeSeries):
+            self_aligned, other_aligned = TimeSeries.align(self, other)
+
+            # Call ndarray's add directly to avoid recursion
+            raw_sum = np.ndarray.__mul__(self_aligned, other_aligned)
+
+            return self_aligned.promote(raw_sum)
+        
+        else:
+            raw_sum = np.ndarray.__mul__(self, other)
+            return self.promote(raw_sum)
+        
     @property
     def x_axis(self) -> np.ndarray:
         """
@@ -202,9 +219,9 @@ class TimeSeries(np.ndarray):
             new_time_series = TimeSeries(self,
                                          new_start,
                                          new_stop,
-                                         data_to_slice.units,
                                          data_to_slice.period,
                                          new_length,
+                                         data_to_slice.units,
                                          new_meta)
 
             data_to_slice = new_time_series
@@ -273,7 +290,7 @@ class TimeSeries(np.ndarray):
         :raises: ValueError if ``time`` falls outside of x–axis
         """
         if not (0.0 <= time <= self.length):
-            raise ValueError(f"Relative time {time} falls outside of x–axis!")
+            raise ValueError(f"Relative time {time} falls outside of x–axis! {self.length}")
 
         return np.argmin(np.abs(self.x_axis - time))
 
@@ -301,7 +318,13 @@ class TimeSeries(np.ndarray):
         """
         meta: dict = self.meta
 
-        return TimeSeries(array, self.start, self.stop, self.units, self.period, self.length, meta)
+        return TimeSeries(array, 
+                          self.start, 
+                          self.stop,  
+                          self.period, 
+                          self.length, 
+                          self.units,
+                          meta)
     
     def interpolate_indices(self, i: float) -> float:
         """
