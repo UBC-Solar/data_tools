@@ -9,6 +9,7 @@ import re
 import warnings
 import pint
 
+_GLOBAL_UREG = pint.UnitRegistry() #Important so that different Timeseries don't experience registry errors
 
 class TimeSeries(np.ndarray):
     """
@@ -57,7 +58,7 @@ class TimeSeries(np.ndarray):
                  units = None,
                  meta: dict = None):
         
-        self.ureg = pint.UnitRegistry() # Unit Registry for Pint
+        self.ureg = _GLOBAL_UREG # Connect timeseries to a global registry
 
         # Check if the start and stop are not naive
         if start_time.tzinfo is None:
@@ -73,7 +74,7 @@ class TimeSeries(np.ndarray):
 
         # Setting units
         if units is None:
-            self._units = units
+            self._units = self.ureg.dimensionless
         elif isinstance(units, str): # Eg. "meter/second**2" or "J"
             self._units = self.ureg.parse_units(units)
         elif isinstance(units, self.ureg.Unit):
@@ -89,28 +90,55 @@ class TimeSeries(np.ndarray):
         if isinstance(other, TimeSeries):
             self_aligned, other_aligned = TimeSeries.align(self, other)
 
-            # Call ndarray's add directly to avoid recursion
-            raw_sum = np.ndarray.__add__(self_aligned, other_aligned)
+            # Check if both have units
+            if self_aligned.units is None or other_aligned.units is None:
+                raise ValueError("Both TimeSeries must have units for addition.")
 
-            return self_aligned.promote(raw_sum)
-        
+            # Check dimensionalilty
+            if not self_aligned.units.dimensionality == other_aligned.units.dimensionality:
+                raise ValueError(
+                    f"Incompatible units: {self_aligned.units} and {other_aligned.units}"
+                )
+
+            # Convert other to self's units
+            factor = (1 * other_aligned.units).to(self_aligned.units).magnitude
+            converted_other = np.asarray(other_aligned) * factor
+
+            raw_sum = np.ndarray.__add__(self_aligned, converted_other)
+
+            result = self_aligned.promote(raw_sum)
+            result._units = self_aligned.units
+            return result
+
         else:
-            raw_sum = np.ndarray.__add__(self, other)
-            return self.promote(raw_sum)
+            raw_sum = np.ndarray.__add__(self, other) # Assumption being that the added value is the same unit as the timeseries
+            result = self.promote(raw_sum)
+            result._units = self.units
+            return result
         
     def __mul__(self, other):
         if isinstance(other, TimeSeries):
             self_aligned, other_aligned = TimeSeries.align(self, other)
 
-            # Call ndarray's multiply directly to avoid recursion
-            raw_sum = np.ndarray.__mul__(self_aligned, other_aligned)
+            raw_product = np.ndarray.__mul__(self_aligned, other_aligned)
 
-            return self_aligned.promote(raw_sum)
-        
+            result = self_aligned.promote(raw_product)
+
+            # Compose units
+            if self_aligned.units and other_aligned.units:
+                result._units = self_aligned.units * other_aligned.units
+            else:
+                result._units = None
+
+            return result
+
         else:
-            raw_sum = np.ndarray.__mul__(self, other)
-            return self.promote(raw_sum)
-        
+            raw_product = np.ndarray.__mul__(self, other)
+
+            result = self.promote(raw_product)
+            result._units = self.units
+            return result
+            
     @property
     def x_axis(self) -> np.ndarray:
         """

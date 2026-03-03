@@ -9,7 +9,8 @@ def quick_gen_timeseries(x_data, y_data):
                              datetime.datetime.fromtimestamp(x_data[0], tz = datetime.timezone.utc),
                              datetime.datetime.fromtimestamp(x_data[-1], tz = datetime.timezone.utc),
                              period = 1.0,
-                             length = x_data[-1] - x_data[0],)
+                             length = x_data[-1] - x_data[0],
+                             units="m")
     
     return time_series
 
@@ -177,13 +178,15 @@ def test_multiplication_auto_align_different_granularity():
                      datetime.datetime.fromtimestamp(x1[0]),
                      datetime.datetime.fromtimestamp(x1[-1]),
                      period = 1.0,
-                     length = x1[-1] - x1[0])
+                     length = x1[-1] - x1[0],
+                     units="m")
 
     ts2 = TimeSeries(y2, 
                      datetime.datetime.fromtimestamp(x2[0]), 
                      datetime.datetime.fromtimestamp(x2[-1]), 
                      period = 0.5, 
-                     length = x2[-1] - x2[0])
+                     length = x2[-1] - x2[0],
+                     units="m")
 
     result = ts1 * ts2
 
