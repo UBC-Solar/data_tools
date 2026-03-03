@@ -194,37 +194,38 @@ def test_multiplication_auto_align_different_granularity():
  
 def test_units_and_operations():
     # Addition with same units
-    ts1 = TimeSeries([1, 2, 3], meta={"units": "m"})
-    ts2 = TimeSeries([4, 5, 6], meta={"units": "m"})
+    ts1 = TimeSeries([1, 2, 3], units="m")
+    ts2 = TimeSeries([4, 5, 6], units="m")
 
     result_add = ts1 + ts2
 
-    assert result_add.meta["units"] == "m"
+    assert str(result_add.units) == "meter"
     assert np.allclose(result_add, [5, 7, 9])
 
     # Addition with different units should fail
-    ts3 = TimeSeries([1, 2, 3], meta={"units": "m"})
-    ts4 = TimeSeries([4, 5, 6], meta={"units": "s"})
+    ts3 = TimeSeries([1, 2, 3], units="m")
+    ts4 = TimeSeries([4, 5, 6], units="s")
 
     with pytest.raises(ValueError):
         _ = ts3 + ts4
 
-    # Multiplication should compose units 
-    ts5 = TimeSeries([2, 3], meta={"units": "m"})
-    ts6 = TimeSeries([4, 5], meta={"units": "s"})
+    # Multiplication should compose units
+    ts5 = TimeSeries([2, 3], units="m")
+    ts6 = TimeSeries([4, 5], units="s")
 
     result_mul = ts5 * ts6
 
-    assert result_mul.meta["units"] in {"m*s", "s*m"}
+    # Pint composes units automatically
+    assert result_mul.units == ts5.units * ts6.units
     assert np.allclose(result_mul, [8, 15])
 
-    # Dimensionless operations allowed (Should check if this is valid behaviour)
-    ts7 = TimeSeries([1, 2, 3], meta={"units": ""})
-    ts8 = TimeSeries([4, 5, 6], meta={"units": "kg"})
+    # Dimensionless operations allowed
+    ts7 = TimeSeries([1, 2, 3], units="")
+    ts8 = TimeSeries([4, 5, 6], units="kg")
 
     result_dimless = ts7 * ts8
 
-    assert result_dimless.meta["units"] == "kg"
+    assert result_dimless.units == ts8.units
 
 
 def test_time_shift_behavior():

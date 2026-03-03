@@ -102,7 +102,7 @@ class TimeSeries(np.ndarray):
         if isinstance(other, TimeSeries):
             self_aligned, other_aligned = TimeSeries.align(self, other)
 
-            # Call ndarray's add directly to avoid recursion
+            # Call ndarray's multiply directly to avoid recursion
             raw_sum = np.ndarray.__mul__(self_aligned, other_aligned)
 
             return self_aligned.promote(raw_sum)
