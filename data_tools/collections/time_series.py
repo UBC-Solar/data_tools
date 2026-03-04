@@ -427,6 +427,40 @@ class TimeSeries(np.ndarray):
     def shift(self, milliseconds):
         return 0
 
+    def convert_to(self, new_unit: str):
+        """ Returns a new TimeSeries after being converted to a new unit, appropriately scales timeseries
+
+        Args:
+            new_unit (str): The unit the entire series will be translated to
+
+        Raises:
+            ValueError: Cannot convert TimeSeries without units
+            ValueError: Unable to convert between units of different dimensionality
+
+        Returns:
+            result (TimeSeries): Timeseries with converted units
+        """        '''
+        '''
+        if self.units is None:
+            raise ValueError("Cannot convert TimeSeries without units.")
+
+        new_unit_parsed = self.ureg.parse_units(new_unit)
+
+        # Check dimensionality
+        if self.units.dimensionality != new_unit_parsed.dimensionality:
+            raise ValueError(
+                f"Cannot convert {self.units} to {new_unit_parsed} (incompatible dimensions)"
+            )
+
+        factor = (1 * self.units).to(new_unit_parsed).magnitude
+
+        converted_values = np.asarray(self) * factor
+
+        result = self.promote(converted_values)
+        result._units = new_unit_parsed
+
+        return result
+    
     @staticmethod
     def align(*args) -> list:
         start_time = max(arg.start.timestamp() for arg in args)
@@ -484,17 +518,18 @@ class TimeSeries(np.ndarray):
 
         # Compile metadata
         meta: dict = {
-            "start": query_df.index.to_numpy()[0].to_pydatetime(),
-            "stop": query_df.index.to_numpy()[-1].to_pydatetime(),
             "car": query_df["car"].to_numpy()[0],
             "measurement": query_df["_measurement"].to_numpy()[0],
-            "field": field,
-            "period": actual_granularity,
-            "length": temporal_length,
-            "units": units,
+            "field": field
         }
 
-        new_wave = TimeSeries(wave_interpolated, meta)
+        new_wave = TimeSeries(wave_interpolated, 
+                              start_time = query_df.index.to_numpy()[0].to_pydatetime(),
+                              stop_time = query_df.index.to_numpy()[-1].to_pydatetime(),
+                              period = actual_granularity,
+                              length = temporal_length,
+                              units = units,
+                              meta = meta)
 
         return new_wave
 

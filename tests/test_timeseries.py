@@ -230,6 +230,11 @@ def test_units_and_operations():
 
     assert result_dimless.units == ts8.units
 
+def test_convert_units():
+    print('')
+
+def test_addition_different_units():
+    print('')
 
 def test_time_shift_behavior():
     # Forward shift
