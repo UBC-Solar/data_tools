@@ -61,13 +61,15 @@ class TimeSeries(np.ndarray):
         self.ureg = _GLOBAL_UREG # Connect timeseries to a global registry
 
         # Check if the start and stop are not naive
-        if start_time.tzinfo is None:
-            warnings.warn("Start time does not have a listed timezone, defaulting to UTC")
-            start_time = start_time.replace(tzinfo=datetime.timezone.utc)
-        
-        if stop_time.tzinfo is None:
-            warnings.warn("Stop time does not have a listed timezone, defaulting to UTC")
-            stop_time = stop_time.replace(tzinfo=datetime.timezone.utc)
+        if start_time is not None:
+            if start_time.tzinfo is None:
+                warnings.warn("Start time does not have a listed timezone, defaulting to UTC")
+                start_time = start_time.replace(tzinfo=datetime.timezone.utc)
+
+        if stop_time is not None:
+            if stop_time.tzinfo is None:
+                warnings.warn("Stop time does not have a listed timezone, defaulting to UTC")
+                stop_time = stop_time.replace(tzinfo=datetime.timezone.utc)
 
         self._start: datetime.datetime = start_time
         self._stop: datetime.datetime = stop_time
@@ -196,9 +198,19 @@ class TimeSeries(np.ndarray):
         return self._units
 
     @units.setter
-    def units(self, value: str):
-        assert isinstance(value, str), f"Units should be a string, not {type(value)}!"
-        self._units = value
+    def units(self, value):
+        if value is None:
+            self._units = self.ureg.dimensionless
+        elif isinstance(value, str): # Eg. "meter/second**2" or "J"
+            warnings.warn("Setting units does not convert unit magnitudes!! If you wish to convert units, use .convert_to()")
+            self._units = self.ureg.parse_units(value)
+        elif isinstance(value, self.ureg.Unit):
+            warnings.warn("Setting units does not convert unit magnitudes!! If you wish to convert units, use .convert_to()")
+            self._units = value
+        else:
+            raise ValueError(
+                f"Input should be a string or Unit object, not {type(value)}!"
+            )
 
     @property
     def start(self) -> datetime.datetime:

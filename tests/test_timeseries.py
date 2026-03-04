@@ -4,13 +4,13 @@ import math
 import pytest
 import datetime
 
-def quick_gen_timeseries(x_data, y_data):
+def quick_gen_timeseries(x_data, y_data, units = "m"):
     time_series = TimeSeries(y_data, 
                              datetime.datetime.fromtimestamp(x_data[0], tz = datetime.timezone.utc),
                              datetime.datetime.fromtimestamp(x_data[-1], tz = datetime.timezone.utc),
                              period = 1.0,
                              length = x_data[-1] - x_data[0],
-                             units="m")
+                             units=units)
     
     return time_series
 
@@ -166,7 +166,6 @@ def test_addition_auto_align():
     assert isinstance(result, TimeSeries)
     assert np.allclose(result, [2 + 10, 3 + 20, 4 + 30])
 
-
 def test_multiplication_auto_align_different_granularity():
     y1 = [1, 2, 3, 4]
     x1 = np.array([0, 1, 2, 3]) + 946684800.0
@@ -196,9 +195,10 @@ def test_multiplication_auto_align_different_granularity():
     assert np.allclose(result, [10, 20*1.5, 2*30, 2.5*40, 3*50, 3.5*60, 4*70])
  
 def test_units_and_operations():
+    x = [0, 1, 2]
     # Addition with same units
-    ts1 = TimeSeries([1, 2, 3], units="m")
-    ts2 = TimeSeries([4, 5, 6], units="m")
+    ts1 = quick_gen_timeseries(x, [1, 2, 3], units = "m")
+    ts2 = quick_gen_timeseries(x, [4, 5, 6], units = "m")
 
     result_add = ts1 + ts2
 
@@ -206,35 +206,66 @@ def test_units_and_operations():
     assert np.allclose(result_add, [5, 7, 9])
 
     # Addition with different units should fail
-    ts3 = TimeSeries([1, 2, 3], units="m")
-    ts4 = TimeSeries([4, 5, 6], units="s")
+    ts3 = quick_gen_timeseries(x, [1, 2, 3], units = "m")
+    ts4 = quick_gen_timeseries(x, [1, 2, 3], units = "s")
 
     with pytest.raises(ValueError):
         _ = ts3 + ts4
 
     # Multiplication should compose units
-    ts5 = TimeSeries([2, 3], units="m")
-    ts6 = TimeSeries([4, 5], units="s")
+    ts5 = quick_gen_timeseries(x, [1, 2, 3], units = "m")
+    ts6 = quick_gen_timeseries(x, [4, 5, 6], units = "s")
 
     result_mul = ts5 * ts6
 
     # Pint composes units automatically
     assert result_mul.units == ts5.units * ts6.units
-    assert np.allclose(result_mul, [8, 15])
+    assert np.allclose(result_mul, [4, 10, 18])
 
     # Dimensionless operations allowed
-    ts7 = TimeSeries([1, 2, 3], units="")
-    ts8 = TimeSeries([4, 5, 6], units="kg")
+    ts7 = quick_gen_timeseries(x, [1, 3, 5], units = "")
+    ts8 = quick_gen_timeseries(x, [4, 5, 6], units = "kg")
 
     result_dimless = ts7 * ts8
 
     assert result_dimless.units == ts8.units
-
-def test_convert_units():
-    print('')
+    assert np.allclose(result_dimless, [4, 15, 30])
 
 def test_addition_different_units():
-    print('')
+    # Testing if units transfer expectedly: Expected behaviour is that the one on the left is transferred
+    # Test add across different units of the same dimensionality
+    y1 = [1, 2, 3]
+    x1 = np.array([0, 1, 2]) + 946684800.0
+
+    y2 = [4, 5, 6]
+    x2 = np.array([0, 1, 2]) + 946684800.0
+
+    ts1 = TimeSeries(y1, 
+                     datetime.datetime.fromtimestamp(x1[0]),
+                     datetime.datetime.fromtimestamp(x1[-1]),
+                     period = 1.0,
+                     length = x1[-1] - x1[0]
+                     )
+
+    ts2 = TimeSeries(y2, 
+                     datetime.datetime.fromtimestamp(x2[0]), 
+                     datetime.datetime.fromtimestamp(x2[-1]), 
+                     period = 1.0, 
+                     length = x2[-1] - x2[0]
+                     )
+
+    ts1.units = "km"
+    ts2.units = "m"
+
+    result_add1 =  ts1 + ts2
+
+    assert result_add1.units == ts1.units
+    assert np.allclose(result_add1, [1.004, 2.005, 3.006])
+
+    result_add2 =  ts2 + ts1
+
+    assert result_add2.units == ts2.units
+    assert np.allclose(result_add2, [1004, 2005, 3006])
 
 def test_time_shift_behavior():
     # Forward shift
