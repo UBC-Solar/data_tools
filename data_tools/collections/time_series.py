@@ -355,8 +355,14 @@ class TimeSeries(np.ndarray):
                           meta)
     
     def interpolate_indices(self, i: float) -> float:
-        """
-        Takes in a float which represents a value between indices and iterpolates those indices to return an interpolated value
+        """ Function which interpolates between the two nearest indices
+
+        Args:
+            i (float): floating index
+
+        Returns:
+            float: interpolated value
+        """        """
         """
         i1 = math.floor(i)
         i2 = math.ceil(i)
@@ -369,10 +375,21 @@ class TimeSeries(np.ndarray):
         return value1*(1-inter) + value2*inter
     
     def slice_datetime(self, start_time: datetime.datetime, end_time: datetime.datetime):
-        """
-        Returns all values in a time series between the requested start and end time.
-        
-        The output has the same period and the function does not generate any new values
+        """ This function returns all values between two given points, useful for filtering out data for specific dates or times. 
+        The returned series will not have the same start_time and end_time, the returned series will align the start and end time to existing points
+
+        Args:
+            start_time (datetime.datetime): _description_
+            end_time (datetime.datetime): _description_
+
+        Raises:
+            ValueError: Naive inputs (Inputs do not have assigned timezones)
+            ValueError: start_time is after stop_time
+            ValueError: stop_time is before timeseries start time
+            ValueError: start_time is after timeseries stop time
+
+        Returns:
+            series (Timeseries): Returns a series with all values between start and stop time
         """
 
         if (start_time.tzinfo is None) or (end_time.tzinfo is None): # Throw error if start or stop time is naive
@@ -439,8 +456,7 @@ class TimeSeries(np.ndarray):
 
         Returns:
             result (TimeSeries): Timeseries with converted units
-        """        '''
-        '''
+        """
         if self.units is None:
             raise ValueError("Cannot convert TimeSeries without units.")
 
@@ -460,7 +476,7 @@ class TimeSeries(np.ndarray):
         result._units = new_unit_parsed
 
         return result
-    
+
     @staticmethod
     def align(*args) -> list:
         start_time = max(arg.start.timestamp() for arg in args)
