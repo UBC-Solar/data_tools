@@ -1,7 +1,7 @@
 from .query import (
     FluxQuery,
     FluxStatement,
-    DBClient,
+    InfluxDBClient,
     PostgresClient,
     SunbeamClient
 )

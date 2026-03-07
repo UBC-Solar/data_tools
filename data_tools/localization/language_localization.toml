@@ -1,0 +1,81 @@
+[2024-01-01]  # 2024-07-12 – 2024-07-20
+VehicleSpeed = ["VehicleVelocity", "MDI", "m/s"]
+PackVoltage = ["TotalPackVoltage", "BMS", "V"]
+PackCurrent = ["PackCurrent", "ECU", "A"]
+MotorCurrent = ["BatteryCurrent", "MC", "A"]
+AcceleratorPosition = ["AcceleratorPosition", "MC", ""]
+MinimumModuleVoltage = ["VoltageofLeast", "BMS","V"]
+MaximumModuleVoltage = ["VoltageofHighest", "BMS", "V"]
+BrakePressed = ["MechBrakePressed", "MCB", ""]
+MotorCurrentDirection = ["BatteryCurrentDirection", "MC", ""]
+
+MPPTInputVoltageA = ["VoltSensor1", "AMB", "V"]
+MPPTInputVoltageB = ["VoltSensor2", "AMB", "V"]
+MPPTInputCurrentA = ["CurrentSensor1", "AMB", "A"]
+MPPTInputCurrentB = ["CurrentSensor2", "AMB", "A"]
+
+
+[2025-01-01]  # 2025-04-01 – 2025-07-23
+VehicleSpeed = ["MotorRotatingSpeed", "MC", "km/h"]
+PackVoltage = ["TotalPackVoltage", "BMS", "V"]
+PackCurrent = ["PackCurrent", "ECU", "A"]
+MotorCurrent = ["BatteryCurrent", "MC", "A"]
+AcceleratorPosition = ["AcceleratorPosition", "MC", ""]
+MinimumModuleVoltage = ["VoltageofLeast", "BMS","V"]
+MaximumModuleVoltage = ["VoltageofHighest", "BMS", "V"]
+BrakePressed = ["BrakePressed", "DRD", ""]
+MotorCurrentDirection = ["BatteryCurrentDirection", "MC", ""]
+
+MPPTOutputVoltageA = ["OutputVoltageA", "MPPT", "V"]
+MPPTOutputVoltageB = ["OutputVoltageB", "MPPT", "V"]
+MPPTOutputVoltageC = ["OutputVoltageC", "MPPT", "V"]
+MPPTOutputCurrentA = ["OutputCurrentA", "MPPT", "A"]
+MPPTOutputCurrentB = ["OutputCurrentB", "MPPT", "A"]
+MPPTOutputCurrentC = ["OutputCurrentC", "MPPT", "A"]
+
+MPPTInputVoltageA = ["InputVoltageA", "MPPT", "V"]
+MPPTInputVoltageB = ["InputVoltageB", "MPPT", "V"]
+MPPTInputVoltageC = ["InputVoltageC", "MPPT", "V"]
+MPPTInputCurrentA = ["InputCurrentA", "MPPT", "A"]
+MPPTInputCurrentB = ["InputCurrentB", "MPPT", "A"]
+MPPTInputCurrentC = ["InputCurrentC", "MPPT", "A"]
+
+GPSLatitude = ["GPSLatitude", "TEL", ""]
+GPSLongitude = ["GPSLongitude", "TEL", ""]
+
+Acceleration_X = ["Acceleration_X", "TEL", ""]
+Acceleration_Y = ["Acceleration_Y", "TEL", ""]
+Acceleration_Z = ["Acceleration_Z", "TEL", ""]
+
+
+[2026-01-01]   # 2026-01-20 –
+VehicleSpeed = ["MotorRotatingSpeed", "MC", "km/h"]
+PackVoltage = ["TotalPackVoltage", "BMS", "V"]
+PackCurrent = ["PackCurrent", "ECU", "A"]
+MotorCurrent = ["BatteryCurrent", "MC", "A"]
+AcceleratorPosition = ["AcceleratorPosition", "MC", ""]
+MinimumModuleVoltage = ["VoltageofLeast", "BMS","V"]
+MaximumModuleVoltage = ["VoltageofHighest", "BMS", "V"]
+BrakePressed = ["BrakePressed", "DRD", ""]
+MotorCurrentDirection = ["BatteryCurrentDirection", "MC", ""]
+
+MPPTOutputVoltageA = ["OutputVoltageA", "MPPT", "V"]
+MPPTOutputVoltageB = ["OutputVoltageB", "MPPT", "V"]
+MPPTOutputVoltageC = ["OutputVoltageC", "MPPT", "V"]
+MPPTOutputCurrentA = ["OutputCurrentA", "MPPT", "A"]
+MPPTOutputCurrentB = ["OutputCurrentB", "MPPT", "A"]
+MPPTOutputCurrentC = ["OutputCurrentC", "MPPT", "A"]
+
+MPPTInputVoltageA = ["InputVoltageA", "MPPT", "V"]
+MPPTInputVoltageB = ["InputVoltageB", "MPPT", "V"]
+MPPTInputVoltageC = ["InputVoltageC", "MPPT", "V"]
+MPPTInputCurrentA = ["InputCurrentA", "MPPT", "A"]
+MPPTInputCurrentB = ["InputCurrentB", "MPPT", "A"]
+MPPTInputCurrentC = ["InputCurrentC", "MPPT", "A"]
+
+GPSLatitude = ["GPSLatitude", "TEL", ""]
+GPSLongitude = ["GPSLongitude", "TEL", ""]
+
+Acceleration_X = ["Acceleration_X", "TEL", ""]
+Acceleration_Y = ["Acceleration_Y", "TEL", ""]
+Acceleration_Z = ["Acceleration_Z", "TEL", ""]

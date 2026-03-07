@@ -5,10 +5,8 @@ readme = "README.md"
 requires-python = ">=3.11,<4.0"
 license = { text = "MIT" }
 authors = [{ name = "Joshua Riefman", email = "joshuariefman@gmail.com" }]
-
-# Keep your placeholder version if something else injects it.
-# If you use dynamic versioning (recommended), see [project] dynamic section below.
 dynamic = ["version"]
+
 
 dependencies = [
   "influxdb-client>=1.45.0,<2.0.0",
@@ -27,7 +25,6 @@ dependencies = [
 ]
 
 
-
 [build-system]
 requires = ["setuptools>=68", "wheel", "setuptools_scm>=8"]
 build-backend = "setuptools.build_meta"
@@ -35,7 +32,7 @@ build-backend = "setuptools.build_meta"
 [tool.setuptools_scm]
 version_file = "data_tools/_version.py"
 
-[project.optional-dependencies]
+[dependency-groups]
 test = [
   "pytest>=8.3.3,<9.0.0",
   "pytest-cov>=6.0.0,<7.0.0",
@@ -46,8 +43,6 @@ docs = [
   "pydata-sphinx-theme>=0.15.4,<0.16.0",
 ]
 
-# This replaces Poetry's `packages = [{ include = "data_tools" }]`
-# and tells build backends what to include.
 [tool.setuptools.packages.find]
 include = ["data_tools*"]
 

@@ -8,9 +8,7 @@ class LanguageLocalization:
     _instance: "LanguageLocalization | None" = None
 
     def __init__(self, localization_table: pathlib.Path):
-        self._localization_table = VersionedTable.from_toml_file(
-            str(localization_table.absolute())
-        )
+        self._localization_table = VersionedTable.from_toml_file(str(localization_table.absolute()))
 
     @classmethod
     def load(cls, localization_table: pathlib.Path) -> "LanguageLocalization":
@@ -36,4 +34,31 @@ class LanguageLocalization:
 
 class CanonicalName(StrEnum):
     VehicleSpeed = "VehicleSpeed"
-    BatteryVoltage = "BatteryVoltage"
+    PackVoltage = "PackVoltage"
+    PackCurrent = "PackCurrent"
+    MotorCurrent = "MotorCurrent"
+    AcceleratorPosition = "AcceleratorPosition"
+    VoltageOfLeast = "VoltageOfLeast"
+    VoltageOfHighest = "VoltageOfHighest"
+    BrakePressed = "BrakePressed"
+
+    MPPTOutputVoltageA = "MPPTOutputVoltageA"
+    MPPTOutputVoltageB = "MPPTOutputVoltageB"
+    MPPTOutputVoltageC = "MPPTOutputVoltageC"
+    MPPTOutputCurrentA = "MPPTOutputCurrentA"
+    MPPTOutputCurrentB = "MPPTOutputCurrentB"
+    MPPTOutputCurrentC = "MPPTOutputCurrentC"
+
+    MPPTInputVoltageA = "MPPTInputVoltageA"
+    MPPTInputVoltageB = "MPPTInputVoltageB"
+    MPPTInputVoltageC = "MPPTInputVoltageC"
+    MPPTInputCurrentA = "MPPTInputCurrentA"
+    MPPTInputCurrentB = "MPPTInputCurrentB"
+    MPPTInputCurrentC = "MPPTInputCurrentC"
+
+    GPSLatitude = "GPSLatitude"
+    GPSLongitude = "GPSLongitude"
+
+    Acceleration_X = "Acceleration_X"
+    Acceleration_Y = "Acceleration_Y"
+    Acceleration_Z = "Acceleration_Z"
