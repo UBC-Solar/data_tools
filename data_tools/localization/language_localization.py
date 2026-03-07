@@ -1,27 +1,10 @@
 from data_tools.localization.versioned_table import VersionedTable
+from data_tools.localization.localization import Localization
 from enum import StrEnum
 from datetime import date
-import pathlib
 
 
-class LanguageLocalization:
-    _instance: "LanguageLocalization | None" = None
-
-    def __init__(self, localization_table: pathlib.Path):
-        self._localization_table = VersionedTable.from_toml_file(str(localization_table.absolute()))
-
-    @classmethod
-    def load(cls, localization_table: pathlib.Path) -> "LanguageLocalization":
-        if cls._instance is None:
-            cls._instance = cls(localization_table)
-        return cls._instance
-
-    @classmethod
-    def _get(cls) -> "LanguageLocalization":
-        if cls._instance is None:
-            raise RuntimeError("LanguageLocalization not loaded. Call LanguageLocalization.load(path) first.")
-        return cls._instance
-
+class LanguageLocalization(Localization):
     @classmethod
     def localize(cls, canonical_name: str, current_date: date | str) -> tuple[str, str, str]:
         """
@@ -38,9 +21,10 @@ class CanonicalName(StrEnum):
     PackCurrent = "PackCurrent"
     MotorCurrent = "MotorCurrent"
     AcceleratorPosition = "AcceleratorPosition"
-    VoltageOfLeast = "VoltageOfLeast"
-    VoltageOfHighest = "VoltageOfHighest"
+    MinimumModuleVoltage = "MinimumModuleVoltage"
+    MaximumModuleVoltage = "MaximumModuleVoltage"
     BrakePressed = "BrakePressed"
+    MotorCurrentDirection = "MotorCurrentDirection"
 
     MPPTOutputVoltageA = "MPPTOutputVoltageA"
     MPPTOutputVoltageB = "MPPTOutputVoltageB"

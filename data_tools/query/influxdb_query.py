@@ -1,4 +1,4 @@
-from data_tools.localization import LanguageLocalization, CanonicalName
+from data_tools.localization import LanguageLocalization, CanonicalName, TemporalLocalization
 from influxdb_client import InfluxDBClient as _InfluxDBClient
 from data_tools.collections.time_series import TimeSeries
 from datetime import datetime, timedelta, timezone
@@ -143,8 +143,8 @@ class InfluxDBClient:
         # InfluxDB has an issue where PST timestamps were interpreted as UTC. So, we need to mutate
         # the timestamps to represent a time -7 hours to compensate for the UTC offset of +7.
 
-        utc_start = ensure_utc(start) - timedelta(hours=7)
-        utc_end = ensure_utc(stop) - timedelta(hours=7)
+        utc_start = ensure_utc(start)
+        utc_end = ensure_utc(stop)
 
         # Make the query
         query = FluxQuery() \
@@ -187,9 +187,17 @@ class InfluxDBClient:
         else:
             field_str = field
 
-        query_df = self.query_series(start, stop, field_str, bucket, car, measurement)
+        timezone_fix = TemporalLocalization.localize(start)
+        start = start - timezone_fix
+        stop = stop - timezone_fix
 
-        return TimeSeries.from_query_dataframe(query_df, granularity, field_str, units)
+        query_df = self.query_series(start, stop, field_str, bucket, car, measurement)
+        time_series = TimeSeries.from_query_dataframe(query_df, granularity, field_str, units)
+
+        time_series._start = time_series._start + timezone_fix
+        time_series._stop = time_series._stop + timezone_fix
+
+        return time_series
 
 
 if __name__ == "__main__":

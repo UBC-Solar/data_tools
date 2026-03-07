@@ -1,0 +1,20 @@
+[2024-01-01]  # 2024-07-12 – 2024-07-20
+# In 2024, we were in Kentucky the first lap was at 10:00AM EDT and EDT is UTC - 4, so 2:00PM UTC.
+# The first timestamp on InfluxDB is at 8:00AM UTC which means we have an offset of 6 hours.
+# That is, queries must be shifted by -6 and returned timestamps by +6 to be correct.
+shift = 6
+
+[2025-04-01]  # 2025-04-01 – 2025-06-23
+# In 2025 before FSGP we were in Vancouver, which is in PDT timezone where PDT timestamps were interpreted as UTC
+# by InfluxDB. I see 3:30PM UTC when it should actually be 3:30PM PDT, which is 10:30PM UTC. So, queries need to be shifted back by
+# 7 hours and returned timestamps by +7 to be correct.
+shift = 7
+
+[2025-06-30]  # 2025-06-30 – 2025-07-05
+# Using the time that our motor blew up in 2025, which was around 6:00PM EDT, which is 10:00PM UTC, we see
+# that the motor temperature spiked at 4:00PM on InfluxDB which again indicates a shift of +6.
+shift = 6
+
+[2025-07-23]  # 2025-07-23 –
+# Back in Vancouver, same issue as 2025-04-01 – 2025-06-23.
+shift = 7
