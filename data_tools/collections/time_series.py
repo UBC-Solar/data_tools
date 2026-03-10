@@ -117,7 +117,40 @@ class TimeSeries(np.ndarray):
             result = self.promote(raw_sum)
             result._units = self.units
             return result
-        
+    
+    def __sub__(self, other):
+        if isinstance(other, TimeSeries):
+            # Align time series
+            self_aligned, other_aligned = TimeSeries.align(self, other)
+
+            # Check if both have units
+            if self_aligned.units is None or other_aligned.units is None:
+                raise ValueError("Both TimeSeries must have units for subtraction.")
+
+            # Check dimensionality
+            if not self_aligned.units.dimensionality == other_aligned.units.dimensionality:
+                raise ValueError(
+                    f"Incompatible units: {self_aligned.units} and {other_aligned.units}"
+                )
+
+            # Convert other to self's units
+            factor = (1 * other_aligned.units).to(self_aligned.units).magnitude
+            converted_other = np.asarray(other_aligned) * factor
+
+            # Perform subtraction
+            raw_sub = np.ndarray.__sub__(self_aligned, converted_other)
+
+            result = self_aligned.promote(raw_sub)
+            result._units = self_aligned.units
+            return result
+
+        else:
+            # Scalar subtraction, assuming other is in the same units
+            raw_sub = np.ndarray.__sub__(self, other)
+            result = self.promote(raw_sub)
+            result._units = self.units
+            return result 
+
     def __mul__(self, other):
         if isinstance(other, TimeSeries):
             self_aligned, other_aligned = TimeSeries.align(self, other)
@@ -140,7 +173,15 @@ class TimeSeries(np.ndarray):
             result = self.promote(raw_product)
             result._units = self.units
             return result
-            
+        
+    def __radd__(self, other):
+        return self.__add__(other)
+
+    def __rmul__(self, other):
+        return self.__mul__(other)
+    
+    def
+    
     @property
     def x_axis(self) -> np.ndarray:
         """
@@ -454,6 +495,8 @@ class TimeSeries(np.ndarray):
         return new_series
     
     def shift(self, milliseconds):
+
+
         return 0
 
     def convert_to(self, new_unit: str):

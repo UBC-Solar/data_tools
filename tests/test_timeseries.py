@@ -290,15 +290,16 @@ def test_time_shift_behavior():
     assert shifted_backward.stop.timestamp() == ts2.stop.timestamp() - 3
 
     # Preserve metadata test
-    ts3 = TimeSeries([1, 2, 3], meta={
-        "start": datetime.datetime.fromtimestamp(946684800.0),
-        "stop": datetime.datetime.fromtimestamp(946684802.0),
-        "period": 1.0,
-        "length": 2.0,
-        "units": "m"
-    })
+    ts3 = TimeSeries([1, 2, 3], 
+                      1 + 946684800.0,
+                      3 + 946684800.0,
+                      1,
+                      3,
+                      "m"
+                    
+    )
 
     shifted_meta = ts3.shift(10)
 
     assert shifted_meta.period == ts3.period
-    assert shifted_meta.meta["units"] == "m"
+    assert shifted_meta.units == "m"
