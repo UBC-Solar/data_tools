@@ -180,7 +180,19 @@ class TimeSeries(np.ndarray):
     def __rmul__(self, other):
         return self.__mul__(other)
     
-    def
+    def __rsub__(self, other):
+        # This might not be the wanted implementation, but its also really unintuitive to subtract a time series from an integer so I dont know what the desired output is
+        raw_sub = np.ndarray.__sub__(other, self) # other - self
+        result = self.promote(raw_sub)
+        
+        # Units for scalar - TimeSeries are typically -self.units
+        if self.units:
+            result._units = self.units # Magnitude is negative, units remain same
+        else:
+            result._units = None
+            
+        return result
+
     
     @property
     def x_axis(self) -> np.ndarray:
