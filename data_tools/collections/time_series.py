@@ -215,8 +215,19 @@ class TimeSeries(np.ndarray):
             result._units = None
             
         return result
-
     
+    def __rtruediv__(self, other):
+        # reverses the division: other / self
+        raw_product = np.ndarray.__rtruediv__(self, other)
+
+        result = self.promote(raw_product)
+
+        if self.units: # reciprocal units !
+            result._units = 1 / self.units 
+        else:
+            result._units = None
+            
+        return result
     @property
     def x_axis(self) -> np.ndarray:
         """
@@ -529,10 +540,25 @@ class TimeSeries(np.ndarray):
                                 units = self.units)
         return new_series
     
-    def shift(self, milliseconds):
+    def shift(self, shift):
+        """A function which moves a timeseries backwards or forwards in time without changing any data inside it. Can have timedelta or a float as an input
 
+        Args:
+            seconds (_float || datetime.timedelta_): The amount of seconds the series should be shifted
+        """        
+        if not isinstance(shift, datetime.timedelta):
+            shift = datetime.timedelta(seconds=shift)
 
-        return 0
+        copy = TimeSeries(self[...],
+                          self.start + shift,
+                          self.stop + shift,
+                          self.period,
+                          self.length,
+                          self.units,
+                          self.meta
+        ) #Create a copy of timeseries with shifted start and stop times
+
+        return copy
 
     def convert_to(self, new_unit: str):
         """ Returns a new TimeSeries after being converted to a new unit, appropriately scales timeseries

@@ -4,6 +4,7 @@ import math
 import pytest
 import datetime
 
+# Helper Function for testing
 def quick_gen_timeseries(x_data, y_data, units = "m"):
     time_series = TimeSeries(y_data, 
                              datetime.datetime.fromtimestamp(x_data[0], tz = datetime.timezone.utc),
@@ -14,6 +15,7 @@ def quick_gen_timeseries(x_data, y_data, units = "m"):
     
     return time_series
 
+# There's alot of tests...
 def test_align_with_same_granularity():
     y_data_1 = [1, 2, 3, 3, 3, 2, 4, 4, 4, 1]
     x_data_1 = np.array([4, 5, 6, 7, 8, 9, 10, 11, 12, 13]) + 946684800.0
@@ -267,6 +269,120 @@ def test_addition_different_units():
     assert result_add2.units == ts2.units
     assert np.allclose(result_add2, [1004, 2005, 3006])
 
+def test_subtraction_operations():
+    x = [0, 1, 2]
+    # subtraction with same units
+    ts1 = quick_gen_timeseries(x, [10, 20, 30], units="m")
+    ts2 = quick_gen_timeseries(x, [1, 2, 3], units="m")
+    
+    result_sub = ts1 - ts2
+    assert str(result_sub.units) == "meter"
+    assert np.allclose(result_sub, [9, 18, 27])
+
+    # Subtraction with different units should fail
+    ts3 = quick_gen_timeseries(x, [10, 20, 30], units="kg")
+    with pytest.raises(ValueError):
+        _ = ts1 - ts3
+
+    # Subtraction with scalars 
+    ts_dimless = quick_gen_timeseries(x, [5, 10, 15], units="")
+    result_scalar_sub = ts_dimless - 2
+    assert np.allclose(result_scalar_sub, [3, 8, 13])
+
+def test_reflected_addition_radd():
+    x = [0, 1, 2]
+    ts = quick_gen_timeseries(x, [1, 2, 3], units="")
+    
+    # Testing scalar + TimeSeries
+    result = 5 + ts
+    
+    assert np.allclose(result, [6, 7, 8])
+    assert result.units == ts.units
+
+    # Testing numpy array + TimeSeries
+    arr = np.array([10, 10, 10])
+    result_arr = arr + ts
+    assert np.allclose(result_arr, [11, 12, 13])
+
+def test_reflected_multiplication():
+    x = [0, 1, 2]
+    ts = quick_gen_timeseries(x, [2, 4, 6], units="m")
+    
+    # Testing scalar * TimeSeries (rmul)
+    # 10 * [2, 4, 6] meters should be [20, 40, 60] meters
+    result = 10 * ts
+    
+    assert np.allclose(result, [20, 40, 60])
+    assert str(result.units) == "meter"
+
+    # Testing reflected multiplication with different types
+    factor = np.array([1, 0, 1])
+    result_vec = factor * ts
+    assert np.allclose(result_vec, [2, 0, 6])
+    assert str(result_vec.units) == "meter"
+
+def test_div():
+    x = [0, 1, 2]
+    
+    # Division test between two timeseries
+    ts_dist = quick_gen_timeseries(x, [10, 20, 30], units="m")
+    ts_time = quick_gen_timeseries(x, [2, 4, 5], units="s")
+    
+    result_div = ts_dist / ts_time
+    
+    assert str(result_div.units) == "meter / second"
+    assert np.allclose(result_div, [5, 5, 6])
+
+    # Division by scalar
+    ts_mass = quick_gen_timeseries(x, [10, 20, 30], units="kg")
+    result_scalar_div = ts_mass / 2
+    
+    assert result_scalar_div.units == ts_mass.units
+    assert np.allclose(result_scalar_div, [5, 10, 15])
+
+def test_rdiv():
+    x = [0, 1, 2]
+    # Timeseries dividing a scalar
+    ts_period = quick_gen_timeseries(x, [2, 4, 8], units="s")
+    result_rdiv = 1 / ts_period
+    
+    assert result_rdiv.units == 1 / ts_period.units
+    assert np.allclose(result_rdiv, [0.5, 0.25, 0.125])
+
+def test_division_dimensionless_units():
+    x = [0, 1, 2]
+    # Division with Dimensionless units
+    ts_val = quick_gen_timeseries(x, [10, 20, 30], units="m")
+    ts_ratio = quick_gen_timeseries(x, [2, 2, 2], units="")
+    
+    result_dim = ts_val / ts_ratio
+    assert result_dim.units == ts_val.units
+    assert np.allclose(result_dim, [5, 10, 15])
+
+    # Dimensionless result (same units cancel out)
+    ts_a = quick_gen_timeseries(x, [10, 20, 30], units="m")
+    ts_b = quick_gen_timeseries(x, [2, 2, 2], units="m")
+    
+    result_cancel = ts_a / ts_b
+    # Check if result is dimensionless (unitless)
+    assert result_cancel.units.dimensionless
+    assert np.allclose(result_cancel, [5, 10, 15])
+
+def test_complex_unit_chaining():
+    # This one is mostly just for funsies
+    x = [0, 1, 2]
+    # (ts1 - ts2) * ts3
+    ts1 = quick_gen_timeseries(x, [10, 10, 10], units="m")
+    ts2 = quick_gen_timeseries(x, [1, 1, 1], units="m")
+    ts3 = quick_gen_timeseries(x, [2, 2, 2], units="s")
+    
+    result = (ts1 - ts2) * ts3
+    
+    # Units should be meter * second
+    assert np.allclose(result, [18, 18, 18])
+    assert "meter" in str(result.units)
+    assert "second" in str(result.units)
+
 def test_time_shift_behavior():
     # Forward shift
     y1 = [1, 2, 3]
@@ -277,7 +393,7 @@ def test_time_shift_behavior():
 
     assert shifted_forward.start.timestamp() == ts1.start.timestamp() + 5
     assert shifted_forward.stop.timestamp() == ts1.stop.timestamp() + 5
-    assert np.allclose(shifted_forward, ts1)
+    assert np.allclose(shifted_forward, y1)
 
     # Backward shift
     y2 = [1, 2, 3]
@@ -291,15 +407,21 @@ def test_time_shift_behavior():
 
     # Preserve metadata test
     ts3 = TimeSeries([1, 2, 3], 
-                      1 + 946684800.0,
-                      3 + 946684800.0,
+                      datetime.datetime.fromtimestamp(1 + 946684800.0, tz = datetime.timezone.utc),
+                      datetime.datetime.fromtimestamp(3 + 946684800.0, tz = datetime.timezone.utc),
                       1,
                       3,
                       "m"
-                    
     )
 
     shifted_meta = ts3.shift(10)
 
     assert shifted_meta.period == ts3.period
-    assert shifted_meta.units == "m"
+    assert shifted_meta.units == "meter"
+
+    ts3 = quick_gen_timeseries(x1, y1)
+    shifted_forward_timedelta = ts1.shift(datetime.timedelta(minutes=2))
+
+    assert shifted_forward_timedelta.start.timestamp() == ts1.start.timestamp() + 120
+    assert shifted_forward_timedelta.stop.timestamp() == ts1.stop.timestamp() + 120
+    assert np.allclose(shifted_forward_timedelta, y1)
