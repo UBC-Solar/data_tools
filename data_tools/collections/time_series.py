@@ -173,6 +173,29 @@ class TimeSeries(np.ndarray):
             result = self.promote(raw_product)
             result._units = self.units
             return result
+
+    def __truediv__(self, other):
+        if isinstance(other, TimeSeries):
+            self_aligned, other_aligned = TimeSeries.align(self, other)
+
+            raw_product = np.ndarray.__truediv__(self_aligned, other_aligned)
+
+            result = self_aligned.promote(raw_product)
+
+            # Compose units
+            if self_aligned.units and other_aligned.units:
+                result._units = self_aligned.units / other_aligned.units
+            else:
+                result._units = None
+
+            return result
+
+        else:
+            raw_product = np.ndarray.__truediv__(self, other)
+
+            result = self.promote(raw_product)
+            result._units = self.units
+            return result
         
     def __radd__(self, other):
         return self.__add__(other)
