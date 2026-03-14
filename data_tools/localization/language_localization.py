@@ -1,4 +1,3 @@
-from data_tools.localization.versioned_table import VersionedTable
 from data_tools.localization.localization import Localization
 from enum import StrEnum
 from datetime import date

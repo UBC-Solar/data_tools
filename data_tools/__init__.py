@@ -34,7 +34,7 @@ __all__ = [
     "FluxQuery",
     "FluxStatement",
     "TimeSeries",
-    "DBClient",
+    "InfluxDBClient",
     "FSGPDayLaps",
     "FSGPDayLaps",
     "collect_lap_data",

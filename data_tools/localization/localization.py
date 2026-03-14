@@ -1,6 +1,5 @@
 from data_tools.localization.versioned_table import VersionedTable
 from abc import ABC, abstractmethod
-from datetime import date
 import pathlib
 
 

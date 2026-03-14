@@ -1,7 +1,7 @@
 from data_tools.localization import LanguageLocalization, CanonicalName, TemporalLocalization
 from influxdb_client import InfluxDBClient as _InfluxDBClient
 from data_tools.collections.time_series import TimeSeries
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 from data_tools.utils.times import ensure_utc
 from data_tools.query.flux import FluxQuery
 from pydantic import BaseModel, Field
