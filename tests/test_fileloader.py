@@ -1,6 +1,22 @@
-from data_tools.schema import FileLoader, File, Result
-from tests.test_file import canonical_path_elements, file
+from data_tools.schema import FileLoader, Result, CanonicalPath, FileType, File
+from tests.test_file import canonical_path_elements
+import pytest
 
+
+@pytest.fixture
+def file(canonical_path_elements):
+    event, origin, source, name = canonical_path_elements
+    data = {
+        "some_data": 10,
+        "another_field": 11
+    }
+
+    file_type = FileType.Any
+    canonical_path = CanonicalPath(origin=origin, event=event, source=source, name=name)
+    metadata = {"test": True}
+    description = "This is a fake File, if you didn't already know. Oops."
+
+    return data, file_type, metadata, description, canonical_path
 
 def test_file_loader(file):
     data, file_type, metadata, description, canonical_path = file
