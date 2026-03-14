@@ -41,7 +41,7 @@ jobs:
         env:
           SOLCAST_API_KEY: ${{ secrets.SOLCAST_API_KEY }}
         run: |
-          uv run pytest -m "not skip_ci and not solcast" --cov --cov-branch --cov-report=xml
+          uv run pytest -m "not ci_skip and not solcast" --cov --cov-branch --cov-report=xml
 
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v5
