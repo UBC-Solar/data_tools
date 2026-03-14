@@ -1,5 +1,5 @@
 from data_tools.localization import LANGUAGE_LOCALIZATION_TABLE_PATH
-from data_tools.localization import VersionedTable
+from data_tools.localization import VersionedTable, SpatialLocalization
 from datetime import datetime, timezone, timedelta
 from data_tools.localization import CanonicalName
 from data_tools.query import InfluxDBClient
@@ -93,3 +93,22 @@ def test_temporal_localization():
 
         client.query_time_series(start_time, end_time, CanonicalName.VehicleSpeed)
 
+
+def test_spatial_localization():
+    coords, name = SpatialLocalization.localize(datetime(2024, 7, 16, 13, 59, 0, tzinfo=timezone.utc))
+    assert coords[10] == [37.00026491, -86.37041498]
+    assert len(coords) == 290
+    assert name == "NCM Motorsports Park"
+
+    coords, name = SpatialLocalization.localize(datetime(2025, 1, 16, 13, 59, 0, tzinfo=timezone.utc))
+    assert len(coords) == 0
+    assert name == "UBC"
+
+    coords, name = SpatialLocalization.localize(datetime(2025, 7, 1, 13, 59, 0, tzinfo=timezone.utc))
+    assert coords[11] == [37.00031195, -86.37062837]
+    assert len(coords) == 290
+    assert name == "NCM Motorsports Park"
+
+    coords, name = SpatialLocalization.localize(datetime(2025, 1, 16, 13, 59, 0, tzinfo=timezone.utc))
+    assert len(coords) == 0
+    assert name == "UBC"
