@@ -63,13 +63,12 @@ class TimeSeries(np.ndarray):
         # Check if the start and stop are not naive
         if start_time is not None:
             if start_time.tzinfo is None:
-                warnings.warn("Start time does not have a listed timezone, defaulting to UTC")
-                start_time = start_time.replace(tzinfo=datetime.timezone.utc)
+                raise ValueError(f"The start time does not have an assigned timezone!")
 
         if stop_time is not None:
             if stop_time.tzinfo is None:
-                warnings.warn("Stop time does not have a listed timezone, defaulting to UTC")
-                stop_time = stop_time.replace(tzinfo=datetime.timezone.utc)
+                raise ValueError(f"The end time does not have an assigned timezone!")
+
 
         self._start: datetime.datetime = start_time
         self._stop: datetime.datetime = stop_time
@@ -228,6 +227,7 @@ class TimeSeries(np.ndarray):
             result._units = None
             
         return result
+    
     @property
     def x_axis(self) -> np.ndarray:
         """
@@ -319,39 +319,6 @@ class TimeSeries(np.ndarray):
         if isinstance(item, float):
             index = self.index_of(item)
             return super(TimeSeries, data_to_slice).__getitem__(index)
-
-        elif isinstance(item, slice):
-            if isinstance(item.start, float):
-                start_index = self.index_of(item.start)
-            else:
-                start_index = item.start
-
-            if isinstance(item.stop, float):
-                stop_index = self.index_of(item.stop)
-            else:
-                stop_index = item.stop
-
-            item = slice(start_index, stop_index, item.step)
-
-            unix_x_axis = data_to_slice.unix_x_axis
-            new_start_timestamp: float = unix_x_axis[start_index]
-            new_stop_timestamp: float = unix_x_axis[stop_index - 1]
-
-            new_start: datetime.datetime = datetime.datetime.fromtimestamp(new_start_timestamp)
-            new_stop: datetime.datetime = datetime.datetime.fromtimestamp(new_stop_timestamp)
-            new_length: float = new_stop_timestamp - new_start_timestamp
-
-            new_meta = data_to_slice.meta
-            
-            new_time_series = TimeSeries(self,
-                                         new_start,
-                                         new_stop,
-                                         data_to_slice.period,
-                                         new_length,
-                                         data_to_slice.units,
-                                         new_meta)
-
-            data_to_slice = new_time_series
 
         elif isinstance(item, datetime.datetime):
             unix_x_axis = data_to_slice.unix_x_axis
@@ -608,7 +575,7 @@ class TimeSeries(np.ndarray):
             start_index = array.index_of(array.relative_time(start_time))
             stop_index = array.index_of(array.relative_time(end_time))
 
-            new_array: TimeSeries = array[start_index:stop_index + 1]
+            new_array = array[start_index:stop_index + 1]
             if array.start.tzinfo is not None:
                 tz = array.start.tzinfo
                 new_array._start = datetime.datetime.fromtimestamp(start_time, tz)

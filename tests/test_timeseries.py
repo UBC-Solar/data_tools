@@ -24,17 +24,9 @@ def test_align_with_same_granularity():
     y_data_2 = [1, 2, 1, 2, 7, 8, 3, 2, 4, 4, 4, 1, 4, 3]
     x_data_2 = np.array([2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]) + 946684800.0
 
-    time_series_1 = TimeSeries(y_data_1, 
-                               datetime.datetime.fromtimestamp(x_data_1[0], tz = datetime.timezone.utc),
-                               datetime.datetime.fromtimestamp(x_data_1[-1], tz = datetime.timezone.utc),
-                               period = 1.0,
-                               length = x_data_1[-1] - x_data_1[0],)
+    time_series_1 = quick_gen_timeseries(x_data_1, y_data_1)
 
-    time_series_2 = TimeSeries(y_data_2, 
-                               datetime.datetime.fromtimestamp(x_data_2[0], tz = datetime.timezone.utc),
-                               datetime.datetime.fromtimestamp(x_data_2[-1], tz = datetime.timezone.utc),
-                               period = 1.0,
-                               length = x_data_2[-1] - x_data_2[0],)
+    time_series_2 = quick_gen_timeseries(x_data_2, y_data_2)
 
     time_series_1_aligned, time_series_2_aligned = TimeSeries.align(time_series_1, time_series_2)
 
@@ -176,15 +168,15 @@ def test_multiplication_auto_align_different_granularity():
     x2 = np.array([0, 0.5, 1, 1.5, 2, 2.5, 3]) + 946684800.0
 
     ts1 = TimeSeries(y1, 
-                     datetime.datetime.fromtimestamp(x1[0]),
-                     datetime.datetime.fromtimestamp(x1[-1]),
+                     datetime.datetime.fromtimestamp(x1[0], tz = datetime.timezone.utc),
+                     datetime.datetime.fromtimestamp(x1[-1], tz = datetime.timezone.utc),
                      period = 1.0,
                      length = x1[-1] - x1[0],
                      units="m")
 
     ts2 = TimeSeries(y2, 
-                     datetime.datetime.fromtimestamp(x2[0]), 
-                     datetime.datetime.fromtimestamp(x2[-1]), 
+                     datetime.datetime.fromtimestamp(x2[0], tz = datetime.timezone.utc), 
+                     datetime.datetime.fromtimestamp(x2[-1], tz = datetime.timezone.utc), 
                      period = 0.5, 
                      length = x2[-1] - x2[0],
                      units="m")
@@ -243,15 +235,15 @@ def test_addition_different_units():
     x2 = np.array([0, 1, 2]) + 946684800.0
 
     ts1 = TimeSeries(y1, 
-                     datetime.datetime.fromtimestamp(x1[0]),
-                     datetime.datetime.fromtimestamp(x1[-1]),
+                     datetime.datetime.fromtimestamp(x1[0], tz = datetime.timezone.utc),
+                     datetime.datetime.fromtimestamp(x1[-1], tz = datetime.timezone.utc),
                      period = 1.0,
                      length = x1[-1] - x1[0]
                      )
 
     ts2 = TimeSeries(y2, 
-                     datetime.datetime.fromtimestamp(x2[0]), 
-                     datetime.datetime.fromtimestamp(x2[-1]), 
+                     datetime.datetime.fromtimestamp(x2[0], tz = datetime.timezone.utc), 
+                     datetime.datetime.fromtimestamp(x2[-1], tz = datetime.timezone.utc), 
                      period = 1.0, 
                      length = x2[-1] - x2[0]
                      )
