@@ -72,7 +72,7 @@ def test_all_names():
             assert name in CanonicalName, (f"The name {name} is defined in the localization table but "
                                            f"was not found as a CanonicalName option. Please add it.")
 
-
+@pytest.mark.ci_skip
 def test_temporal_localization():
     client = InfluxDBClient()
 

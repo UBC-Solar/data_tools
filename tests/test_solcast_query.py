@@ -28,6 +28,7 @@ def test_invalid_period():
 
 
 @pytest.fixture
+@pytest.mark.solcast
 def solcast_client():
     api_key = os.getenv("SOLCAST_API_KEY")
     return SolcastClient(api_key)
@@ -47,6 +48,7 @@ def solcast_client():
     (7200, 2),  # Exactly 2 hours
     (7260, 2),  # 1 minute past 2 hours, round up
 ])
+@pytest.mark.solcast
 def test_round_to_hour(input_seconds, expected_hours):
     assert SolcastClient._round_to_hour(input_seconds) == expected_hours
 
@@ -65,7 +67,7 @@ def test_solcast_time_resolution(start_offset, end_offset, expected_past_hours, 
     assert num_past_hours == expected_past_hours, f"Expected {expected_past_hours} past hours, got {num_past_hours}"
     assert num_future_hours == expected_future_hours, f"Expected {expected_future_hours} future hours, got {num_future_hours}"
 
-
+@pytest.mark.solcast
 def test_solcast_query():
     api_key = os.getenv("SOLCAST_API_KEY")
     client = SolcastClient(api_key)
@@ -97,6 +99,7 @@ def test_solcast_query():
     assert np.all(~np.isnan(ghi10[3:]))
     assert np.all(~np.isnan(ghi))
 
+@pytest.mark.solcast
 def test_datetime_x_axis():
     api_key = os.getenv("SOLCAST_API_KEY")
     client = SolcastClient(api_key)

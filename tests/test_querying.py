@@ -2,8 +2,9 @@ from data_tools.query import InfluxDBClient
 from data_tools.localization import CanonicalName
 from data_tools.collections import TimeSeries
 from datetime import datetime, timezone
+import pytest
 
-
+@pytest.mark.ci_skip
 def test_query():
     client = InfluxDBClient()
 

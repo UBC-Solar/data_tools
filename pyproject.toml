@@ -53,3 +53,9 @@ build = ["cp311-*", "cp312-*", "cp313-*", "cp314-*"]
 manylinux-x86_64-image = "manylinux2014"
 manylinux-i686-image = "manylinux2014"
 manylinux-aarch64-image = "manylinux2014"
+
+[tool.pytest.ini_options]
+markers = [
+    "ci_skip: skip these tests in CI",
+    "solcast: solcast-dependent tests"
+]
