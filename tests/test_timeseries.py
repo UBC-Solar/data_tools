@@ -187,7 +187,8 @@ def test_multiplication_auto_align_different_granularity():
     assert len(result) == 7
     assert np.allclose(result, np.array(result))  # sanity: numeric output
     assert np.allclose(result, [10, 20*1.5, 2*30, 2.5*40, 3*50, 3.5*60, 4*70])
- 
+    assert result.units == result.ureg.meter*result.ureg.meter
+
 def test_units_and_operations():
     x = [0, 1, 2]
     # Addition with same units
@@ -417,3 +418,17 @@ def test_time_shift_behavior():
     assert shifted_forward_timedelta.start.timestamp() == ts1.start.timestamp() + 120
     assert shifted_forward_timedelta.stop.timestamp() == ts1.stop.timestamp() + 120
     assert np.allclose(shifted_forward_timedelta, y1)
+
+def test_timeseries_generation():
+    y1 = [1, 3, 4]
+    x1 = np.array([1, 3, 4]) + 946684800.0
+
+    ts = TimeSeries.generate_timeseries(x1, y1, 0.75, "m")
+
+    print(ts.period)
+
+    assert np.allclose(ts, [1, 2, 3, 4])
+    assert ts.units == "meter"
+
+
+    

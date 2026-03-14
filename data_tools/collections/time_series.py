@@ -8,6 +8,7 @@ import pandas as pd
 import re
 import warnings
 import pint
+import copy
 
 _GLOBAL_UREG = pint.UnitRegistry() #Important so that different Timeseries don't experience registry errors
 
@@ -15,7 +16,7 @@ class TimeSeries(np.ndarray):
     """
     This class encapsulates time-series data with units, a temporal x–axis, and metadata.
 
-    Data is homogenous and evenly-spaced, such that temporal granularity between subsequent elements is constant.
+    Data is homogenous and evenly-spaced, such that temporal period between subsequent elements is constant.
 
     TimeSeries can be indexed with a ``float`` or slice with ``float`` components in order to index by relative time.
     For example, for some ``timeSeries``, ``timeSeries[10.43]`` is equivalent to
@@ -261,11 +262,11 @@ class TimeSeries(np.ndarray):
         return self._length
 
     @property
-    def granularity(self) -> float:
+    def period(self) -> float:
         """
-        Temporal granularity (delta t) between each element of this wave's data in seconds
+        Temporal period (delta t) between each element of this wave's data in seconds
         """
-        warn("Please use TimeSeries.period instead of TimeSeries.granularity", DeprecationWarning, stacklevel=2)
+        warn("Please use TimeSeries.period instead of TimeSeries.period", DeprecationWarning, stacklevel=2)
         return self._period
 
     @property
@@ -595,7 +596,7 @@ class TimeSeries(np.ndarray):
         return new_args
 
     @staticmethod
-    def from_query_dataframe(query_df: pd.DataFrame, granularity: float, field: str, units: str):
+    def from_query_dataframe(query_df: pd.DataFrame, period: float, field: str, units: str, timezone = datetime.timezone.utc):
         # Transform the DataFrame into a nicer format where we have our time-series data indexed by time
         query_df['_time'] = pd.to_datetime(query_df['_time'])
         query_df.set_index('_time', inplace=True)
@@ -604,9 +605,9 @@ class TimeSeries(np.ndarray):
         x_axis = query_df.index.map(lambda x: x.timestamp()).to_numpy()
         x_axis -= x_axis[0]  # Subtract off first time, so the x_axis starts at 0 with units of seconds
 
-        # Reshape the x-axis to have the right number of elements for our needed granularity
+        # Reshape the x-axis to have the right number of elements for our needed period
         temporal_length: float = x_axis[-1]  # Total time of the query in seconds
-        desired_num_elements: int = math.ceil(temporal_length / granularity)
+        desired_num_elements: int = math.ceil(temporal_length / period)
         desired_x_axis = np.linspace(0, temporal_length, desired_num_elements, endpoint=True)
 
         # Re-interpolate our data on desired x-axis
@@ -633,7 +634,35 @@ class TimeSeries(np.ndarray):
         return new_wave
 
     @staticmethod
-    def from_csv(path, granularity, field):
+    def generate_timeseries(x_axis, y_axis, period: float, units: str, timezone = datetime.timezone.utc, meta: dict = None):
+        # Get the x-axis in relative seconds (first element is t=0)
+        rel_x_axis = x_axis.copy()
+        rel_x_axis -= x_axis[0]  # Subtract off first time, so the x_axis starts at 0 with units of seconds
+
+        # Reshape the x-axis to have the right number of elements for our needed period
+        temporal_length: float = rel_x_axis[-1]  # Total time of the query in seconds
+        desired_num_elements: int = math.ceil(temporal_length / period)
+        desired_x_axis = np.linspace(0, temporal_length, desired_num_elements, endpoint=True)
+
+        # Re-interpolate our data on desired x-axis
+        wave = np.array(y_axis).reshape(-1)
+        wave_interpolated = np.interp(desired_x_axis, rel_x_axis, wave)
+
+        actual_granularity = np.mean(np.diff(desired_x_axis))
+
+        new_wave = TimeSeries(wave_interpolated, 
+                              start_time = datetime.datetime.fromtimestamp(x_axis[0], tz = timezone),
+                              stop_time = datetime.datetime.fromtimestamp(x_axis[0], tz = timezone),
+                              period = actual_granularity,
+                              length = temporal_length,
+                              units = units,
+                              meta = meta)
+
+        return new_wave
+
+
+    @staticmethod
+    def from_csv(path, period, field):
         df = pd.read_csv(path)
 
         fields = df['_field'].unique()
