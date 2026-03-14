@@ -1,6 +1,15 @@
 from data_tools.schema import FileLoader, Result, CanonicalPath, FileType, File
-from tests.test_file import canonical_path_elements
 import pytest
+
+
+@pytest.fixture
+def canonical_path_elements():
+    event = "event"
+    origin = "origin"
+    source = "source"
+    name = "name"
+
+    return event, origin, source, name
 
 
 @pytest.fixture
