@@ -248,10 +248,10 @@ class TimeSeries(np.ndarray):
     @property
     def datetime_x_axis(self) -> np.ndarray:
         """
-        This wave's x–axis as ``datetime``s, in UTC.
+        This wave's x–axis as timezone-aware datetimes.
         """
-
-        return pd.to_datetime(self.unix_x_axis, unit='s')
+        tz = self.start.tzinfo
+        return pd.to_datetime(self.unix_x_axis, unit='s', utc=True).tz_convert(tz)
 
     @property
     def length(self) -> float:
