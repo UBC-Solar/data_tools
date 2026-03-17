@@ -423,12 +423,41 @@ def test_timeseries_generation():
     y1 = [1, 3, 4]
     x1 = np.array([1, 3, 4]) + 946684800.0
 
-    ts = TimeSeries.generate_timeseries(x1, y1, 0.75, "m")
+    ts = TimeSeries.generate_timeseries(x1, y1, 1, "m")
 
     print(ts.period)
 
     assert np.allclose(ts, [1, 2, 3, 4])
     assert ts.units == "meter"
 
+def test_merge():
+    # Basic merge with gap filling
+    y1 = [1, 2, 3]
+    x1 = np.array([0, 1, 2]) + 946684800.0
 
-    
+    y2 = [4, 5, 6]
+    x2 = np.array([5, 6, 7]) + 946684800.0
+
+    ts1 = quick_gen_timeseries(x1, y1)
+    ts2 = quick_gen_timeseries(x2, y2)
+
+    merged = TimeSeries.merge(ts1, ts2)
+
+    # Expect gap between 2 and 5 filled with zeros
+    assert np.allclose(merged, [1, 2, 3, 0, 0, 4, 5, 6])
+
+def test_merge_gaps():
+    # Basic merge with gap filling
+    y1 = [1, 2, 3]
+    x1 = np.array([0, 1, 2]) + 946684800.0
+
+    y2 = [4, 5, 6]
+    x2 = np.array([5, 6, 7]) + 946684800.0
+
+    ts1 = quick_gen_timeseries(x1, y1)
+    ts2 = quick_gen_timeseries(x2, y2)
+
+    merged = TimeSeries.merge(ts1, ts2, fill_value=1)
+
+    # Expect gap between 2 and 5 filled with zeros
+    assert np.allclose(merged, [1, 2, 3, 1, 1, 4, 5, 6])

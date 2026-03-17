@@ -596,6 +596,79 @@ class TimeSeries(np.ndarray):
         return new_args
 
     @staticmethod
+    def merge(*args, fill_value=0):
+        """The merge function combines several timeseries into one contiguous series. Any spaces in time is filled by the 'fill_value'. It assumes that the datapoints pull from the same source
+
+        Args:
+            fill_value (int, optional): The value for filling between gaps of time. Defaults to 0.
+
+        Raises:
+            ValueError: If no timeseries are input
+
+        Returns:
+            _type_: The merged series
+        """        
+        
+        if len(args) == 0:
+            raise ValueError("At least one TimeSeries is required")
+
+        # Series properties
+        start_time = min(ts.start.timestamp() for ts in args)
+        end_time = max(ts.stop.timestamp() for ts in args)
+        period = min(ts.period for ts in args)  # highest resolution
+
+        new_length = end_time - start_time
+        num_points = math.ceil(new_length / period) + 1
+        
+        merged_values = np.full(num_points, fill_value, dtype=float)
+
+        # Use meta data from the first series
+        base = args[0]
+        units = base.units
+        meta = copy.deepcopy(base.meta)
+
+        # Merge timeseries loop
+        for ts in args:
+
+            # Convert to common units and check dimensionality
+            if ts.units != units:
+                if ts.units.dimensionality == units.dimensionality:
+                    ts = ts.convert_to(str(units))
+                else:
+                    raise ValueError("One of the timeseries is not in the same units of dimensionality")
+
+            ts_times = ts.unix_x_axis
+            ts_values = np.asarray(ts)
+
+            # Map ts indices into the whole space
+            indices = np.round((ts_times - start_time) / period).astype(int)
+
+            # Clamp indices (safety)
+            valid = (indices >= 0) & (indices < num_points)
+            indices = indices[valid]
+            ts_values = ts_values[valid]
+
+            # Overwrite values in the merged series
+            merged_values[indices] = ts_values
+
+        # Create final series
+        tz = base.start.tzinfo
+        new_start_dt = datetime.datetime.fromtimestamp(start_time, tz)
+        new_stop_dt = datetime.datetime.fromtimestamp(end_time, tz)
+
+        merged_series = TimeSeries(
+            merged_values,
+            start_time=new_start_dt,
+            stop_time=new_stop_dt,
+            period=period,
+            length=new_length,
+            units=units,
+            meta=meta
+        )
+
+        return merged_series
+    
+    @staticmethod
     def from_query_dataframe(query_df: pd.DataFrame, period: float, field: str, units: str, timezone = datetime.timezone.utc):
         # Transform the DataFrame into a nicer format where we have our time-series data indexed by time
         query_df['_time'] = pd.to_datetime(query_df['_time'])
@@ -608,7 +681,7 @@ class TimeSeries(np.ndarray):
         # Reshape the x-axis to have the right number of elements for our needed period
         temporal_length: float = x_axis[-1]  # Total time of the query in seconds
         desired_num_elements: int = math.ceil(temporal_length / period)
-        desired_x_axis = np.linspace(0, temporal_length, desired_num_elements, endpoint=True)
+        desired_x_axis = np.linspace(0, temporal_length, desired_num_elements+1, endpoint=True)
 
         # Re-interpolate our data on desired x-axis
         wave = query_df[[field]].to_numpy().reshape(-1)
@@ -642,7 +715,7 @@ class TimeSeries(np.ndarray):
         # Reshape the x-axis to have the right number of elements for our needed period
         temporal_length: float = rel_x_axis[-1]  # Total time of the query in seconds
         desired_num_elements: int = math.ceil(temporal_length / period)
-        desired_x_axis = np.linspace(0, temporal_length, desired_num_elements, endpoint=True)
+        desired_x_axis = np.linspace(0, temporal_length, desired_num_elements+1, endpoint=True)
 
         # Re-interpolate our data on desired x-axis
         wave = np.array(y_axis).reshape(-1)
