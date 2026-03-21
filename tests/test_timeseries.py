@@ -249,8 +249,9 @@ def test_addition_different_units():
                      length = x2[-1] - x2[0]
                      )
 
-    ts1.units = "km"
-    ts2.units = "m"
+    with pytest.warns(UserWarning):
+        ts1.units = "km"
+        ts2.units = "m"
 
     result_add1 =  ts1 + ts2
 
