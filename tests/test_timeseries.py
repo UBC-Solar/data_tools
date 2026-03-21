@@ -462,7 +462,6 @@ def test_merge_gaps():
     # Expect gap between 2 and 5 filled with zeros
     assert np.allclose(merged, [1, 2, 3, 1, 1, 4, 5, 6])
 
-
 def test_merge_override():
     # Basic merge with gap filling
     y1 = [1, 2, 3]
