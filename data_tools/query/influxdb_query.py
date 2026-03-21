@@ -5,6 +5,7 @@ from datetime import datetime, timezone
 from data_tools.utils.times import ensure_utc
 from data_tools.query.flux import FluxQuery
 from pydantic import BaseModel, Field
+from typing import Optional, Type
 from dotenv import load_dotenv
 import pandas as pd
 import os
@@ -33,7 +34,15 @@ class InfluxDBClient:
     This class encapsulates a connection to an InfluxDB database.
     """
 
-    def __init__(self, influxdb_org=None, influxdb_token=None, url=None, timeout=10):
+    def __init__(
+            self,
+            influxdb_org=None,
+            influxdb_token=None,
+            url=None,
+            timeout=10,
+            temporal_localization: Optional[Type[TemporalLocalization]] = None,
+            language_localization: Optional[Type[LanguageLocalization]] = None
+        ):
         """
         Create a connection to the InfluxDB database.
 
@@ -41,6 +50,8 @@ class InfluxDBClient:
         :param influxdb_token: The API Token to the InfluxDB database.
         :param url: The URL to the InfluxDB database, default is "http://influxdb.telemetry.ubcsolar.com"
         :param timeout: The request timeout in seconds, default is 10 seconds.
+        :param temporal_localization: The type of temporal localization to use, default is TemporalLocalization.
+        :param language_localization: The type of language localization to use, default is LanguageLocalization.
         """
         if influxdb_token is None or influxdb_org is None:
             load_dotenv()
@@ -50,6 +61,9 @@ class InfluxDBClient:
 
         self._influx_org = influxdb_org
         url = DEFAULT_INFLUXDB_URL if url is None else url
+
+        self._language_localization = language_localization if language_localization else LanguageLocalization
+        self._temporal_localization = temporal_localization if temporal_localization else TemporalLocalization
 
         self._client = _InfluxDBClient(url=url, org=influxdb_org, token=influxdb_token, timeout=timeout * 1000)
 
@@ -183,11 +197,11 @@ class InfluxDBClient:
         :return: a TimeSeries of the resulting time-series data
         """
         if isinstance(field, CanonicalName):
-            field_str, measurement, units = LanguageLocalization.localize(field, start.date())
+            field_str, measurement, units = self._language_localization.localize(field, start.date())
         else:
             field_str = field
 
-        timezone_fix = TemporalLocalization.localize(start)
+        timezone_fix = self._temporal_localization.localize(start)
         start = start - timezone_fix
         stop = stop - timezone_fix
 
