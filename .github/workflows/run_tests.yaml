@@ -38,6 +38,7 @@ jobs:
 
     - name: Install Dependencies
       run: |
+        python -m poetry lock
         python -m poetry install --with test
 
     - name: Run Tests
