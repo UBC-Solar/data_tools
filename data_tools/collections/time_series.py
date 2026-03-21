@@ -97,7 +97,7 @@ class TimeSeries(np.ndarray):
                 )
 
             # Convert other to self's units
-            factor = (1 * other_aligned.units).to(self_aligned.units).magnitude
+            factor = (1 * other_aligned.units).to(self_aligned.units).magnitude # 1 * unit turns it into a quanity rather than pure unit
             converted_other = np.asarray(other_aligned) * factor
 
             raw_sum = np.ndarray.__add__(self_aligned, converted_other)
@@ -128,7 +128,7 @@ class TimeSeries(np.ndarray):
                 )
 
             # Convert other to self's units
-            factor = (1 * other_aligned.units).to(self_aligned.units).magnitude
+            factor = (1 * other_aligned.units).to(self_aligned.units).magnitude #  1 * unit turns it into a quanity rather than pure unit
             converted_other = np.asarray(other_aligned) * factor
 
             # Perform subtraction
@@ -538,7 +538,7 @@ class TimeSeries(np.ndarray):
                 f"Cannot convert {self.units} to {new_unit_parsed} (incompatible dimensions)"
             )
 
-        factor = (1 * self.units).to(new_unit_parsed).magnitude
+        factor = (1 * self.units).to(new_unit_parsed).magnitude # 1 * unit turns it into a quanity rather than pure unit
 
         converted_values = np.asarray(self) * factor
 
