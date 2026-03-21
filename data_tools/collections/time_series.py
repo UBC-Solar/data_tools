@@ -733,7 +733,6 @@ class TimeSeries(np.ndarray):
 
         return new_wave
 
-
     @staticmethod
     def from_csv(path, period, field):
         df = pd.read_csv(path)
