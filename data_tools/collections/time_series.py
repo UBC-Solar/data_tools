@@ -432,8 +432,8 @@ class TimeSeries(np.ndarray):
         The returned series will not have the same start_time and end_time, the returned series will align the start and end time to existing points
 
         Args:
-            start_time (datetime.datetime): _description_
-            end_time (datetime.datetime): _description_
+            start_time (datetime.datetime): The start datetime to slice with
+            end_time (datetime.datetime): The end datetime to slice with
 
         Raises:
             ValueError: Naive inputs (Inputs do not have assigned timezones)
