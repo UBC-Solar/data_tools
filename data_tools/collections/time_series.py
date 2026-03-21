@@ -1,6 +1,5 @@
 import numpy as np
 import datetime
-from dateutil import parser
 import matplotlib.pyplot as plt
 import math
 from warnings import warn
@@ -64,11 +63,11 @@ class TimeSeries(np.ndarray):
         # Check if the start and stop are not naive
         if start_time is not None:
             if start_time.tzinfo is None:
-                raise ValueError(f"The start time does not have an assigned timezone!")
+                raise ValueError("The start time does not have an assigned timezone!")
 
         if stop_time is not None:
             if stop_time.tzinfo is None:
-                raise ValueError(f"The end time does not have an assigned timezone!")
+                raise ValueError("The end time does not have an assigned timezone!")
 
 
         self._start: datetime.datetime = start_time
@@ -264,14 +263,6 @@ class TimeSeries(np.ndarray):
     @property
     def period(self) -> float:
         """
-        Temporal period (delta t) between each element of this wave's data in seconds
-        """
-        warn("Please use TimeSeries.period instead of TimeSeries.period", DeprecationWarning, stacklevel=2)
-        return self._period
-
-    @property
-    def period(self) -> float:
-        """
         Get the period, in seconds, between data points of this TimeSeries.
 
         :return: period, in seconds.
@@ -336,7 +327,7 @@ class TimeSeries(np.ndarray):
                 )
             
             if item.tzinfo is None:
-                raise ValueError(f"The index does not have an assigned timezone!")
+                raise ValueError("The index does not have an assigned timezone!")
 
             dt = stop_timestamp - start_timestamp
 
@@ -460,16 +451,16 @@ class TimeSeries(np.ndarray):
         """
 
         if (start_time.tzinfo is None) or (end_time.tzinfo is None): # Throw error if start or stop time is naive
-            raise ValueError(f"The start or end time does not have an assigned timezone!")
+            raise ValueError("The start or end time does not have an assigned timezone!")
 
         if (end_time < start_time): # Throw error if the end time is before stop time
             raise ValueError(f"Start time {start_time} is after stop time {end_time}!")
         
         if (end_time < self.start):
-            raise ValueError(f"Slice ends before timeseries starts!")
+            raise ValueError("Slice ends before timeseries starts!")
         
         if (start_time > self.stop):
-            raise ValueError(f"Slice starts after timeseries ends!")
+            raise ValueError("Slice starts after timeseries ends!")
 
         dt = self.stop - self.start
 
