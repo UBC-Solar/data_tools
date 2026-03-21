@@ -15,10 +15,6 @@ class TimeSeries(np.ndarray):
     This class encapsulates time-series data with units, a temporal x–axis, and metadata.
 
     Data is homogenous and evenly-spaced, such that temporal period between subsequent elements is constant.
-
-    TimeSeries can be indexed with a ``float`` or slice with ``float`` components in order to index by relative time.
-    For example, for some ``timeSeries``, ``timeSeries[10.43]`` is equivalent to
-    ``timeSeries[timeSeries.index_of(10.43)]``.
     """
 
     # __new__ and __array_finalize__ are mandatory to ensure that
