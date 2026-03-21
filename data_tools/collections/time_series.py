@@ -281,10 +281,10 @@ class TimeSeries(np.ndarray):
         if value is None:
             self._units = self.ureg.dimensionless
         elif isinstance(value, str): # Eg. "meter/second**2" or "J"
-            warnings.warn("Setting units does not convert unit magnitudes!! If you wish to convert units, use .convert_to()")
+            warn("Setting units does not convert unit magnitudes!! If you wish to convert units, use .convert_to()")
             self._units = self.ureg.parse_units(value)
         elif isinstance(value, self.ureg.Unit):
-            warnings.warn("Setting units does not convert unit magnitudes!! If you wish to convert units, use .convert_to()")
+            warn("Setting units does not convert unit magnitudes!! If you wish to convert units, use .convert_to()")
             self._units = value
         else:
             raise ValueError(
