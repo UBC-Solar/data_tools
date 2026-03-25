@@ -51,7 +51,7 @@ class TimeSeries(np.ndarray):
                  period: float,
                  length: float,
                  units = None,
-                 meta: dict = None):
+                 meta: dict = {}):
         
         self.ureg = _GLOBAL_UREG # Connect TimeSeries to a global registry
 
@@ -98,7 +98,7 @@ class TimeSeries(np.ndarray):
 
             raw_sum = np.ndarray.__add__(self_aligned, converted_other)
 
-            result = self_aligned.promote(raw_sum)
+            result: TimeSeries = self_aligned.promote(raw_sum)
             result._units = self_aligned.units
             return result
 
@@ -257,23 +257,23 @@ class TimeSeries(np.ndarray):
         """
         return self._units
 
-    def override_units(self, value):
+    def override_units(self, new_unit):
         """ Overrides the units of a TimeSeries, does not convert magnitudes! Directly changes one unit for another.
         If you wish to convert units, use .convert_to()
 
-        Args:
-            :parameter str|unit value: _description_
+            :param str new_unit: The unit the entire series will be translated to
+            :raises ValueError: Cannot convert TimeSeries without units
         """
-        if value is None:
+        if new_unit is None:
             self._units = self.ureg.dimensionless
-        elif isinstance(value, str): # Eg. "meter/second**2" or "J"
-            self._units = self.ureg.parse_units(value)
-        elif isinstance(value, self.ureg.Unit):
+        elif isinstance(new_unit, str): # Eg. "meter/second**2" or "J"
+            self._units = self.ureg.parse_units(new_unit)
+        elif isinstance(new_unit, self.ureg.Unit):
             warn("Setting units does not convert unit magnitudes!! If you wish to convert units, use .convert_to()")
-            self._units = value
+            self._units = new_unit
         else:
             raise ValueError(
-                f"Input should be a string or Unit object, not {type(value)}!"
+                f"Input should be a string or Unit object, not {type(new_unit)}!"
             )
 
     @property
@@ -378,7 +378,7 @@ class TimeSeries(np.ndarray):
     def promote(self, array: np.ndarray):
         """
         Promote a plain ndarray, ``array``, to a TimeSeries with the same properties
-        as this TimeSeries.
+        as this TimeSeries (start_time, stop_time, period, length, units, meta)
 
         This method is particularly useful for interfacing
         with libraries such as SciPy and NumPy, which will return an ndarray even when
@@ -421,18 +421,15 @@ class TimeSeries(np.ndarray):
         """ This function returns all values between two given points, useful for filtering out data for specific dates or times. 
         The returned series will not have the same start_time and end_time, the returned series will align the start and end time to existing points
 
-        Args:
-            start_time (datetime.datetime): The start datetime to slice with
-            end_time (datetime.datetime): The end datetime to slice with
+        :param datetime.datetime start_time: The start datetime to slice with
+        :param datetime.datetime end_time: The end datetime to slice with
 
-        Raises:
-            ValueError: Naive inputs (Inputs do not have assigned timezones)
-            ValueError: start_time is after stop_time
-            ValueError: stop_time is before TimeSeries start time
-            ValueError: start_time is after TimeSeries stop time
+        :raises ValueError: Naive inputs (Inputs do not have assigned timezones)
+        :raises ValueError: start_time is after stop_time
+        :raises ValueError: stop_time is before TimeSeries start time
+        :raises ValueError: start_time is after TimeSeries stop time
 
-        Returns:
-            series (TimeSeries): Returns a series with all values between start and stop time
+        :return TimeSeries: Returns a series with all values between start and stop time
         """
 
         if (start_time.tzinfo is None) or (end_time.tzinfo is None): # Throw error if start or stop time is naive
@@ -484,16 +481,16 @@ class TimeSeries(np.ndarray):
                                 units = self.units)
         return new_series
     
-    def shift(self, shift):
+    def shift(self, shift: float | datetime.timedelta):
         """A function which moves a TimeSeries backwards or forwards in time without changing any data inside it. Can have timedelta or a float as an input
 
-        Args:
-            seconds (_float || datetime.timedelta_): The amount of seconds the series should be shifted
+        :param float | datetime.timedelta shift: The amount of seconds the series should be shifted
+        :return TimeSeries: Shifted timeseries
         """        
         if not isinstance(shift, datetime.timedelta):
             shift = datetime.timedelta(seconds=shift)
 
-        copy = TimeSeries(self[...],
+        timeseries_copy = TimeSeries(self[...],
                           self.start + shift,
                           self.stop + shift,
                           self.period,
@@ -502,19 +499,16 @@ class TimeSeries(np.ndarray):
                           self.meta
         ) #Create a copy of TimeSeries with shifted start and stop times
 
-        return copy
+        return timeseries_copy
 
     def convert_to(self, new_unit: str):
         """ Returns a new TimeSeries after being converted to a new unit, appropriately scales TimeSeries
 
-        Args:
             :param str new_unit: The unit the entire series will be translated to
 
-        Raises:
             :raises ValueError: Cannot convert TimeSeries without units
             :raises ValueError: Unable to convert between units of different dimensionality
 
-        Returns:
             :return: TimeSeries with converted units
         """
         if self.units is None:
@@ -538,7 +532,12 @@ class TimeSeries(np.ndarray):
         return result
 
     def convert_to_base_units(self):
-        # Find base unit
+        '''
+        Converts TimeSeries units to the unit registry system base units (SI Units by default)
+
+        :return TimeSeries: Timeseries with converted units
+        '''
+        # Find base units
         new_unit = (1 * self.units).to_base_units().units
 
         # Multiply by a factor
