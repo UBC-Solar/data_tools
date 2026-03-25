@@ -257,12 +257,16 @@ class TimeSeries(np.ndarray):
         """
         return self._units
 
-    @units.setter
-    def units(self, value):
+    def override_units(self, value):
+        """ Overrides the units of a TimeSeries, does not convert magnitudes! Directly changes one unit for another.
+        If you wish to convert units, use .convert_to()
+
+        Args:
+            :parameter str|unit value: _description_
+        """
         if value is None:
             self._units = self.ureg.dimensionless
         elif isinstance(value, str): # Eg. "meter/second**2" or "J"
-            warn("Setting units does not convert unit magnitudes!! If you wish to convert units, use .convert_to()")
             self._units = self.ureg.parse_units(value)
         elif isinstance(value, self.ureg.Unit):
             warn("Setting units does not convert unit magnitudes!! If you wish to convert units, use .convert_to()")
@@ -413,7 +417,7 @@ class TimeSeries(np.ndarray):
 
         return value1*(1-inter) + value2*inter
     
-    def slice_datetime(self, start_time: datetime.datetime, end_time: datetime.datetime):
+    def slice(self, start_time: datetime.datetime, end_time: datetime.datetime):
         """ This function returns all values between two given points, useful for filtering out data for specific dates or times. 
         The returned series will not have the same start_time and end_time, the returned series will align the start and end time to existing points
 

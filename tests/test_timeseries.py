@@ -114,18 +114,18 @@ def test_datetime_slice():
     t7 = datetime.datetime.fromtimestamp(20, tz = datetime.timezone.utc)
     t8 = datetime.datetime.fromtimestamp(3, tz = datetime.timezone.utc)
 
-    test_series_1 = time_series_1.slice_datetime(t1, t2)
-    test_series_2 = time_series_1.slice_datetime(t3, t4)
+    test_series_1 = time_series_1.slice(t1, t2)
+    test_series_2 = time_series_1.slice(t3, t4)
 
     # Out of bounds tests
     # Slice start before start time
-    test_series_3 = time_series_1.slice_datetime(t5, t2)
+    test_series_3 = time_series_1.slice(t5, t2)
 
     # Slice end after stop time
-    test_series_4 = time_series_1.slice_datetime(t1, t6)
+    test_series_4 = time_series_1.slice(t1, t6)
 
     # Slice start is before start time and slice end is after stop time
-    test_series_7 = time_series_1.slice_datetime(t5, t6)
+    test_series_7 = time_series_1.slice(t5, t6)
 
     assert np.allclose(test_series_1, [2, 3, 3, 3, 2, 4, 5, 4, 1, 3, 4, 6, 7, 3])
     assert np.allclose(test_series_2, [4, 1, 3, 4, 6, 7])
@@ -135,15 +135,15 @@ def test_datetime_slice():
 
     #  Slice start and end both before start time
     with pytest.raises(ValueError): 
-        _ = time_series_1.slice_datetime(t5, t8)
+        _ = time_series_1.slice(t5, t8)
 
     # Slice start and end both after stop time
     with pytest.raises(ValueError): 
-        _ = time_series_1.slice_datetime(t7, t6)
+        _ = time_series_1.slice(t7, t6)
 
     # Slice start is after slice end 
     with pytest.raises(ValueError): 
-        _ = time_series_1.slice_datetime(t6, t5)
+        _ = time_series_1.slice(t6, t5)
 
 def test_addition_auto_align():
     y1 = [1, 2, 3, 4]
@@ -249,9 +249,9 @@ def test_addition_different_units():
                      length = x2[-1] - x2[0]
                      )
 
-    with pytest.warns(UserWarning):
-        ts1.units = "km"
-        ts2.units = "m"
+
+    ts1.override_units("km")
+    ts2.override_units("m")
 
     result_add1 =  ts1 + ts2
 
