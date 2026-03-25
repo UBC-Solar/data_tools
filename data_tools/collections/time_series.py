@@ -269,7 +269,7 @@ class TimeSeries(np.ndarray):
         elif isinstance(new_unit, str): # Eg. "meter/second**2" or "J"
             self._units = self.ureg.parse_units(new_unit)
         elif isinstance(new_unit, self.ureg.Unit):
-            warn("Setting units does not convert unit magnitudes!! If you wish to convert units, use .convert_to()")
+            warn("Overriding units does not convert unit magnitudes!! If you wish to convert units, use .convert_to()")
             self._units = new_unit
         else:
             raise ValueError(
