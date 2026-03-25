@@ -535,7 +535,7 @@ class TimeSeries(np.ndarray):
 
     def convert_to_base_units(self):
         # Find base unit
-        new_unit = (1 * self.units.to_base_units()).unit
+        new_unit = (1 * self.units).to_base_units().units
 
         # Multiply by a factor
         factor = (1 * self.units).to(new_unit).magnitude # 1 * unit turns it into a quanity rather than pure unit

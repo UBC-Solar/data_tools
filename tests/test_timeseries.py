@@ -478,3 +478,15 @@ def test_merge_override():
 
     # Expect second series to override first
     assert np.allclose(merged, [1, 2, 4, 5, 6])
+
+
+def test_convert_to_base():
+    x = [0, 1, 2]
+    # Addition with same units
+    ts1 = quick_gen_timeseries(x, [0, 1, 2], units = "ft/min")
+
+    ts2 = ts1.convert_to_base_units()
+
+    assert np.allclose(ts2, [0, 0.00508, 0.00508*2])
+    assert ts2.units == ts2.ureg.meter/ts2.ureg.second
+    
