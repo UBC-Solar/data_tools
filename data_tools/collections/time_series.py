@@ -46,10 +46,10 @@ class TimeSeries(np.ndarray):
         self._meta = getattr(obj, '_meta', None)
 
     def __init__(self, input_array, 
-                 start_time: datetime.datetime = None, 
-                 stop_time: datetime.datetime = None,
-                 period: float = None,
-                 length: float = None,
+                 start_time: datetime.datetime, 
+                 stop_time: datetime.datetime,
+                 period: float,
+                 length: float,
                  units = None,
                  meta: dict = None):
         
@@ -86,10 +86,6 @@ class TimeSeries(np.ndarray):
         if isinstance(other, TimeSeries):
             self_aligned, other_aligned = TimeSeries.align(self, other)
 
-            # Check if both have units
-            if self_aligned.units is None or other_aligned.units is None:
-                raise ValueError("Both TimeSeries must have units for addition.")
-
             # Check dimensionalilty
             if not self_aligned.units.dimensionality == other_aligned.units.dimensionality:
                 raise ValueError(
@@ -116,10 +112,6 @@ class TimeSeries(np.ndarray):
         if isinstance(other, TimeSeries):
             # Align time series
             self_aligned, other_aligned = TimeSeries.align(self, other)
-
-            # Check if both have units
-            if self_aligned.units is None or other_aligned.units is None:
-                raise ValueError("Both TimeSeries must have units for subtraction.")
 
             # Check dimensionality
             if not self_aligned.units.dimensionality == other_aligned.units.dimensionality:
@@ -154,10 +146,7 @@ class TimeSeries(np.ndarray):
             result = self_aligned.promote(raw_product)
 
             # Compose units
-            if self_aligned.units and other_aligned.units:
-                result._units = self_aligned.units * other_aligned.units
-            else:
-                result._units = None
+            result._units = self_aligned.units * other_aligned.units
 
             return result
 
