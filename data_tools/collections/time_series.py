@@ -8,7 +8,7 @@ import re
 import pint
 import copy
 
-_GLOBAL_UREG = pint.UnitRegistry() #Important so that different Timeseries don't experience registry errors
+_GLOBAL_UREG = pint.UnitRegistry() #Important so that different TimeSeries don't experience registry errors
 
 class TimeSeries(np.ndarray):
     """
@@ -53,7 +53,7 @@ class TimeSeries(np.ndarray):
                  units = None,
                  meta: dict = None):
         
-        self.ureg = _GLOBAL_UREG # Connect timeseries to a global registry
+        self.ureg = _GLOBAL_UREG # Connect TimeSeries to a global registry
 
         # Check if the start and stop are not naive
         if start_time is not None:
@@ -107,7 +107,7 @@ class TimeSeries(np.ndarray):
             return result
 
         else:
-            raw_sum = np.ndarray.__add__(self, other) # Assumption being that the added value is the same unit as the timeseries
+            raw_sum = np.ndarray.__add__(self, other) # Assumption being that the added value is the same unit as the TimeSeries
             result = self.promote(raw_sum)
             result._units = self.units
             return result
@@ -438,11 +438,11 @@ class TimeSeries(np.ndarray):
         Raises:
             ValueError: Naive inputs (Inputs do not have assigned timezones)
             ValueError: start_time is after stop_time
-            ValueError: stop_time is before timeseries start time
-            ValueError: start_time is after timeseries stop time
+            ValueError: stop_time is before TimeSeries start time
+            ValueError: start_time is after TimeSeries stop time
 
         Returns:
-            series (Timeseries): Returns a series with all values between start and stop time
+            series (TimeSeries): Returns a series with all values between start and stop time
         """
 
         if (start_time.tzinfo is None) or (end_time.tzinfo is None): # Throw error if start or stop time is naive
@@ -452,10 +452,10 @@ class TimeSeries(np.ndarray):
             raise ValueError(f"Start time {start_time} is after stop time {end_time}!")
         
         if (end_time < self.start):
-            raise ValueError("Slice ends before timeseries starts!")
+            raise ValueError("Slice ends before TimeSeries starts!")
         
         if (start_time > self.stop):
-            raise ValueError("Slice starts after timeseries ends!")
+            raise ValueError("Slice starts after TimeSeries ends!")
 
         dt = self.stop - self.start
 
@@ -495,7 +495,7 @@ class TimeSeries(np.ndarray):
         return new_series
     
     def shift(self, shift):
-        """A function which moves a timeseries backwards or forwards in time without changing any data inside it. Can have timedelta or a float as an input
+        """A function which moves a TimeSeries backwards or forwards in time without changing any data inside it. Can have timedelta or a float as an input
 
         Args:
             seconds (_float || datetime.timedelta_): The amount of seconds the series should be shifted
@@ -510,12 +510,12 @@ class TimeSeries(np.ndarray):
                           self.length,
                           self.units,
                           self.meta
-        ) #Create a copy of timeseries with shifted start and stop times
+        ) #Create a copy of TimeSeries with shifted start and stop times
 
         return copy
 
     def convert_to(self, new_unit: str):
-        """ Returns a new TimeSeries after being converted to a new unit, appropriately scales timeseries
+        """ Returns a new TimeSeries after being converted to a new unit, appropriately scales TimeSeries
 
         Args:
             new_unit (str): The unit the entire series will be translated to
@@ -525,7 +525,7 @@ class TimeSeries(np.ndarray):
             ValueError: Unable to convert between units of different dimensionality
 
         Returns:
-            result (TimeSeries): Timeseries with converted units
+            result (TimeSeries): TimeSeries with converted units
         """
         if self.units is None:
             raise ValueError("Cannot convert TimeSeries without units.")
@@ -583,13 +583,13 @@ class TimeSeries(np.ndarray):
 
     @staticmethod
     def merge(*args, fill_value=0):
-        """The merge function combines several timeseries into one contiguous series. Any spaces in time is filled by the 'fill_value'. It assumes that the datapoints pull from the same source
+        """The merge function combines several TimeSeries into one contiguous series. Any spaces in time is filled by the 'fill_value'. It assumes that the datapoints pull from the same source
 
         Args:
             fill_value (int, optional): The value for filling between gaps of time. Defaults to 0.
 
         Raises:
-            ValueError: If no timeseries are input
+            ValueError: If no TimeSeries are input
 
         Returns:
             _type_: The merged series
@@ -613,7 +613,7 @@ class TimeSeries(np.ndarray):
         units = base.units
         meta = copy.deepcopy(base.meta)
 
-        # Merge timeseries loop
+        # Merge TimeSeries loop
         for ts in args:
 
             # Convert to common units and check dimensionality
@@ -621,7 +621,7 @@ class TimeSeries(np.ndarray):
                 if ts.units.dimensionality == units.dimensionality:
                     ts = ts.convert_to(str(units))
                 else:
-                    raise ValueError("One of the timeseries is not in the same units of dimensionality")
+                    raise ValueError("One of the TimeSeries is not in the same units of dimensionality")
 
             ts_times = ts.unix_x_axis
             ts_values = np.asarray(ts)
