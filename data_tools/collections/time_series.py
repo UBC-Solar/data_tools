@@ -166,10 +166,7 @@ class TimeSeries(np.ndarray):
             result = self_aligned.promote(raw_product)
 
             # Compose units
-            if self_aligned.units and other_aligned.units:
-                result._units = self_aligned.units / other_aligned.units
-            else:
-                result._units = None
+            result._units = self_aligned.units / other_aligned.units
 
             return result
 
@@ -507,14 +504,14 @@ class TimeSeries(np.ndarray):
         """ Returns a new TimeSeries after being converted to a new unit, appropriately scales TimeSeries
 
         Args:
-            new_unit (str): The unit the entire series will be translated to
+            :param str new_unit: The unit the entire series will be translated to
 
         Raises:
-            ValueError: Cannot convert TimeSeries without units
-            ValueError: Unable to convert between units of different dimensionality
+            :raises ValueError: Cannot convert TimeSeries without units
+            :raises ValueError: Unable to convert between units of different dimensionality
 
         Returns:
-            result (TimeSeries): TimeSeries with converted units
+            :return: TimeSeries with converted units
         """
         if self.units is None:
             raise ValueError("Cannot convert TimeSeries without units.")
@@ -533,6 +530,21 @@ class TimeSeries(np.ndarray):
 
         result = self.promote(converted_values)
         result._units = new_unit_parsed
+
+        return result
+
+    def convert_to_base_units(self):
+        # Find base unit
+        new_unit = (1 * self.units.to_base_units()).unit
+
+        # Multiply by a factor
+        factor = (1 * self.units).to(new_unit).magnitude # 1 * unit turns it into a quanity rather than pure unit
+        converted_values = np.asarray(self) * factor
+
+        # Construct new TimeSeries
+        result = self.promote(converted_values)
+
+        result._units = new_unit
 
         return result
 
