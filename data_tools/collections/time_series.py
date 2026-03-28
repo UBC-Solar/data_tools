@@ -8,7 +8,7 @@ import re
 import pint
 import copy
 
-_GLOBAL_UREG = pint.UnitRegistry() #Important so that different TimeSeries don't experience registry errors
+from data_tools import unit_reg #Important so that different TimeSeries don't experience registry errors
 
 class TimeSeries(np.ndarray):
     """
@@ -53,7 +53,7 @@ class TimeSeries(np.ndarray):
                  units = None,
                  meta: dict = {}):
         
-        self.ureg = _GLOBAL_UREG # Connect TimeSeries to a global registry
+        self.ureg = unit_reg # Connect TimeSeries to a global registry
 
         # Check if the start and stop are not naive
         if start_time is not None:
@@ -202,8 +202,10 @@ class TimeSeries(np.ndarray):
 
         result = self.promote(raw_product)
 
-        if self.units: # reciprocal units !
-            result._units = 1 / self.units 
+        # This logic only triggers when the numerator is not a TimeSeries, meaning in this case it is only ever a unitless other (float or integer). 
+        # Currently there is no implementation of multiplying or dividing by pint quantities
+        if self.units: # Reciprocal units !
+            result._units = 1 / self.units #
         else:
             result._units = None
             
@@ -258,7 +260,7 @@ class TimeSeries(np.ndarray):
         return self._units
 
     def override_units(self, new_unit):
-        """ Overrides the units of a TimeSeries, does not convert magnitudes! Directly changes one unit for another.
+        """ Overrides the units of a TimeSeries, directly changes one unit for another. Does not convert magnitudes! 
         If you wish to convert units, use .convert_to()
 
             :param str new_unit: The unit the entire series will be translated to
@@ -269,7 +271,6 @@ class TimeSeries(np.ndarray):
         elif isinstance(new_unit, str): # Eg. "meter/second**2" or "J"
             self._units = self.ureg.parse_units(new_unit)
         elif isinstance(new_unit, self.ureg.Unit):
-            warn("Overriding units does not convert unit magnitudes!! If you wish to convert units, use .convert_to()")
             self._units = new_unit
         else:
             raise ValueError(
@@ -361,7 +362,7 @@ class TimeSeries(np.ndarray):
         :raises: ValueError if ``time`` falls outside of x–axis
         """
         if not (0.0 <= time <= self.length):
-            raise ValueError(f"Relative time {time} falls outside of x–axis! {self.length}")
+            raise ValueError(f"Relative time {time} falls outside of x–axis!")
 
         return np.argmin(np.abs(self.x_axis - time))
 
@@ -400,12 +401,9 @@ class TimeSeries(np.ndarray):
     def interpolate_indices(self, i: float) -> float:
         """ Function which interpolates between the two nearest indices
 
-        Args:
-            i (float): floating index
+        :param float i: floating index
 
-        Returns:
-            float: interpolated value
-        """        """
+        :return float: interpolated value
         """
         i1 = math.floor(i)
         i2 = math.ceil(i)
@@ -419,7 +417,7 @@ class TimeSeries(np.ndarray):
     
     def slice(self, start_time: datetime.datetime, end_time: datetime.datetime):
         """ This function returns all values between two given points, useful for filtering out data for specific dates or times. 
-        The returned series will not have the same start_time and end_time, the returned series will align the start and end time to existing points
+        The returned series will not have the argument start_time and end_time, instead the returned series will align the start and end time to existing points
 
         :param datetime.datetime start_time: The start datetime to slice with
         :param datetime.datetime end_time: The end datetime to slice with
@@ -511,11 +509,8 @@ class TimeSeries(np.ndarray):
 
             :return: TimeSeries with converted units
         """
-        if self.units is None:
-            raise ValueError("Cannot convert TimeSeries without units.")
 
         new_unit_parsed = self.ureg.parse_units(new_unit)
-
         # Check dimensionality
         if self.units.dimensionality != new_unit_parsed.dimensionality:
             raise ValueError(
@@ -586,17 +581,15 @@ class TimeSeries(np.ndarray):
         return new_args
 
     @staticmethod
-    def merge(*args, fill_value=0):
-        """The merge function combines several TimeSeries into one contiguous series. Any spaces in time is filled by the 'fill_value'. It assumes that the datapoints pull from the same source
+    def merge(*args, fill_value: float = 0):
+        """The merge function combines several TimeSeries into one contiguous series. Any spaces in time is filled by the 'fill_value'. 
+        It assumes that the datapoints pull from the same source, as overlapping point are overriden.
 
-        Args:
-            fill_value (int, optional): The value for filling between gaps of time. Defaults to 0.
+        :param float fill_value: The value for filling between gaps of time. Defaults to 0.
 
-        Raises:
-            ValueError: If no TimeSeries are input
+        :raises ValueError: If no TimeSeries are input
 
-        Returns:
-            _type_: The merged series
+        :return TimeSeries: The merged series
         """        
         
         if len(args) == 0:
@@ -697,7 +690,25 @@ class TimeSeries(np.ndarray):
         return new_wave
 
     @staticmethod
-    def generate_timeseries(x_axis, y_axis, period: float, units: str, timezone = datetime.timezone.utc, meta: dict = None):
+    def generate_timeseries(x_axis: list, 
+                            y_axis: list, 
+                            period: float, 
+                            units: str, 
+                            timezone: datetime.timezone = datetime.timezone.utc, 
+                            meta: dict = {}):
+        '''
+        Creates a TimeSeries from a non-homogeneous / not evenly spaces set of data with a specified period. Useful for converting weirder data into a neat TimeSeries.
+
+        :param list x_axis: Data point times
+        :param list y_axis: Data points
+        :param float period: Time between data points in seconds
+        :param str | Unit units: Units of the TimeSeries
+        :param datetime.timezone timezone: Timezone
+        :param dict meta: Metadata for the TimeSeries
+
+        :return: Homogenized TimeSeries
+
+        '''
         # Get the x-axis in relative seconds (first element is t=0)
         rel_x_axis = x_axis.copy()
         rel_x_axis -= x_axis[0]  # Subtract off first time, so the x_axis starts at 0 with units of seconds
@@ -707,7 +718,7 @@ class TimeSeries(np.ndarray):
         desired_num_elements: int = math.ceil(temporal_length / period)
         desired_x_axis = np.linspace(0, temporal_length, desired_num_elements+1, endpoint=True)
 
-        # Re-interpolate our data on desired x-axis
+        # Re-interpolate our data on x-axis
         wave = np.array(y_axis).reshape(-1)
         wave_interpolated = np.interp(desired_x_axis, rel_x_axis, wave)
 

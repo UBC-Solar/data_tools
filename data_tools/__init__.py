@@ -1,3 +1,7 @@
+import pint
+
+unit_reg = pint.UnitRegistry()
+
 from .query import (
     FluxQuery,
     FluxStatement,
@@ -29,7 +33,6 @@ from .lap_tools import (
     collect_lap_data
 )
 
-
 __all__ = [
     "FluxQuery",
     "FluxStatement",
@@ -47,5 +50,6 @@ __all__ = [
     "Event",
     "DataSource",
     "FileLoader",
-    "SunbeamClient"
+    "SunbeamClient",
+    "_GLOBAL_UREG"
 ]
