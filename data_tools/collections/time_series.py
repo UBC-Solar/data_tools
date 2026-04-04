@@ -101,7 +101,24 @@ class TimeSeries(np.ndarray):
             result: TimeSeries = self_aligned.promote(raw_sum)
             result._units = self_aligned.units
             return result
+        
+        elif isinstance(other, self.ureg.Quantity):
+             # Check dimensionalilty
+            if not self.units.dimensionality == other.units.dimensionality:
+                raise ValueError(
+                    f"Incompatible units: {self.units} and {other.units}"
+                )
 
+            # Convert other to self's units
+            factor = (1 * other.units).to(self.units).magnitude # 1 * unit turns it into a quanity rather than pure unit
+            converted_other = other.magnitude * factor
+
+            raw_sum = np.ndarray.__add__(self, converted_other)
+
+            result: TimeSeries = self.promote(raw_sum)
+            result._units = self.units
+            return result
+        
         else:
             raw_sum = np.ndarray.__add__(self, other) # Assumption being that the added value is the same unit as the TimeSeries
             result = self.promote(raw_sum)
@@ -129,7 +146,25 @@ class TimeSeries(np.ndarray):
             result = self_aligned.promote(raw_sub)
             result._units = self_aligned.units
             return result
+        
+        elif isinstance(other, self.ureg.Quantity):
+            
+             # Check dimensionalilty
+            if not self.units.dimensionality == other.units.dimensionality:
+                raise ValueError(
+                    f"Incompatible units: {self.units} and {other.units}"
+                )
 
+            # Convert other to self's units
+            factor = (1 * other.units).to(self.units).magnitude # 1 * unit turns it into a quanity rather than pure unit
+            converted_other = other.magnitude * factor
+
+            raw_sum = np.ndarray.__sub__(self, converted_other)
+
+            result: TimeSeries = self.promote(raw_sum)
+            result._units = self.units
+            return result
+        
         else:
             # Scalar subtraction, assuming other is in the same units
             raw_sub = np.ndarray.__sub__(self, other)
@@ -138,7 +173,8 @@ class TimeSeries(np.ndarray):
             return result 
 
     def __mul__(self, other):
-        if isinstance(other, TimeSeries):
+
+        if isinstance(other, TimeSeries): # If TimeSeries
             self_aligned, other_aligned = TimeSeries.align(self, other)
 
             raw_product = np.ndarray.__mul__(self_aligned, other_aligned)
@@ -147,6 +183,15 @@ class TimeSeries(np.ndarray):
 
             # Compose units
             result._units = self_aligned.units * other_aligned.units
+
+            return result
+        
+        elif isinstance(other, self.ureg.Quantity): # If Pint Quantity
+            raw_product = np.ndarray.__mul__(self, other.magnitude)
+
+            result = self.promote(raw_product)
+
+            result._units = self.units * other.units
 
             return result
 
@@ -169,6 +214,17 @@ class TimeSeries(np.ndarray):
             result._units = self_aligned.units / other_aligned.units
 
             return result
+        
+        elif isinstance(other, self.ureg.Quantity):
+
+            raw_product = np.ndarray.__truediv__(self, other.magnitude)
+
+            result = self.promote(raw_product)
+
+            # Compose units
+            result._units = self.units/other.units
+
+            return result
 
         else:
             raw_product = np.ndarray.__truediv__(self, other)
@@ -189,28 +245,21 @@ class TimeSeries(np.ndarray):
         result = self.promote(raw_sub)
         
         # Units for scalar - TimeSeries are typically -self.units
-        if self.units:
-            result._units = self.units # Magnitude is negative, units remain same
-        else:
-            result._units = None
+        result._units = self.units # Magnitude is negative, units remain same
             
         return result
     
     def __rtruediv__(self, other):
         # reverses the division: other / self
-        raw_product = np.ndarray.__rtruediv__(self, other)
-
-        result = self.promote(raw_product)
-
         # This logic only triggers when the numerator is not a TimeSeries, meaning in this case it is only ever a unitless other (float or integer). 
-        # Currently there is no implementation of multiplying or dividing by pint quantities
-        if self.units: # Reciprocal units !
-            result._units = 1 / self.units #
-        else:
-            result._units = None
-            
+        # Currently there is no implementation of multiplying or dividing by pint quantities    
+        
+        raw_product = np.ndarray.__rtruediv__(self, other)
+        result = self.promote(raw_product)
+        result._units = 1 / self.units 
+
         return result
-    
+            
     @property
     def x_axis(self) -> np.ndarray:
         """
@@ -711,12 +760,12 @@ class TimeSeries(np.ndarray):
         '''
         # Get the x-axis in relative seconds (first element is t=0)
         rel_x_axis = x_axis.copy()
-        rel_x_axis -= x_axis[0]  # Subtract off first time, so the x_axis starts at 0 with units of seconds
+        rel_x_axis -= x_axis[0]  # Subtract off first time, so the x_axis starts at 0
 
-        # Reshape the x-axis to have the right number of elements for our needed period
+        # Reshape the x-axis to have the right number of elements for needed period
         temporal_length: float = rel_x_axis[-1]  # Total time of the query in seconds
         desired_num_elements: int = math.ceil(temporal_length / period)
-        desired_x_axis = np.linspace(0, temporal_length, desired_num_elements+1, endpoint=True)
+        desired_x_axis = np.linspace(0, temporal_length, desired_num_elements + 1, endpoint=True)
 
         # Re-interpolate our data on x-axis
         wave = np.array(y_axis).reshape(-1)

@@ -226,6 +226,76 @@ def test_units_and_operations():
     assert result_dimless.units == ts8.units
     assert np.allclose(result_dimless, [4, 15, 30])
 
+def test_pint_addition():
+    x = [0, 1, 2]
+
+    ts1 = quick_gen_timeseries(x, [1, 2, 3], units = "m")
+    quantity = 5 * ts1.ureg.meter
+
+    output = ts1 + quantity
+
+    assert np.allclose(output, [6, 7, 8])
+    assert output.units == ts1.ureg.meter
+
+    ts1 = quick_gen_timeseries(x, [1, 2, 3], units = "m")
+    quantity = 5 * ts1.ureg.kilometer
+
+    output = ts1 + quantity
+
+    assert np.allclose(output, [5001, 5002, 5003])
+    assert output.units == ts1.ureg.meter
+
+    quantity = 5 * ts1.ureg.second
+
+    with pytest.raises(ValueError):
+        _ = ts1 + quantity
+
+def test_pint_subtraction():
+    x = [0, 1, 2]
+
+    ts1 = quick_gen_timeseries(x, [1, 2, 3], units = "m")
+    quantity = 1 * ts1.ureg.meter
+
+    output = ts1 - quantity
+
+    assert np.allclose(output, [0, 1, 2])
+    assert output.units == ts1.ureg.meter
+
+    ts1 = quick_gen_timeseries(x, [1, 2, 3], units = "m")
+    quantity = 5 * ts1.ureg.kilometer
+
+    output = ts1 - quantity
+
+    assert np.allclose(output, [-4999, -4998, -4997])
+    assert output.units == ts1.ureg.meter
+    
+    quantity = 5 * ts1.ureg.second
+
+    with pytest.raises(ValueError):
+        _ = ts1 - quantity
+
+def test_pint_multiplication():
+    x = [0, 1, 2]
+
+    ts1 = quick_gen_timeseries(x, [1, 2, 3], units = "m")
+    quantity = 5 * ts1.ureg.meter
+
+    ts2 = ts1 * quantity
+
+    assert np.allclose(ts2, [5, 10, 15])
+    assert ts2.units == ts1.ureg.meter * ts1.ureg.meter
+
+def test_pint_division():
+    x = [0, 1, 2]
+
+    ts1 = quick_gen_timeseries(x, [1, 2, 3], units = "m")
+    quantity = 5 * ts1.ureg.second
+
+    ts2 = ts1 / quantity
+
+    assert np.allclose(ts2, [1/5, 2/5, 3/5])
+    assert ts2.units == ts1.ureg.meter / ts1.ureg.second
+
 def test_addition_different_units():
     # Testing if units transfer expectedly: Expected behaviour is that the one on the left is transferred
     # Test add across different units of the same dimensionality
@@ -479,7 +549,6 @@ def test_merge_override():
     # Expect second series to override first
     assert np.allclose(merged, [1, 2, 4, 5, 6])
 
-
 def test_convert_to_base():
     x = [0, 1, 2]
     # Addition with same units
@@ -489,4 +558,3 @@ def test_convert_to_base():
 
     assert np.allclose(ts2, [0, 0.00508, 0.00508*2])
     assert ts2.units == ts2.ureg.meter/ts2.ureg.second
-    
