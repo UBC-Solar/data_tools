@@ -1,7 +1,5 @@
 import pint
 
-unit_reg = pint.UnitRegistry()
-
 from .query import (
     FluxQuery,
     FluxStatement,
@@ -32,6 +30,8 @@ from .lap_tools import (
     FSGPDayLaps,
     collect_lap_data
 )
+
+unit_reg = pint.UnitRegistry()
 
 __all__ = [
     "FluxQuery",
