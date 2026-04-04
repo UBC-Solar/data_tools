@@ -5,7 +5,6 @@ import math
 from warnings import warn
 import pandas as pd
 import re
-import pint
 import copy
 
 from data_tools import unit_reg #Important so that different TimeSeries don't experience registry errors
@@ -253,7 +252,7 @@ class TimeSeries(np.ndarray):
         # reverses the division: other / self
         # This logic only triggers when the numerator is not a TimeSeries, meaning in this case it is only ever a unitless other (float or integer). 
         # Currently there is no implementation of multiplying or dividing by pint quantities    
-        
+
         raw_product = np.ndarray.__rtruediv__(self, other)
         result = self.promote(raw_product)
         result._units = 1 / self.units 
