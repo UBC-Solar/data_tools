@@ -239,8 +239,8 @@ class TimeSeries(np.ndarray):
     
     def __rsub__(self, other):
         # This might not be the wanted implementation, but its also really unintuitive to subtract a time series from an integer so I dont know what the desired output is
-        raw_sub = np.ndarray.__sub__(other, self) # other - self
-        result = self.promote(raw_sub)
+        raw_sub =  np.ndarray.__sub__(self, other) # other - self = -(self - other)
+        result = -1 * self.promote(raw_sub)
         
         # Units for scalar - TimeSeries are typically -self.units
         result._units = self.units # Magnitude is negative, units remain same

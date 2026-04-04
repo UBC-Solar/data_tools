@@ -353,6 +353,24 @@ def test_subtraction_operations():
     result_scalar_sub = ts_dimless - 2
     assert np.allclose(result_scalar_sub, [3, 8, 13])
 
+def test_rsub():
+    x = [0, 1, 2]
+
+    ts1 = quick_gen_timeseries(x, [1, 2, 3], units = "m")
+
+    ts2 = 1 - ts1
+
+    assert np.allclose(ts2, [0, -1, -2])
+    assert ts2.units == ts1.ureg.meter
+
+def test_dimensionless():
+    x = [0, 1, 2]
+
+    ts1 = quick_gen_timeseries(x, [1, 2, 3], units = "")
+
+    assert np.allclose(ts1, [1, 2, 3])
+    assert ts1.units == ts1.ureg.dimensionless
+
 def test_reflected_addition_radd():
     x = [0, 1, 2]
     ts = quick_gen_timeseries(x, [1, 2, 3], units="")
@@ -558,3 +576,16 @@ def test_convert_to_base():
 
     assert np.allclose(ts2, [0, 0.00508, 0.00508*2])
     assert ts2.units == ts2.ureg.meter/ts2.ureg.second
+
+def test_convert_to():
+    x = [0, 1, 2]
+    # Addition with same units
+    ts1 = quick_gen_timeseries(x, [0, 1, 2], units = "m/s")
+
+    ts2 = ts1.convert_to("ft/min")
+
+    assert np.allclose(ts2, [0, 196.850393701, 196.850393701*2])
+    assert ts2.units == ts2.ureg.foot/ts2.ureg.minute
+
+    with pytest.raises(ValueError): 
+        _ = ts1.convert_to("ft")
