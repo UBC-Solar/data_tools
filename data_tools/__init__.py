@@ -1,6 +1,8 @@
 import pint
 
-from .query import (
+unit_reg = pint.UnitRegistry()
+
+from .query import (  # noqa: E402
     FluxQuery,
     FluxStatement,
     DBClient,
@@ -8,11 +10,11 @@ from .query import (
     SunbeamClient
 )
 
-from .collections import (
+from .collections import (  # noqa: E402
     TimeSeries,
 )
 
-from .schema import (
+from .schema import (  # noqa: E402
     FileType,
     File,
     Event,
@@ -20,18 +22,16 @@ from .schema import (
     FileLoader
 )
 
-from .utils import (
+from .utils import (  # noqa: E402
     parse_iso_datetime,
     ensure_utc,
     iso_string_from_datetime
 )
 
-from .lap_tools import (
+from .lap_tools import (  # noqa: E402
     FSGPDayLaps,
     collect_lap_data
 )
-
-unit_reg = pint.UnitRegistry()
 
 __all__ = [
     "FluxQuery",
