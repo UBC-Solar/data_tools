@@ -6,7 +6,9 @@ import pandas as pd
 import re
 import copy
 
+
 from data_tools import unit_reg #Important so that different TimeSeries don't experience registry errors
+
 
 class TimeSeries(np.ndarray):
     """
@@ -108,7 +110,7 @@ class TimeSeries(np.ndarray):
                 )
 
             # Convert other to self's units
-            factor = (1 * other.units).to(self.units).magnitude # 1 * unit turns it into a quanity rather than pure unit
+            factor = (1 * other.units).to(self.units).magnitude # 1 * unit turns it into a quality rather than pure unit
             converted_other = other.magnitude * factor
 
             raw_sum = np.ndarray.__add__(self, converted_other)
@@ -135,7 +137,7 @@ class TimeSeries(np.ndarray):
                 )
 
             # Convert other to self's units
-            factor = (1 * other_aligned.units).to(self_aligned.units).magnitude #  1 * unit turns it into a quanity rather than pure unit
+            factor = (1 * other_aligned.units).to(self_aligned.units).magnitude #  1 * unit turns it into a quality rather than pure unit
             converted_other = np.asarray(other_aligned) * factor
 
             # Perform subtraction
@@ -147,14 +149,14 @@ class TimeSeries(np.ndarray):
         
         elif isinstance(other, self.ureg.Quantity):
             
-             # Check dimensionalilty
+             # Check dimensionality
             if not self.units.dimensionality == other.units.dimensionality:
                 raise ValueError(
                     f"Incompatible units: {self.units} and {other.units}"
                 )
 
             # Convert other to self's units
-            factor = (1 * other.units).to(self.units).magnitude # 1 * unit turns it into a quanity rather than pure unit
+            factor = (1 * other.units).to(self.units).magnitude # 1 * unit turns it into a quality rather than pure unit
             converted_other = other.magnitude * factor
 
             raw_sum = np.ndarray.__sub__(self, converted_other)
@@ -480,25 +482,25 @@ class TimeSeries(np.ndarray):
         if (start_time.tzinfo is None) or (end_time.tzinfo is None): # Throw error if start or stop time is naive
             raise ValueError("The start or end time does not have an assigned timezone!")
 
-        if (end_time < start_time): # Throw error if the end time is before stop time
+        if end_time < start_time: # Throw error if the end time is before stop time
             raise ValueError(f"Start time {start_time} is after stop time {end_time}!")
         
-        if (end_time < self.start):
+        if end_time < self.start:
             raise ValueError("Slice ends before TimeSeries starts!")
         
-        if (start_time > self.stop):
+        if start_time > self.stop:
             raise ValueError("Slice starts after TimeSeries ends!")
 
         dt = self.stop - self.start
 
-        # Values used for indexxing
+        # Values used for indexing
         relative_start = start_time - self.start
         relative_stop = end_time - self.start
 
-        if (relative_start < datetime.timedelta(0)):
+        if relative_start < datetime.timedelta(0):
             relative_start = datetime.timedelta(0)
 
-        if (relative_stop > dt):
+        if relative_stop > dt:
             relative_stop = dt
 
         # Finding indexes to slice with
@@ -564,7 +566,7 @@ class TimeSeries(np.ndarray):
                 f"Cannot convert {self.units} to {new_unit_parsed} (incompatible dimensions)"
             )
 
-        factor = (1 * self.units).to(new_unit_parsed).magnitude # 1 * unit turns it into a quanity rather than pure unit
+        factor = (1 * self.units).to(new_unit_parsed).magnitude # 1 * unit turns it into a quality rather than pure unit
 
         converted_values = np.asarray(self) * factor
 
@@ -574,16 +576,16 @@ class TimeSeries(np.ndarray):
         return result
 
     def convert_to_base_units(self):
-        '''
+        """
         Converts TimeSeries units to the unit registry system base units (SI Units by default)
 
         :return TimeSeries: Timeseries with converted units
-        '''
+        """
         # Find base units
         new_unit = (1 * self.units).to_base_units().units
 
         # Multiply by a factor
-        factor = (1 * self.units).to(new_unit).magnitude # 1 * unit turns it into a quanity rather than pure unit
+        factor = (1 * self.units).to(new_unit).magnitude # 1 * unit turns it into a quality rather than pure unit
         converted_values = np.asarray(self) * factor
 
         # Construct new TimeSeries
@@ -630,7 +632,7 @@ class TimeSeries(np.ndarray):
     @staticmethod
     def merge(*args, fill_value: float = 0):
         """The merge function combines several TimeSeries into one contiguous series. Any spaces in time is filled by the 'fill_value'. 
-        It assumes that the datapoints pull from the same source, as overlapping point are overriden.
+        It assumes that the datapoints pull from the same source, as overlapping point are overridden.
 
         :param float fill_value: The value for filling between gaps of time. Defaults to 0.
 
@@ -652,7 +654,7 @@ class TimeSeries(np.ndarray):
         
         merged_values = np.full(num_points, fill_value, dtype=float)
 
-        # Use meta data from the first series
+        # Use metadata from the first series
         base = args[0]
         units = base.units
         meta = copy.deepcopy(base.meta)
@@ -743,7 +745,7 @@ class TimeSeries(np.ndarray):
                             units: str, 
                             timezone: datetime.timezone = datetime.timezone.utc, 
                             meta: dict = {}):
-        '''
+        """
         Creates a TimeSeries from a non-homogeneous / not evenly spaces set of data with a specified period. Useful for converting weirder data into a neat TimeSeries.
 
         :param list x_axis: Data point times
@@ -755,7 +757,7 @@ class TimeSeries(np.ndarray):
 
         :return: Homogenized TimeSeries
 
-        '''
+        """
         # Get the x-axis in relative seconds (first element is t=0)
         rel_x_axis = x_axis.copy()
         rel_x_axis -= x_axis[0]  # Subtract off first time, so the x_axis starts at 0
