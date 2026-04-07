@@ -5,13 +5,13 @@ from datetime import date
 
 class LanguageLocalization(Localization):
     @classmethod
-    def localize(cls, canonical_name: str, current_date: date | str) -> tuple[str, str, str]:
+    def localize(cls, canonical_name: str, current_date: date | str) -> tuple[str, str, str, float]:
         """
-        Return the (field, board, units)
+        Return the (field, board, units, frequency)
         """
         inst = cls._get()
-        name, board, units = inst._localization_table.lookup(canonical_name, current_date)
-        return name, board, units
+        name, board, units, frequency = inst._localization_table.lookup(canonical_name, current_date)
+        return name, board, units, frequency
 
 
 class CanonicalName(StrEnum):

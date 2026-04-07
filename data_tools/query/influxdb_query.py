@@ -197,7 +197,8 @@ class InfluxDBClient:
         :return: a TimeSeries of the resulting time-series data
         """
         if isinstance(field, CanonicalName):
-            field_str, measurement, units = self._language_localization.localize(field, start.date())
+            field_str, measurement, units, frequency = self._language_localization.localize(field, start.date())
+            granularity = 1 / frequency
         else:
             field_str = field
 
@@ -212,6 +213,9 @@ class InfluxDBClient:
         time_series._stop = time_series._stop + timezone_fix
 
         return time_series
+
+    def close(self):
+        self._client.close()
 
 
 if __name__ == "__main__":
