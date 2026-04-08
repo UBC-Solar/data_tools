@@ -6,8 +6,8 @@ class TemporalLocalization(Localization):
     @classmethod
     def localize(cls, query_datetime: datetime) -> timedelta:
         """
-        Return the timedelta to add to InfluxDB query ranges to account for timezone reporting errors in InfluxDB.
-        The same error should be subtracted from returned data ranges to amend them.
+        Return the timedelta to subtract from InfluxDB query ranges to account for timezone reporting errors in InfluxDB.
+        The same error should be added to returned data ranges to amend them.
         """
         inst = cls._get()
         shift_str: str = str(inst._localization_table.lookup("shift", query_datetime.date())) # Will be a one-tuple
