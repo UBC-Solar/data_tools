@@ -154,9 +154,6 @@ class InfluxDBClient:
         :param car: the car which data is being queried for, default is "Brightside".
         :return: a TimeSeries of the resulting time-series data
         """
-        # InfluxDB has an issue where PST timestamps were interpreted as UTC. So, we need to mutate
-        # the timestamps to represent a time -7 hours to compensate for the UTC offset of +7.
-
         utc_start = ensure_utc(start)
         utc_end = ensure_utc(stop)
 
