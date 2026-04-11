@@ -5,9 +5,10 @@ import math
 import pandas as pd
 import re
 import copy
+from pint.registry import Unit
 
 
-from data_tools import unit_reg #Important so that different TimeSeries don't experience registry errors
+from data_tools import unit_registry #Important so that different TimeSeries don't experience registry errors
 
 
 class TimeSeries(np.ndarray):
@@ -50,10 +51,10 @@ class TimeSeries(np.ndarray):
                  stop_time: datetime.datetime,
                  period: float,
                  length: float,
-                 units = None,
-                 meta: dict = {}):
+                 units: Unit | str = None,
+                 meta: dict = None):
         
-        self.ureg = unit_reg # Connect TimeSeries to a global registry
+        self.ureg = unit_registry # Connect TimeSeries to a global registry
 
         # Check if the start and stop are not naive
         if start_time is not None:
@@ -73,8 +74,13 @@ class TimeSeries(np.ndarray):
             self._units = self.ureg.dimensionless
         elif isinstance(units, str): # Eg. "meter/second**2" or "J"
             self._units = self.ureg.parse_units(units)
-        elif isinstance(units, self.ureg.Unit):
+        elif isinstance(units, Unit):
             self._units = units
+
+        if meta is None:
+            self._meta = {}
+        else:
+            self._meta = meta
 
         self._period: float = period
 
@@ -282,7 +288,7 @@ class TimeSeries(np.ndarray):
         This wave's x–axis as timezone-aware datetimes.
         """
         tz = self.start.tzinfo
-        return pd.to_datetime(self.unix_x_axis, unit='s', utc=True).tz_convert(tz)
+        return pd.to_datetime(self.unix_x_axis, unit='s', utc=True).tz_convert(tz).to_numpy()
 
     @property
     def length(self) -> float:
@@ -302,13 +308,13 @@ class TimeSeries(np.ndarray):
         return self._period
 
     @property
-    def units(self) -> str:
+    def units(self) -> Unit:
         """
         The units of this wave's data
         """
         return self._units
 
-    def override_units(self, new_unit):
+    def override_units(self, new_unit: Unit | str):
         """ Overrides the units of a TimeSeries, directly changes one unit for another. Does not convert magnitudes! 
         If you wish to convert units, use .convert_to()
 
@@ -510,8 +516,6 @@ class TimeSeries(np.ndarray):
         # Find new start and end time
         new_start_time = datetime.timedelta(seconds = start_index * self.period) + self.start
         new_stop_time = datetime.timedelta(seconds = stop_index * self.period) + self.start
-
-        new_series: TimeSeries = []
         y_data = []
         for i in range(start_index, stop_index + 1):
             y_data.append(self[i])
@@ -548,7 +552,7 @@ class TimeSeries(np.ndarray):
 
         return timeseries_copy
 
-    def convert_to(self, new_unit: str):
+    def convert_to(self, new_unit: Unit | str):
         """ Returns a new TimeSeries after being converted to a new unit, appropriately scales TimeSeries
 
             :param str new_unit: The unit the entire series will be translated to
@@ -701,7 +705,7 @@ class TimeSeries(np.ndarray):
         return merged_series
     
     @staticmethod
-    def from_query_dataframe(query_df: pd.DataFrame, period: float, field: str, units: str, timezone = datetime.timezone.utc):
+    def from_query_dataframe(query_df: pd.DataFrame, period: float, field: str, units: Unit | str):
         # Transform the DataFrame into a nicer format where we have our time-series data indexed by time
         query_df['_time'] = pd.to_datetime(query_df['_time'])
         query_df.set_index('_time', inplace=True)
@@ -742,9 +746,9 @@ class TimeSeries(np.ndarray):
     def generate_timeseries(x_axis: list, 
                             y_axis: list, 
                             period: float, 
-                            units: str, 
+                            units: Unit | str, 
                             timezone: datetime.timezone = datetime.timezone.utc, 
-                            meta: dict = {}):
+                            meta: dict = None):
         """
         Creates a TimeSeries from a non-homogeneous / not evenly spaces set of data with a specified period. Useful for converting weirder data into a neat TimeSeries.
 
@@ -758,6 +762,9 @@ class TimeSeries(np.ndarray):
         :return: Homogenized TimeSeries
 
         """
+        if meta is None:
+            meta = {}
+
         # Get the x-axis in relative seconds (first element is t=0)
         rel_x_axis = x_axis.copy()
         rel_x_axis -= x_axis[0]  # Subtract off first time, so the x_axis starts at 0

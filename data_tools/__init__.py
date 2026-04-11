@@ -1,6 +1,6 @@
 import pint
 
-unit_reg = pint.UnitRegistry()
+unit_registry = pint.UnitRegistry()
 
 from .query import (  # noqa: E402
     FluxQuery,
@@ -51,5 +51,5 @@ __all__ = [
     "DataSource",
     "FileLoader",
     "SunbeamClient",
-    "_GLOBAL_UREG"
+    "unit_registry"
 ]
