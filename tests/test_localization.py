@@ -84,7 +84,7 @@ def test_temporal_localization():
     assert ts[0] == 0.0  # We start stopped
 
     # Make sure the time we think it is the actual returned time
-    assert (ts.datetime_x_axis[0] - datetime(2024, 7, 16, 13, 59, 0)) < timedelta(minutes=2)
+    assert (ts.datetime_x_axis[0] - datetime(2024, 7, 16, 13, 59, 0, tzinfo=timezone.utc)) < timedelta(minutes=2)
 
     # This is right before we started driving, should return no data.
     with pytest.raises(ValueError):

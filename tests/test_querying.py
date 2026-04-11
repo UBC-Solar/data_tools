@@ -11,12 +11,11 @@ def test_query():
     start_time = datetime(2024, 7, 12, 10, 0, 0, tzinfo=timezone.utc)
     end_time = datetime(2024, 7, 14, 23, 0, 0, tzinfo=timezone.utc)
 
-
     pack_voltage: TimeSeries = client.query_time_series(start_time, end_time, CanonicalName.VehicleSpeed)
-    assert pack_voltage.units == "m/s"
+    assert str(pack_voltage.units) == "meter / second"
 
     start_time = datetime(2026, 1, 19, 0, 0, 0, tzinfo=timezone.utc)
     end_time = datetime(2026, 1, 22, 0, 0, 0, tzinfo=timezone.utc)
 
     pack_voltage: TimeSeries = client.query_time_series(start_time, end_time, CanonicalName.VehicleSpeed)
-    assert pack_voltage.units == "km/h"
+    assert str(pack_voltage.units) == "kilometer / hour"

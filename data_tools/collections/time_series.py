@@ -8,7 +8,7 @@ import copy
 from pint.registry import Unit
 
 
-from data_tools import unit_registry #Important so that different TimeSeries don't experience registry errors
+from data_tools import unit_registry  # Important so that different TimeSeries don't experience registry errors
 
 
 class TimeSeries(np.ndarray):
@@ -17,6 +17,7 @@ class TimeSeries(np.ndarray):
 
     Data is homogenous and evenly-spaced, such that temporal period between subsequent elements is constant.
     """
+    UnitRegistry = unit_registry
 
     # __new__ and __array_finalize__ are mandatory to ensure that
     # `TimeSeries` properly acts like a ndarray when necessary.
@@ -53,8 +54,6 @@ class TimeSeries(np.ndarray):
                  length: float,
                  units: Unit | str = None,
                  meta: dict = None):
-        
-        self.ureg = unit_registry # Connect TimeSeries to a global registry
 
         # Check if the start and stop are not naive
         if start_time is not None:
@@ -87,6 +86,10 @@ class TimeSeries(np.ndarray):
         self._length: float = length
 
         self._meta = meta
+
+    @property
+    def ureg(self):
+        return TimeSeries.UnitRegistry
 
     def __add__(self, other):
         if isinstance(other, TimeSeries):
