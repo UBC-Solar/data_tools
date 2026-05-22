@@ -4,13 +4,11 @@ from datetime import date
 
 
 class LanguageLocalization(Localization):
-    @classmethod
-    def localize(cls, canonical_name: str, current_date: date | str) -> tuple[str, str, str, float]:
+    def localize(self, canonical_name: str, current_date: date | str) -> tuple[str, str, str, float]:
         """
         Return the (field, board, units, frequency)
         """
-        inst = cls._get()
-        name, board, units, frequency = inst._localization_table.lookup(canonical_name, current_date)
+        name, board, units, frequency = self._localization_table.lookup(canonical_name, current_date)
         return name, board, units, frequency
 
 
@@ -45,3 +43,6 @@ class CanonicalName(StrEnum):
     Acceleration_X = "Acceleration_X"
     Acceleration_Y = "Acceleration_Y"
     Acceleration_Z = "Acceleration_Z"
+
+    MotorPower = "MotorPower"
+    MotorEfficiency = "MotorEfficiency"

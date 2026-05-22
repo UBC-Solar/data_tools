@@ -1,4 +1,4 @@
-from data_tools.localization import LanguageLocalization, CanonicalName, TemporalLocalization
+from data_tools.localization import InfluxDBLanguageLocalization, CanonicalName, TemporalLocalization
 from influxdb_client import InfluxDBClient as _InfluxDBClient
 from data_tools.collections.time_series import TimeSeries
 from datetime import datetime, timezone
@@ -41,7 +41,7 @@ class InfluxDBClient:
             url=None,
             timeout=10,
             temporal_localization: Optional[Type[TemporalLocalization]] = None,
-            language_localization: Optional[Type[LanguageLocalization]] = None
+            language_localization: Optional[Type[InfluxDBLanguageLocalization]] = None
         ):
         """
         Create a connection to the InfluxDB database.
@@ -62,7 +62,7 @@ class InfluxDBClient:
         self._influx_org = influxdb_org
         url = DEFAULT_INFLUXDB_URL if url is None else url
 
-        self._language_localization = language_localization if language_localization else LanguageLocalization
+        self._language_localization = language_localization if language_localization else InfluxDBLanguageLocalization
         self._temporal_localization = temporal_localization if temporal_localization else TemporalLocalization
 
         self._client = _InfluxDBClient(url=url, org=influxdb_org, token=influxdb_token, timeout=timeout * 1000)

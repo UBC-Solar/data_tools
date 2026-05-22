@@ -1,4 +1,4 @@
-from data_tools.localization import LANGUAGE_LOCALIZATION_TABLE_PATH
+from data_tools.localization import INFLUXDB_LANGUAGE_LOCALIZATION_TABLE_PATH, SUNBEAMDB_LANGUAGE_LOCALIZATION_TABLE_PATH
 from data_tools.localization import VersionedTable, SpatialLocalization
 from datetime import datetime, timezone, timedelta
 from data_tools.localization import CanonicalName
@@ -64,13 +64,15 @@ def test_invalid_localization(versioned_table):
 
 
 def test_all_names():
-    with open(LANGUAGE_LOCALIZATION_TABLE_PATH, "rb") as f:
-        data = tomllib.load(f)
+    for path in [INFLUXDB_LANGUAGE_LOCALIZATION_TABLE_PATH, SUNBEAMDB_LANGUAGE_LOCALIZATION_TABLE_PATH]:
+        with open(path, "rb") as f:
+            data = tomllib.load(f)
 
-    for _, section_dict in data.items():
-        for name in section_dict.keys():
-            assert name in CanonicalName, (f"The name {name} is defined in the localization table but "
-                                           f"was not found as a CanonicalName option. Please add it.")
+        for _, section_dict in data.items():
+            for name in section_dict.keys():
+                assert name in CanonicalName, (f"The name {name} is defined in the localization table but "
+                                               f"was not found as a CanonicalName option. Please add it.")
+
 
 @pytest.mark.ci_skip
 def test_temporal_localization():
