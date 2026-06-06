@@ -5,7 +5,7 @@ unit_registry = pint.UnitRegistry()
 from .query import (  # noqa: E402
     FluxQuery,
     FluxStatement,
-    DBClient,
+    InfluxDBClient,
     PostgresClient,
     SunbeamClient
 )
@@ -37,7 +37,7 @@ __all__ = [
     "FluxQuery",
     "FluxStatement",
     "TimeSeries",
-    "DBClient",
+    "InfluxDBClient",
     "FSGPDayLaps",
     "FSGPDayLaps",
     "collect_lap_data",

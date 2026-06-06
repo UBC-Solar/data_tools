@@ -1,12 +1,15 @@
-from data_tools.query.flux import FluxQuery
-from data_tools.utils.times import ensure_utc
+from data_tools.localization import InfluxDBLanguageLocalization, CanonicalName, TemporalLocalization
+from influxdb_client import InfluxDBClient as _InfluxDBClient
 from data_tools.collections.time_series import TimeSeries
+from datetime import datetime, timezone
+from data_tools.utils.times import ensure_utc
+from data_tools.query.flux import FluxQuery
 from pydantic import BaseModel, Field
-from influxdb_client import InfluxDBClient
+from typing import Optional, Type
 from dotenv import load_dotenv
-from datetime import datetime, timedelta, timezone
 import pandas as pd
 import os
+
 
 DEFAULT_INFLUXDB_URL = "http://influxdb.telemetry.ubcsolar.com"
 
@@ -26,18 +29,29 @@ class TimeSeriesTarget(BaseModel):
     meta: dict = Field(default_factory=dict)
 
 
-class DBClient:
+class InfluxDBClient:
     """
     This class encapsulates a connection to an InfluxDB database.
     """
 
-    def __init__(self, influxdb_org=None, influxdb_token=None, url=None):
+    def __init__(
+            self,
+            influxdb_org=None,
+            influxdb_token=None,
+            url=None,
+            timeout=10,
+            temporal_localization: Optional[Type[TemporalLocalization]] = None,
+            language_localization: Optional[Type[InfluxDBLanguageLocalization]] = None
+        ):
         """
         Create a connection to the InfluxDB database.
 
         :param influxdb_org: The name of the InfluxDB organization.
         :param influxdb_token: The API Token to the InfluxDB database.
         :param url: The URL to the InfluxDB database, default is "http://influxdb.telemetry.ubcsolar.com"
+        :param timeout: The request timeout in seconds, default is 10 seconds.
+        :param temporal_localization: The type of temporal localization to use, default is TemporalLocalization.
+        :param language_localization: The type of language localization to use, default is LanguageLocalization.
         """
         if influxdb_token is None or influxdb_org is None:
             load_dotenv()
@@ -48,7 +62,10 @@ class DBClient:
         self._influx_org = influxdb_org
         url = DEFAULT_INFLUXDB_URL if url is None else url
 
-        self._client = InfluxDBClient(url=url, org=influxdb_org, token=influxdb_token)
+        self._language_localization = language_localization if language_localization else InfluxDBLanguageLocalization
+        self._temporal_localization = temporal_localization if temporal_localization else TemporalLocalization
+
+        self._client = _InfluxDBClient(url=url, org=influxdb_org, token=influxdb_token, timeout=timeout * 1000)
 
     def get_buckets(self) -> list[str]:
         """
@@ -83,13 +100,14 @@ class DBClient:
         :param measurement: the measurement that will be queried. Must exist.
         :return:
         """
+        # NOTE: This will need to be updated in 2054 to query all data properly
         field_query = f'''from(bucket: "{bucket}")
-                      |> range(start: -30d)
+                      |> range(start: -30y)
                       |> filter(fn: (r) => r["_measurement"] == "{measurement}")
                       |> group(columns: ["_field"])
                       |> distinct(column: "_field")'''
 
-        field_result = self._client.query_api().query(org=self._influx_org, query=field_query)
+        field_result = self._client.query_api().query(org=self._influx_org, query=field_query, params={"timeout": 20})
         fields = {record.get_value() for table in field_result for record in table.records}
 
         return list(fields)
@@ -101,8 +119,9 @@ class DBClient:
         :param measurement: the measurement that will be queried. Must exist.
         :return:
         """
+        # NOTE: This will need to be updated in 2054 to query all data properly
         field_query = f'''from(bucket: "{bucket}")
-                      |> range(start: -30d)
+                      |> range(start: -30y)
                       |> distinct(column: "car")'''
 
         cars_result = self._client.query_api().query(org=self._influx_org, query=field_query)
@@ -135,11 +154,8 @@ class DBClient:
         :param car: the car which data is being queried for, default is "Brightside".
         :return: a TimeSeries of the resulting time-series data
         """
-        # InfluxDB has an issue where PST timestamps were interpreted as UTC. So, we need to mutate
-        # the timestamps to represent a time -7 hours to compensate for the UTC offset of +7.
-
-        utc_start = ensure_utc(start) - timedelta(hours=7)
-        utc_end = ensure_utc(stop) - timedelta(hours=7)
+        utc_start = ensure_utc(start)
+        utc_end = ensure_utc(stop)
 
         # Make the query
         query = FluxQuery() \
@@ -160,7 +176,7 @@ class DBClient:
 
         return query_df
 
-    def query_time_series(self, start: datetime, stop: datetime, field: str, bucket: str = "CAN_log",
+    def query_time_series(self, start: datetime, stop: datetime, field: str | CanonicalName, bucket: str = "CAN_log",
                           car: str = "Brightside", granularity: float = 0.1, units: str = "",
                           measurement: str = None) -> TimeSeries:
         """
@@ -177,16 +193,33 @@ class DBClient:
         :param units: the units of the returned data, optional.
         :return: a TimeSeries of the resulting time-series data
         """
-        query_df = self.query_series(start, stop, field, bucket, car, measurement)
+        if isinstance(field, CanonicalName):
+            field_str, measurement, units, frequency = self._language_localization.localize(field, start.date())
+            granularity = 1 / frequency
+        else:
+            field_str = field
 
-        return TimeSeries.from_query_dataframe(query_df, granularity, field, units)
+        timezone_fix = self._temporal_localization.localize(start)
+        start = start - timezone_fix
+        stop = stop - timezone_fix
+
+        query_df = self.query_series(start, stop, field_str, bucket, car, measurement)
+        time_series = TimeSeries.from_query_dataframe(query_df, granularity, field_str, units)
+
+        time_series._start = time_series._start + timezone_fix
+        time_series._stop = time_series._stop + timezone_fix
+
+        return time_series
+
+    def close(self):
+        self._client.close()
 
 
 if __name__ == "__main__":
     start_time = datetime(2024, 6, 16, 10, 0, 0, tzinfo=timezone.utc)
     end_time = datetime(2024, 8, 16, 23, 0, 0, tzinfo=timezone.utc)
 
-    client = DBClient()
+    client = InfluxDBClient()
 
     pack_voltage: TimeSeries = client.query_time_series(start_time, end_time, "TotalPackVoltage", units="V",
                                                         measurement="BMS")

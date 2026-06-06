@@ -1,9 +1,9 @@
 from data_tools.lap_tools import FSGPDayLaps, collect_lap_data
-from data_tools.query import DBClient
+from data_tools.query import InfluxDBClient
 import datetime
 import numpy as np
 
-client = DBClient()
+client = InfluxDBClient()
 
 DAY_1_LAP_COUNT = 46
 DAY_2_LAP_COUNT = 3
@@ -17,7 +17,7 @@ def test_example_usage():
     the output of the function.
     """
 
-    def get_middle_lap_time(start_time: datetime.datetime, end_time: datetime.datetime, data_client: DBClient):
+    def get_middle_lap_time(start_time: datetime.datetime, end_time: datetime.datetime, data_client: InfluxDBClient):
         start: float = start_time.timestamp()
         end: float = end_time.timestamp()
         return np.mean([start, end])

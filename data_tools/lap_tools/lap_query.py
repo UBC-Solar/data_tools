@@ -1,9 +1,9 @@
 from data_tools.lap_tools.fsgp_2024_laps import FSGPDayLaps
-from data_tools.query.influxdb_query import DBClient
+from data_tools.query.influxdb_query import InfluxDBClient
 from typing import Callable
 import numpy as np
 
-def collect_lap_data(query_func: Callable, client: DBClient, include_day_2=False,
+def collect_lap_data(query_func: Callable, client: InfluxDBClient, include_day_2=False,
                      verbose=False) -> np.ndarray:
     """
     Higher order function - computes `query_func` for each lap in FSGP 2024 and returns the resulting array.
@@ -24,13 +24,13 @@ def collect_lap_data(query_func: Callable, client: DBClient, include_day_2=False
         return np.mean(lap_speed)
 
 
-    client = DBClient()
+    client = InfluxDBClient()
 
     average_speeds = collect_lap_data(get_average_speed, client)
     ```
 
-    :param Callable query_func: must take in parameters (lap_start: datetime, lap_end:datetime, data_client:DBClient)
-    :param DBClient client: client to use for querying
+    :param Callable query_func: must take in parameters (lap_start: datetime, lap_end:datetime, data_client:InfluxDBClient)
+    :param InfluxDBClient client: client to use for querying
     :param include_day_2: flag to include the three day 2 laps, driven slowly & under heavy rain
     :param verbose: if True, print out queried data during execution
     :return: a NumPy ndarray of `query_func` results for all laps
