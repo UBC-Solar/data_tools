@@ -19,6 +19,12 @@ class VersionedTable:
 
     @staticmethod
     def from_dict(raw: dict[str, dict[str, tuple]]) -> "VersionedTable":
+        """
+        Parse a VersionedTable from a dictionary.
+
+        :param raw: A mapping from a date string to a mapping of canonical names to stored information about that
+            canonical name during the date.
+        """
         sections: list[tuple[date, dict[str, tuple]]] = []
         for k, v in raw.items():
             try:
@@ -37,7 +43,7 @@ class VersionedTable:
         # name–data pair that we encounter and track the interval that
         # each pairing was "active" for.
 
-        for i, (eff_date, mapping) in enumerate(sections):
+        for eff_date, mapping in sections:
             # Close intervals for names that disappeared to track
             # that they are no longer active.
             to_remove = []
@@ -79,24 +85,24 @@ class VersionedTable:
             except ValueError as e:
                 raise ValueError(f"{on} is not a valid date") from e
 
-        ivals = self._intervals.get(name)
-        if not ivals:
+        intervals = self._intervals.get(name)
+        if not intervals:
             raise UnboundLocalError(f"Unknown name '{name}'")
 
         # The interval to which `on` belongs to will be the interval
         # with the start date closest (in the past) to `on`.
-        starts = [iv.start for iv in ivals]
+        starts = [interval.start for interval in intervals]
         i = bisect_right(starts, on) - 1
 
         # i < 0 means that there is no interval with a start date
         # before `on` with `name` as a defined name.
         if i < 0:
-            earliest = ivals[0].start.isoformat()
+            earliest = intervals[0].start.isoformat()
             raise KeyError(
                 f"No mapping for '{name}' on {on.isoformat()} (earliest is {earliest})"
             )
 
-        iv = ivals[i]
+        iv = intervals[i]
 
         # `None` corresponds to "ongoing". Check that `name` didn't expire.
         if iv.end is not None and on >= iv.end:
