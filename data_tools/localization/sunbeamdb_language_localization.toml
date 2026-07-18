@@ -1,20 +1,34 @@
+# CanonicalName = [SunbeamDB Signal, stage_name, unit, frequency]
 [2024-01-01]  # 2024-07-12 – 2024-07-20
 VehicleSpeed = ["VehicleSpeed", "Ingress", "m/s", 5]
 PackVoltage = ["PackVoltage", "Ingress", "V", 1]
 PackCurrent = ["PackCurrent", "Ingress", "A", 5]
 MotorCurrent = ["MotorCurrent", "Ingress", "A", 5]
+MotorCurrentDirection = ["MotorCurrentDirection", "Ingress", "", 5]
 AcceleratorPosition = ["AcceleratorPosition", "Ingress", "", 10]
 MinimumModuleVoltage = ["MinimumModuleVoltage", "Ingress","V", 1]
 MaximumModuleVoltage = ["MaximumModuleVoltage", "Ingress", "V", 1]
 BrakePressed = ["BrakePressed", "Ingress", "", 10]
-MotorCurrentDirection = ["MotorCurrentDirection", "Ingress", "", 5]
+MotorEfficiency = ["MotorEfficiency", "Efficiency", "", 1]
+
 MPPTInputVoltageA = ["MPPTInputVoltageA", "Ingress", "V", 4]
 MPPTInputVoltageB = ["MPPTInputVoltageB", "Ingress", "V", 4]
 MPPTInputCurrentA = ["MPPTInputCurrentA", "Ingress", "A", 4]
 MPPTInputCurrentB = ["MPPTInputCurrentB", "Ingress", "A", 4]
 
-MotorPower = ["MotorPower", "Power", "W", 10]
-MotorEfficiency = ["MotorEfficiency", "Efficiency", "", 1]
+ArrayPower = ["ArrayPower", "Array", "W", 4]
+MotorPower = ["MotorPower", "MotorPower", "W", 10]
+PackPower = ["PackPower", "PackPower","W", 5]
+
+IntegratedPackPower = ["IntegratedPackPower", "IntegratedPackPower", "Wh", 5]
+EnergyVOLExtrapolated = ["EnergyVOLExtrapolated", "EnergyVOLExtrapolated", "Wh", 10]
+EnergyFromIntegratedPower = ["EnergyFromIntegratedPower", "EnergyFromIntegratedPower", "Wh", 5]
+
+LatitudeRaw = ["LatitudeRaw", "TEL", "", 3]
+LongitudeRaw = ["LongitudeRaw", "TEL", "", 3]
+LatitudeFiltered = ["LatitudeFiltered", "LatitudeLongitude", "", 3]
+LongitudeFiltered = ["LongitudeFiltered", "LatitudeLongitude", "", 3]
+
 
 
 #[2025-01-01]  # 2025-04-01 – 2025-07-23

@@ -37,8 +37,8 @@ class CanonicalName(StrEnum):
     MPPTInputCurrentB = "MPPTInputCurrentB"
     MPPTInputCurrentC = "MPPTInputCurrentC"
 
-    GPSLatitude = "GPSLatitude"
-    GPSLongitude = "GPSLongitude"
+    LatitudeRaw = "LatitudeRaw"
+    LongitudeRaw = "LongitudeRaw"
 
     Acceleration_X = "Acceleration_X"
     Acceleration_Y = "Acceleration_Y"
@@ -46,3 +46,13 @@ class CanonicalName(StrEnum):
 
     MotorPower = "MotorPower"
     MotorEfficiency = "MotorEfficiency"
+
+    ArrayPower = "ArrayPower"
+    PackPower = "PackPower"
+
+    IntegratedPackPower = "IntegratedPackPower"
+    EnergyVOLExtrapolated = "EnergyVOLExtrapolated"
+    EnergyFromIntegratedPower = "EnergyFromIntegratedPower"
+
+    LatitudeFiltered = "LatitudeFiltered"
+    LongitudeFiltered = "LongitudeFiltered"
