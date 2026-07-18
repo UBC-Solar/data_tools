@@ -1,19 +1,22 @@
+# CanonicalName = [InfluxDB Signal, Device Name, Units, Frequency]
 [2024-01-01]  # 2024-07-12 – 2024-07-20
 VehicleSpeed = ["VehicleVelocity", "MDI", "m/s", 5]
-PackVoltage = ["TotalPackVoltage", "BMS", "V", 1]
+PackVoltage = ["TotalPackVoltage", "BMS", "V", 1] 
 PackCurrent = ["PackCurrent", "ECU", "A", 5]
 MotorCurrent = ["BatteryCurrent", "MC", "A", 5]
+MotorCurrentDirection = ["BatteryCurrentDirection", "MC", "", 5]
 AcceleratorPosition = ["AcceleratorPosition", "MC", "", 10]
-MinimumModuleVoltage = ["VoltageofLeast", "BMS","V", 1]
+MinimumModuleVoltage = ["VoltageofLeast", "BMS","V", 1] 
 MaximumModuleVoltage = ["VoltageofHighest", "BMS", "V", 1]
 BrakePressed = ["MechBrakePressed", "MCB", "", 10]
-MotorCurrentDirection = ["BatteryCurrentDirection", "MC", "", 5]
 
 MPPTInputVoltageA = ["VoltSensor1", "AMB", "V", 4]
 MPPTInputVoltageB = ["VoltSensor2", "AMB", "V", 4]
 MPPTInputCurrentA = ["CurrentSensor1", "AMB", "A", 4]
 MPPTInputCurrentB = ["CurrentSensor2", "AMB", "A", 4]
 
+LatitudeRaw = ["GPSLatitude", "TEL", "", 3]
+LongitudeRaw = ["GPSLongitude", "TEL", "", 3]
 
 [2025-01-01]  # 2025-04-01 – 2025-07-23
 VehicleSpeed = ["MotorRotatingSpeed", "MC", "km/h", 10]
@@ -40,8 +43,8 @@ MPPTInputCurrentA = ["InputCurrentA", "MPPT", "A", 3]
 MPPTInputCurrentB = ["InputCurrentB", "MPPT", "A", 3]
 MPPTInputCurrentC = ["InputCurrentC", "MPPT", "A", 3]
 
-GPSLatitude = ["GPSLatitude", "TEL", "", 3]
-GPSLongitude = ["GPSLongitude", "TEL", "", 3]
+LatitudeRaw = ["GPSLatitude", "TEL", "", 3]
+LongitudeRaw = ["GPSLongitude", "TEL", "", 3]
 
 Acceleration_X = ["Acceleration_X", "TEL", "", 10]
 Acceleration_Y = ["Acceleration_Y", "TEL", "", 10]
@@ -73,8 +76,8 @@ MPPTInputCurrentA = ["InputCurrentA", "MPPT", "A", 3]
 MPPTInputCurrentB = ["InputCurrentB", "MPPT", "A", 3]
 MPPTInputCurrentC = ["InputCurrentC", "MPPT", "A", 3]
 
-GPSLatitude = ["GPSLatitude", "TEL", "", 4]
-GPSLongitude = ["GPSLongitude", "TEL", "", 4]
+LatitudeRaw = ["GPSLatitude", "TEL", "", 3]
+LongitudeRaw = ["GPSLongitude", "TEL", "", 3]
 
 Acceleration_X = ["Acceleration_X", "TEL", "", 10]
 Acceleration_Y = ["Acceleration_Y", "TEL", "", 10]
