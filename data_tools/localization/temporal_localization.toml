@@ -1,8 +1,8 @@
 [2024-01-01]  # 2024-07-12 – 2024-07-20
-# In 2024, we were in Kentucky the first lap was at 10:00AM EDT and EDT is UTC - 4, so 2:00PM UTC.
+# In 2024, we were in Kentucky the first lap was at 10:00AM EDT and CDT is UTC - 4, so 2:00PM UTC.
 # The first timestamp on InfluxDB is at 8:00AM UTC which means we have an offset of 6 hours.
 # That is, queries must be shifted by -6 and returned timestamps by +6 to be correct.
-shift = 6
+shift = 7
 
 [2025-04-01]  # 2025-04-01 – 2025-06-23
 # In 2025 before FSGP we were in Vancouver, which is in PDT timezone where PDT timestamps were interpreted as UTC
