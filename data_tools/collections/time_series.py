@@ -357,11 +357,15 @@ class TimeSeries(np.ndarray):
             return super(TimeSeries, data_to_slice).__getitem__(index)
 
         elif isinstance(item, datetime.datetime):
-            unix_x_axis = data_to_slice.unix_x_axis
+            num_elements = len(data_to_slice)
+            if num_elements == 0:
+                raise IndexError("Cannot index an empty TimeSeries by datetime!")
+
             item_ts = item.timestamp()
 
-            start_timestamp: float = unix_x_axis[0]
-            stop_timestamp: float = unix_x_axis[-1]
+            # Same values as unix_x_axis[0] and unix_x_axis[-1], without building the whole axis on every lookup
+            start_timestamp: float = self.start.timestamp()
+            stop_timestamp: float = start_timestamp + self._length if num_elements > 1 else start_timestamp
 
             if item_ts > stop_timestamp or item_ts < start_timestamp:
                 raise IndexError(
