@@ -1,0 +1,6 @@
+.env
+extracted_unused/
+berkeley_backup/
+*.zip
+mapping/.inventory_cache*/
+mapping/.inventory.log

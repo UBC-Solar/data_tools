@@ -1,0 +1,673 @@
+status,confidence,name_status,ubc_canonical_name,ubc_measurement,ubc_field,ubc_units,berkeley_measurement,berkeley_field,berkeley_units,conversion_to_ubc,ubc_avg_hz,berkeley_driving_hz,berkeley_avg_hz,ubc_count,ubc_min,ubc_max,ubc_mean,berkeley_count,berkeley_min,berkeley_max,berkeley_mean,notes
+mapped,likely,existing,,BMS,MaxTemp,C,bms.pack_highest_temp_C,value,C,x 1,3.818,1.13,0.551,99739.0,-1.0,-1.0,-1.0,344350.0,-3.3570981937025278e+38,3.6116658284526294e+24,-9.985489985194904e+32,Keep -20 to 80 C (garbage to +-3e38). Our MaxTemp was a constant -1 on 2026-04-02.
+mapped,likely,existing,,BMS,Temp1,C,bms.pack_temps_2_centicelsius,val_1,0.01 C,x 0.01,3.818,0.97,0.46,99739.0,7.0,17.0,13.436188451859351,287159.0,257.0,52221.0,3556.6208093773835,"Always-present sensor (blocks 2, 5-12), renumbered 1-36 in slot order; physical locations differ from ours. Drop 52183 / 32767 placeholders and keep -20 to 80 C. "
+mapped,likely,existing,,BMS,Temp10,C,bms.pack_temps_6_centicelsius,val_2,0.01 C,x 0.01,3.818,0.8,0.365,99739.0,7.0,17.0,13.296624189133638,228133.0,346.0,65531.0,3708.2431169537062,"Always-present sensor (blocks 2, 5-12), renumbered 1-36 in slot order; physical locations differ from ours. Drop 52183 / 32767 placeholders and keep -20 to 80 C. "
+mapped,likely,existing,,BMS,Temp11,C,bms.pack_temps_6_centicelsius,val_3,0.01 C,x 0.01,3.818,0.8,0.365,99739.0,7.0,18.0,13.71790372873199,228133.0,0.0,65528.0,3647.2785918740383,"Always-present sensor (blocks 2, 5-12), renumbered 1-36 in slot order; physical locations differ from ours. Drop 52183 / 32767 placeholders and keep -20 to 80 C. "
+mapped,likely,existing,,BMS,Temp12,C,bms.pack_temps_6_centicelsius,val_4,0.01 C,x 0.01,3.818,0.8,0.365,99739.0,5.0,16.0,12.030178766580775,228133.0,0.0,65535.0,3625.494286227771,"Always-present sensor (blocks 2, 5-12), renumbered 1-36 in slot order; physical locations differ from ours. Drop 52183 / 32767 placeholders and keep -20 to 80 C. "
+mapped,likely,existing,,BMS,Temp13,C,bms.pack_temps_7_centicelsius,val_1,0.01 C,x 0.01,3.818,0.73,0.34,99739.0,7.0,17.0,12.77505288803778,212387.0,257.0,58907.0,3585.6749236064356,"Always-present sensor (blocks 2, 5-12), renumbered 1-36 in slot order; physical locations differ from ours. Drop 52183 / 32767 placeholders and keep -20 to 80 C. "
+mapped,likely,existing,,BMS,Temp14,C,bms.pack_temps_7_centicelsius,val_2,0.01 C,x 0.01,3.818,0.73,0.34,99739.0,8.0,18.0,13.912220896539967,212387.0,257.0,65532.0,3715.810779379152,"Always-present sensor (blocks 2, 5-12), renumbered 1-36 in slot order; physical locations differ from ours. Drop 52183 / 32767 placeholders and keep -20 to 80 C. "
+mapped,likely,existing,,BMS,Temp15,C,bms.pack_temps_7_centicelsius,val_3,0.01 C,x 0.01,3.818,0.73,0.34,99739.0,7.0,16.0,13.1153310139464,212387.0,257.0,65534.0,3650.348990286599,"Always-present sensor (blocks 2, 5-12), renumbered 1-36 in slot order; physical locations differ from ours. Drop 52183 / 32767 placeholders and keep -20 to 80 C. "
+mapped,likely,existing,,BMS,Temp16,C,bms.pack_temps_7_centicelsius,val_4,0.01 C,x 0.01,3.818,0.73,0.34,99739.0,7.0,15.0,12.054351858350294,212387.0,0.0,65535.0,3626.3601821203742,"Always-present sensor (blocks 2, 5-12), renumbered 1-36 in slot order; physical locations differ from ours. Drop 52183 / 32767 placeholders and keep -20 to 80 C. "
+mapped,likely,existing,,BMS,Temp17,C,bms.pack_temps_8_centicelsius,val_1,0.01 C,x 0.01,3.818,0.68,0.307,99739.0,7.0,35.0,13.316816892088353,191685.0,257.0,61139.0,3594.958004017007,"Always-present sensor (blocks 2, 5-12), renumbered 1-36 in slot order; physical locations differ from ours. Drop 52183 / 32767 placeholders and keep -20 to 80 C. "
+mapped,likely,existing,,BMS,Temp18,C,bms.pack_temps_8_centicelsius,val_2,0.01 C,x 0.01,3.818,0.68,0.307,99739.0,7.0,26.0,12.787725964768043,191685.0,257.0,65471.0,3685.4561128935497,"Always-present sensor (blocks 2, 5-12), renumbered 1-36 in slot order; physical locations differ from ours. Drop 52183 / 32767 placeholders and keep -20 to 80 C. "
+mapped,likely,existing,,BMS,Temp19,C,bms.pack_temps_8_centicelsius,val_3,0.01 C,x 0.01,3.818,0.68,0.307,99739.0,7.0,16.0,12.384694051474348,191685.0,0.0,65515.0,3664.5539296241222,"Always-present sensor (blocks 2, 5-12), renumbered 1-36 in slot order; physical locations differ from ours. Drop 52183 / 32767 placeholders and keep -20 to 80 C. "
+mapped,likely,existing,,BMS,Temp2,C,bms.pack_temps_2_centicelsius,val_2,0.01 C,x 0.01,3.818,0.97,0.46,99739.0,7.0,17.0,13.366526634516086,287159.0,257.0,65363.0,3520.372932765471,"Always-present sensor (blocks 2, 5-12), renumbered 1-36 in slot order; physical locations differ from ours. Drop 52183 / 32767 placeholders and keep -20 to 80 C. "
+mapped,likely,existing,,BMS,Temp20,C,bms.pack_temps_8_centicelsius,val_4,0.01 C,x 0.01,3.818,0.68,0.307,99739.0,7.0,17.0,12.417419464803135,191685.0,0.0,65535.0,3638.6698228865066,"Always-present sensor (blocks 2, 5-12), renumbered 1-36 in slot order; physical locations differ from ours. Drop 52183 / 32767 placeholders and keep -20 to 80 C. "
+mapped,likely,existing,,BMS,Temp21,C,bms.pack_temps_9_centicelsius,val_1,0.01 C,x 0.01,3.818,0.62,0.28,99739.0,7.0,16.0,12.331735830517651,174685.0,789.0,32415.0,3632.020963448493,"Always-present sensor (blocks 2, 5-12), renumbered 1-36 in slot order; physical locations differ from ours. Drop 52183 / 32767 placeholders and keep -20 to 80 C. "
+mapped,likely,existing,,BMS,Temp22,C,bms.pack_temps_9_centicelsius,val_2,0.01 C,x 0.01,3.818,0.62,0.28,99739.0,7.0,17.0,12.791475751711967,174685.0,0.0,65424.0,3925.4118613504306,"Always-present sensor (blocks 2, 5-12), renumbered 1-36 in slot order; physical locations differ from ours. Drop 52183 / 32767 placeholders and keep -20 to 80 C. "
+mapped,likely,existing,,BMS,Temp23,C,bms.pack_temps_9_centicelsius,val_3,0.01 C,x 0.01,3.818,0.62,0.28,99739.0,7.0,16.0,12.760143975776778,174685.0,0.0,65534.0,3661.9459083493143,"Always-present sensor (blocks 2, 5-12), renumbered 1-36 in slot order; physical locations differ from ours. Drop 52183 / 32767 placeholders and keep -20 to 80 C. "
+mapped,likely,existing,,BMS,Temp24,C,bms.pack_temps_9_centicelsius,val_4,0.01 C,x 0.01,3.818,0.62,0.28,99739.0,7.0,15.0,11.858410451277836,174685.0,0.0,65535.0,3643.194979534591,"Always-present sensor (blocks 2, 5-12), renumbered 1-36 in slot order; physical locations differ from ours. Drop 52183 / 32767 placeholders and keep -20 to 80 C. "
+mapped,likely,existing,,BMS,Temp25,C,bms.pack_temps_10_centicelsius,val_1,0.01 C,x 0.01,3.818,0.55,0.245,99739.0,7.0,15.0,12.12062483080841,153299.0,770.0,52183.0,3572.7413355599188,"Always-present sensor (blocks 2, 5-12), renumbered 1-36 in slot order; physical locations differ from ours. Drop 52183 / 32767 placeholders and keep -20 to 80 C. "
+mapped,likely,existing,,BMS,Temp26,C,bms.pack_temps_10_centicelsius,val_2,0.01 C,x 0.01,3.818,0.55,0.245,99739.0,7.0,17.0,13.124434774762127,153299.0,446.0,65397.0,3623.4258279571295,"Always-present sensor (blocks 2, 5-12), renumbered 1-36 in slot order; physical locations differ from ours. Drop 52183 / 32767 placeholders and keep -20 to 80 C. "
+mapped,likely,existing,,BMS,Temp27,C,bms.pack_temps_10_centicelsius,val_3,0.01 C,x 0.01,3.818,0.55,0.245,99739.0,7.0,18.0,13.41765006667402,153299.0,0.0,65534.0,3646.7120268233975,"Always-present sensor (blocks 2, 5-12), renumbered 1-36 in slot order; physical locations differ from ours. Drop 52183 / 32767 placeholders and keep -20 to 80 C. "
+mapped,likely,existing,,BMS,Temp28,C,bms.pack_temps_10_centicelsius,val_4,0.01 C,x 0.01,3.818,0.55,0.245,99739.0,7.0,17.0,12.407954761928634,153299.0,0.0,65535.0,3594.5515430629034,"Always-present sensor (blocks 2, 5-12), renumbered 1-36 in slot order; physical locations differ from ours. Drop 52183 / 32767 placeholders and keep -20 to 80 C. "
+mapped,likely,existing,,BMS,Temp29,C,bms.pack_temps_11_centicelsius,val_1,0.01 C,x 0.01,3.818,0.47,0.207,99739.0,7.0,17.0,12.355868817613972,129574.0,257.0,64556.0,3641.422978375291,"Always-present sensor (blocks 2, 5-12), renumbered 1-36 in slot order; physical locations differ from ours. Drop 52183 / 32767 placeholders and keep -20 to 80 C. "
+mapped,likely,existing,,BMS,Temp3,C,bms.pack_temps_2_centicelsius,val_3,0.01 C,x 0.01,3.818,0.97,0.46,99739.0,7.0,19.0,14.455007569757068,287159.0,0.0,65534.0,3550.2840203510946,"Always-present sensor (blocks 2, 5-12), renumbered 1-36 in slot order; physical locations differ from ours. Drop 52183 / 32767 placeholders and keep -20 to 80 C. "
+mapped,likely,existing,,BMS,Temp30,C,bms.pack_temps_11_centicelsius,val_2,0.01 C,x 0.01,3.818,0.47,0.207,99739.0,7.0,17.0,12.617802464432168,129574.0,257.0,65527.0,3733.333315325606,"Always-present sensor (blocks 2, 5-12), renumbered 1-36 in slot order; physical locations differ from ours. Drop 52183 / 32767 placeholders and keep -20 to 80 C. "
+mapped,likely,existing,,BMS,Temp31,C,bms.pack_temps_11_centicelsius,val_3,0.01 C,x 0.01,3.818,0.47,0.207,99739.0,7.0,16.0,12.58533773147916,129574.0,0.0,65535.0,3657.76362541868,"Always-present sensor (blocks 2, 5-12), renumbered 1-36 in slot order; physical locations differ from ours. Drop 52183 / 32767 placeholders and keep -20 to 80 C. "
+mapped,likely,existing,,BMS,Temp32,C,bms.pack_temps_11_centicelsius,val_4,0.01 C,x 0.01,3.818,0.47,0.207,99739.0,8.0,16.0,12.87433200653706,129574.0,0.0,65535.0,3657.815919860466,"Always-present sensor (blocks 2, 5-12), renumbered 1-36 in slot order; physical locations differ from ours. Drop 52183 / 32767 placeholders and keep -20 to 80 C. "
+mapped,likely,new,,BMS,Temp33,C,bms.pack_temps_12_centicelsius,val_1,0.01 C,x 0.01,,0.4,0.186,,,,,116083.0,257.0,25829.0,3592.2916016987847,"Always-present sensor (blocks 2, 5-12), renumbered 1-36 in slot order; physical locations differ from ours. Drop 52183 / 32767 placeholders and keep -20 to 80 C. We only have Temp1-32, so this is a new field."
+mapped,likely,new,,BMS,Temp34,C,bms.pack_temps_12_centicelsius,val_2,0.01 C,x 0.01,,0.4,0.186,,,,,116083.0,257.0,65525.0,3766.120241551304,"Always-present sensor (blocks 2, 5-12), renumbered 1-36 in slot order; physical locations differ from ours. Drop 52183 / 32767 placeholders and keep -20 to 80 C. We only have Temp1-32, so this is a new field."
+mapped,likely,new,,BMS,Temp35,C,bms.pack_temps_12_centicelsius,val_3,0.01 C,x 0.01,,0.4,0.186,,,,,116083.0,0.0,65531.0,3630.141157619979,"Always-present sensor (blocks 2, 5-12), renumbered 1-36 in slot order; physical locations differ from ours. Drop 52183 / 32767 placeholders and keep -20 to 80 C. We only have Temp1-32, so this is a new field."
+mapped,likely,new,,BMS,Temp36,C,bms.pack_temps_12_centicelsius,val_4,0.01 C,x 0.01,,0.4,0.186,,,,,116083.0,0.0,65535.0,3612.6019313766874,"Always-present sensor (blocks 2, 5-12), renumbered 1-36 in slot order; physical locations differ from ours. Drop 52183 / 32767 placeholders and keep -20 to 80 C. We only have Temp1-32, so this is a new field."
+mapped,likely,new,,BMS,Temp37,C,bms.pack_temps_13_centicelsius,val_1,0.01 C,x 0.01,,0.35,0.157,,,,,97765.0,840.0,52183.0,35965.67064900527,"Intermittent sensor (blocks 13-18): real readings only on Jul 27, Jul 28 and the evening of Jul 30 CDT, placeholder 52183 otherwise. Drop 52183 and keep -20 to 80 C. New field."
+mapped,likely,new,,BMS,Temp38,C,bms.pack_temps_13_centicelsius,val_2,0.01 C,x 0.01,,0.35,0.157,,,,,97765.0,349.0,65445.0,35973.02860942055,"Intermittent sensor (blocks 13-18): real readings only on Jul 27, Jul 28 and the evening of Jul 30 CDT, placeholder 52183 otherwise. Drop 52183 and keep -20 to 80 C. New field."
+mapped,likely,new,,BMS,Temp39,C,bms.pack_temps_13_centicelsius,val_3,0.01 C,x 0.01,,0.35,0.157,,,,,97765.0,257.0,65458.0,35912.505477420345,"Intermittent sensor (blocks 13-18): real readings only on Jul 27, Jul 28 and the evening of Jul 30 CDT, placeholder 52183 otherwise. Drop 52183 and keep -20 to 80 C. New field."
+mapped,likely,existing,,BMS,Temp4,C,bms.pack_temps_2_centicelsius,val_4,0.01 C,x 0.01,3.818,0.97,0.46,99739.0,7.0,19.0,14.87844273553976,287159.0,0.0,65535.0,3507.9002712782813,"Always-present sensor (blocks 2, 5-12), renumbered 1-36 in slot order; physical locations differ from ours. Drop 52183 / 32767 placeholders and keep -20 to 80 C. "
+mapped,likely,new,,BMS,Temp40,C,bms.pack_temps_13_centicelsius,val_4,0.01 C,x 0.01,,0.35,0.157,,,,,97765.0,0.0,65535.0,35866.71180892958,"Intermittent sensor (blocks 13-18): real readings only on Jul 27, Jul 28 and the evening of Jul 30 CDT, placeholder 52183 otherwise. Drop 52183 and keep -20 to 80 C. New field."
+mapped,likely,new,,BMS,Temp41,C,bms.pack_temps_14_centicelsius,val_1,0.01 C,x 0.01,,0.32,0.138,,,,,86259.0,257.0,60859.0,36087.52895350051,"Intermittent sensor (blocks 13-18): real readings only on Jul 27, Jul 28 and the evening of Jul 30 CDT, placeholder 52183 otherwise. Drop 52183 and keep -20 to 80 C. New field."
+mapped,likely,new,,BMS,Temp42,C,bms.pack_temps_14_centicelsius,val_2,0.01 C,x 0.01,,0.32,0.138,,,,,86259.0,257.0,65501.0,36054.86327223826,"Intermittent sensor (blocks 13-18): real readings only on Jul 27, Jul 28 and the evening of Jul 30 CDT, placeholder 52183 otherwise. Drop 52183 and keep -20 to 80 C. New field."
+mapped,likely,new,,BMS,Temp43,C,bms.pack_temps_14_centicelsius,val_3,0.01 C,x 0.01,,0.32,0.138,,,,,86259.0,50.0,65535.0,35047.97471568184,"Intermittent sensor (blocks 13-18): real readings only on Jul 27, Jul 28 and the evening of Jul 30 CDT, placeholder 52183 otherwise. Drop 52183 and keep -20 to 80 C. New field."
+mapped,likely,new,,BMS,Temp44,C,bms.pack_temps_14_centicelsius,val_4,0.01 C,x 0.01,,0.32,0.138,,,,,86259.0,0.0,65535.0,34875.18190565622,"Intermittent sensor (blocks 13-18): real readings only on Jul 27, Jul 28 and the evening of Jul 30 CDT, placeholder 52183 otherwise. Drop 52183 and keep -20 to 80 C. New field."
+mapped,likely,new,,BMS,Temp45,C,bms.pack_temps_15_centicelsius,val_1,0.01 C,x 0.01,,0.25,0.113,,,,,70367.0,983.0,52183.0,36295.67366805463,"Intermittent sensor (blocks 13-18): real readings only on Jul 27, Jul 28 and the evening of Jul 30 CDT, placeholder 52183 otherwise. Drop 52183 and keep -20 to 80 C. New field."
+mapped,likely,new,,BMS,Temp46,C,bms.pack_temps_15_centicelsius,val_2,0.01 C,x 0.01,,0.25,0.113,,,,,70367.0,257.0,52183.0,36307.02452854321,"Intermittent sensor (blocks 13-18): real readings only on Jul 27, Jul 28 and the evening of Jul 30 CDT, placeholder 52183 otherwise. Drop 52183 and keep -20 to 80 C. New field."
+mapped,likely,new,,BMS,Temp47,C,bms.pack_temps_15_centicelsius,val_3,0.01 C,x 0.01,,0.25,0.113,,,,,70367.0,50.0,65527.0,36104.21522872938,"Intermittent sensor (blocks 13-18): real readings only on Jul 27, Jul 28 and the evening of Jul 30 CDT, placeholder 52183 otherwise. Drop 52183 and keep -20 to 80 C. New field."
+mapped,likely,new,,BMS,Temp48,C,bms.pack_temps_15_centicelsius,val_4,0.01 C,x 0.01,,0.25,0.113,,,,,70367.0,0.0,65535.0,36086.25277473816,"Intermittent sensor (blocks 13-18): real readings only on Jul 27, Jul 28 and the evening of Jul 30 CDT, placeholder 52183 otherwise. Drop 52183 and keep -20 to 80 C. New field."
+mapped,likely,new,,BMS,Temp49,C,bms.pack_temps_16_centicelsius,val_1,0.01 C,x 0.01,,0.22,0.093,,,,,57800.0,257.0,52183.0,35748.58847750865,"Intermittent sensor (blocks 13-18): real readings only on Jul 27, Jul 28 and the evening of Jul 30 CDT, placeholder 52183 otherwise. Drop 52183 and keep -20 to 80 C. New field."
+mapped,likely,existing,,BMS,Temp5,C,bms.pack_temps_5_centicelsius,val_1,0.01 C,x 0.01,3.818,0.85,0.392,99739.0,0.0,255.0,13.913464141409078,244800.0,257.0,58632.0,3598.712822712418,"Always-present sensor (blocks 2, 5-12), renumbered 1-36 in slot order; physical locations differ from ours. Drop 52183 / 32767 placeholders and keep -20 to 80 C. "
+mapped,likely,new,,BMS,Temp50,C,bms.pack_temps_16_centicelsius,val_2,0.01 C,x 0.01,,0.22,0.093,,,,,57800.0,257.0,65420.0,35743.83847750865,"Intermittent sensor (blocks 13-18): real readings only on Jul 27, Jul 28 and the evening of Jul 30 CDT, placeholder 52183 otherwise. Drop 52183 and keep -20 to 80 C. New field."
+mapped,likely,new,,BMS,Temp51,C,bms.pack_temps_16_centicelsius,val_3,0.01 C,x 0.01,,0.22,0.093,,,,,57800.0,257.0,65533.0,35671.96136678201,"Intermittent sensor (blocks 13-18): real readings only on Jul 27, Jul 28 and the evening of Jul 30 CDT, placeholder 52183 otherwise. Drop 52183 and keep -20 to 80 C. New field."
+mapped,likely,new,,BMS,Temp52,C,bms.pack_temps_16_centicelsius,val_4,0.01 C,x 0.01,,0.22,0.093,,,,,57800.0,279.0,65535.0,35676.49311418685,"Intermittent sensor (blocks 13-18): real readings only on Jul 27, Jul 28 and the evening of Jul 30 CDT, placeholder 52183 otherwise. Drop 52183 and keep -20 to 80 C. New field."
+mapped,likely,new,,BMS,Temp53,C,bms.pack_temps_17_centicelsius,val_1,0.01 C,x 0.01,,0.22,0.087,,,,,54170.0,257.0,52183.0,35620.24727709064,"Intermittent sensor (blocks 13-18): real readings only on Jul 27, Jul 28 and the evening of Jul 30 CDT, placeholder 52183 otherwise. Drop 52183 and keep -20 to 80 C. New field."
+mapped,likely,new,,BMS,Temp54,C,bms.pack_temps_17_centicelsius,val_2,0.01 C,x 0.01,,0.22,0.087,,,,,54170.0,1.0,65362.0,35642.526379915085,"Intermittent sensor (blocks 13-18): real readings only on Jul 27, Jul 28 and the evening of Jul 30 CDT, placeholder 52183 otherwise. Drop 52183 and keep -20 to 80 C. New field."
+mapped,likely,new,,BMS,Temp55,C,bms.pack_temps_17_centicelsius,val_3,0.01 C,x 0.01,,0.22,0.087,,,,,54170.0,0.0,65399.0,35373.47267860439,"Intermittent sensor (blocks 13-18): real readings only on Jul 27, Jul 28 and the evening of Jul 30 CDT, placeholder 52183 otherwise. Drop 52183 and keep -20 to 80 C. New field."
+mapped,likely,new,,BMS,Temp56,C,bms.pack_temps_17_centicelsius,val_4,0.01 C,x 0.01,,0.22,0.087,,,,,54170.0,0.0,65535.0,35344.05176296843,"Intermittent sensor (blocks 13-18): real readings only on Jul 27, Jul 28 and the evening of Jul 30 CDT, placeholder 52183 otherwise. Drop 52183 and keep -20 to 80 C. New field."
+mapped,likely,new,,BMS,Temp57,C,bms.pack_temps_18_centicelsius,val_1,0.01 C,x 0.01,,0.2,0.083,,,,,51595.0,257.0,52183.0,35544.64558581258,"Intermittent sensor (blocks 13-18): real readings only on Jul 27, Jul 28 and the evening of Jul 30 CDT, placeholder 52183 otherwise. Drop 52183 and keep -20 to 80 C. New field."
+mapped,likely,new,,BMS,Temp58,C,bms.pack_temps_18_centicelsius,val_2,0.01 C,x 0.01,,0.2,0.083,,,,,51595.0,1.0,65495.0,35555.69349743192,"Intermittent sensor (blocks 13-18): real readings only on Jul 27, Jul 28 and the evening of Jul 30 CDT, placeholder 52183 otherwise. Drop 52183 and keep -20 to 80 C. New field."
+mapped,likely,new,,BMS,Temp59,C,bms.pack_temps_18_centicelsius,val_3,0.01 C,x 0.01,,0.2,0.083,,,,,51595.0,0.0,65490.0,35466.29923442194,"Intermittent sensor (blocks 13-18): real readings only on Jul 27, Jul 28 and the evening of Jul 30 CDT, placeholder 52183 otherwise. Drop 52183 and keep -20 to 80 C. New field."
+mapped,likely,existing,,BMS,Temp6,C,bms.pack_temps_5_centicelsius,val_2,0.01 C,x 0.01,3.818,0.85,0.392,99739.0,7.0,16.0,13.438905543468453,244800.0,257.0,65535.0,3603.7768586601305,"Always-present sensor (blocks 2, 5-12), renumbered 1-36 in slot order; physical locations differ from ours. Drop 52183 / 32767 placeholders and keep -20 to 80 C. "
+mapped,likely,new,,BMS,Temp60,C,bms.pack_temps_18_centicelsius,val_4,0.01 C,x 0.01,,0.2,0.083,,,,,51595.0,0.0,65535.0,35446.40686112995,"Intermittent sensor (blocks 13-18): real readings only on Jul 27, Jul 28 and the evening of Jul 30 CDT, placeholder 52183 otherwise. Drop 52183 and keep -20 to 80 C. New field."
+mapped,likely,existing,,BMS,Temp7,C,bms.pack_temps_5_centicelsius,val_3,0.01 C,x 0.01,3.818,0.85,0.392,99739.0,7.0,16.0,13.379690993493016,244800.0,0.0,65535.0,3577.738071895425,"Always-present sensor (blocks 2, 5-12), renumbered 1-36 in slot order; physical locations differ from ours. Drop 52183 / 32767 placeholders and keep -20 to 80 C. "
+mapped,likely,existing,,BMS,Temp8,C,bms.pack_temps_5_centicelsius,val_4,0.01 C,x 0.01,3.818,0.85,0.392,99739.0,7.0,16.0,13.142140987978625,244800.0,0.0,65535.0,3571.5163725490197,"Always-present sensor (blocks 2, 5-12), renumbered 1-36 in slot order; physical locations differ from ours. Drop 52183 / 32767 placeholders and keep -20 to 80 C. "
+mapped,likely,existing,,BMS,Temp9,C,bms.pack_temps_6_centicelsius,val_1,0.01 C,x 0.01,3.818,0.8,0.365,99739.0,7.0,16.0,12.636872236537362,228133.0,768.0,64551.0,3624.358225245799,"Always-present sensor (blocks 2, 5-12), renumbered 1-36 in slot order; physical locations differ from ours. Drop 52183 / 32767 placeholders and keep -20 to 80 C. "
+mapped,exact,canonical,PackVoltage,BMS,TotalPackVoltage,V,bms.pack_voltage_V,value,V,x 1,3.818,1.13,0.552,99740.0,116.8461538487712,128.162393165264,125.65095532854176,344747.0,-8.77757794829185e+33,1.7937639330770955e+38,5.202863605345901e+32,~123.6 V while driving (34 cells in series x ~3.63 V). Has dropouts to 0 - filter out zeros before averaging.
+mapped,likely,existing,,BMS,Voltage1,V,bms.bank_voltages_1_*0.1mV,val_1,0.1 mV,x 0.0001,3.818,1.12,0.547,99739.0,3.627450980345,3.999999999948,3.9187410513481047,341673.0,257.0,65457.0,35261.741603814175,"Bank n = n-th parallel group in series, same as our Module n. Keep 2.5-4.3 V. "
+mapped,likely,existing,,BMS,Voltage10,V,bms.bank_voltages_3_*0.1mV,val_2,0.1 mV,x 0.0001,3.818,1.12,0.541,99739.0,3.627450980345,3.999999999948,3.914823375233098,337897.0,257.0,52183.0,35253.13694705783,"Bank n = n-th parallel group in series, same as our Module n. Keep 2.5-4.3 V. "
+mapped,likely,existing,,BMS,Voltage11,V,bms.bank_voltages_3_*0.1mV,val_3,0.1 mV,x 0.0001,3.818,1.12,0.541,99739.0,3.607843137208,3.999999999948,3.914806664952601,337897.0,257.0,65535.0,35163.50244009269,"Bank n = n-th parallel group in series, same as our Module n. Keep 2.5-4.3 V. "
+mapped,likely,existing,,BMS,Voltage12,V,bms.bank_voltages_3_*0.1mV,val_4,0.1 mV,x 0.0001,3.818,1.12,0.541,99739.0,3.607843137208,3.999999999948,3.91489198567891,337897.0,279.0,65535.0,35226.41728692471,"Bank n = n-th parallel group in series, same as our Module n. Keep 2.5-4.3 V. "
+mapped,likely,existing,,BMS,Voltage13,V,bms.bank_voltages_4_*0.1mV,val_1,0.1 mV,x 0.0001,3.818,1.1,0.536,99739.0,3.588235294071,3.999999999948,3.919431284228472,334946.0,257.0,65535.0,35160.68396398226,"Bank n = n-th parallel group in series, same as our Module n. Keep 2.5-4.3 V. "
+mapped,likely,existing,,BMS,Voltage14,V,bms.bank_voltages_4_*0.1mV,val_2,0.1 mV,x 0.0001,3.818,1.1,0.536,99739.0,3.647058823482,3.999999999948,3.919338689615354,334946.0,257.0,65535.0,35142.94871113553,"Bank n = n-th parallel group in series, same as our Module n. Keep 2.5-4.3 V. "
+mapped,likely,existing,,BMS,Voltage15,V,bms.bank_voltages_4_*0.1mV,val_3,0.1 mV,x 0.0001,3.818,1.1,0.536,99739.0,3.647058823482,3.999999999948,3.9194790559715416,334946.0,257.0,65535.0,35109.179351298415,"Bank n = n-th parallel group in series, same as our Module n. Keep 2.5-4.3 V. "
+mapped,likely,existing,,BMS,Voltage16,V,bms.bank_voltages_4_*0.1mV,val_4,0.1 mV,x 0.0001,3.818,1.1,0.536,99739.0,3.627450980345,3.999999999948,3.9184697550294265,334946.0,279.0,65535.0,35148.90539967637,"Bank n = n-th parallel group in series, same as our Module n. Keep 2.5-4.3 V. "
+mapped,likely,existing,,BMS,Voltage17,V,bms.bank_voltages_5_*0.1mV,val_1,0.1 mV,x 0.0001,3.818,1.08,0.531,99739.0,3.627450980345,3.999999999948,3.9140686603291672,331853.0,257.0,65535.0,35228.837015184436,"Bank n = n-th parallel group in series, same as our Module n. Keep 2.5-4.3 V. "
+mapped,likely,existing,,BMS,Voltage18,V,bms.bank_voltages_5_*0.1mV,val_2,0.1 mV,x 0.0001,3.818,1.08,0.531,99739.0,3.627450980345,3.999999999948,3.9138793426806977,331853.0,257.0,65535.0,35246.32714485028,"Bank n = n-th parallel group in series, same as our Module n. Keep 2.5-4.3 V. "
+mapped,likely,existing,,BMS,Voltage19,V,bms.bank_voltages_5_*0.1mV,val_3,0.1 mV,x 0.0001,3.818,1.08,0.531,99739.0,3.627450980345,3.999999999948,3.9141148593399584,331853.0,257.0,65535.0,35125.781788924614,"Bank n = n-th parallel group in series, same as our Module n. Keep 2.5-4.3 V. "
+mapped,likely,existing,,BMS,Voltage2,V,bms.bank_voltages_1_*0.1mV,val_2,0.1 mV,x 0.0001,3.818,1.12,0.547,99739.0,3.647058823482,3.999999999948,3.9196628690570248,341673.0,0.0,60618.0,35321.90098720121,"Bank n = n-th parallel group in series, same as our Module n. Keep 2.5-4.3 V. "
+mapped,likely,existing,,BMS,Voltage20,V,bms.bank_voltages_5_*0.1mV,val_4,0.1 mV,x 0.0001,3.818,1.08,0.531,99739.0,3.627450980345,3.999999999948,3.91445358655524,331853.0,0.0,65535.0,35170.2140405541,"Bank n = n-th parallel group in series, same as our Module n. Keep 2.5-4.3 V. "
+mapped,likely,existing,,BMS,Voltage21,V,bms.bank_voltages_6_*0.1mV,val_1,0.1 mV,x 0.0001,3.818,1.08,0.524,99739.0,3.568627450934,3.960784313674,3.89146633492685,327293.0,257.0,65535.0,35162.12696269092,"Bank n = n-th parallel group in series, same as our Module n. Keep 2.5-4.3 V. "
+mapped,likely,existing,,BMS,Voltage22,V,bms.bank_voltages_6_*0.1mV,val_2,0.1 mV,x 0.0001,3.818,1.08,0.524,99739.0,3.627450980345,3.999999999948,3.9148933618196584,327293.0,257.0,65535.0,35162.88377997696,"Bank n = n-th parallel group in series, same as our Module n. Keep 2.5-4.3 V. "
+mapped,likely,existing,,BMS,Voltage23,V,bms.bank_voltages_6_*0.1mV,val_3,0.1 mV,x 0.0001,3.818,1.08,0.524,99739.0,3.607843137208,3.999999999948,3.914024034050662,327293.0,0.0,65534.0,35060.6512941004,"Bank n = n-th parallel group in series, same as our Module n. Keep 2.5-4.3 V. "
+mapped,likely,existing,,BMS,Voltage24,V,bms.bank_voltages_6_*0.1mV,val_4,0.1 mV,x 0.0001,3.818,1.08,0.524,99739.0,3.627450980345,3.999999999948,3.914626980289355,327293.0,0.0,65535.0,35092.1838077808,"Bank n = n-th parallel group in series, same as our Module n. Keep 2.5-4.3 V. "
+mapped,likely,existing,,BMS,Voltage25,V,bms.bank_voltages_7_*0.1mV,val_1,0.1 mV,x 0.0001,3.818,1.07,0.516,99739.0,3.607843137208,3.999999999948,3.9195372470659815,322093.0,0.0,64531.0,35095.99746657022,"Bank n = n-th parallel group in series, same as our Module n. Keep 2.5-4.3 V. "
+mapped,likely,existing,,BMS,Voltage26,V,bms.bank_voltages_7_*0.1mV,val_2,0.1 mV,x 0.0001,3.818,1.07,0.516,99739.0,3.647058823482,3.999999999948,3.9194295149046527,322093.0,0.0,65522.0,35099.296709335504,"Bank n = n-th parallel group in series, same as our Module n. Keep 2.5-4.3 V. "
+mapped,likely,existing,,BMS,Voltage27,V,bms.bank_voltages_7_*0.1mV,val_3,0.1 mV,x 0.0001,3.818,1.07,0.516,99739.0,3.627450980345,3.999999999948,3.9191582185859706,322093.0,0.0,65527.0,35034.84824879771,"Bank n = n-th parallel group in series, same as our Module n. Keep 2.5-4.3 V. "
+mapped,likely,existing,,BMS,Voltage28,V,bms.bank_voltages_7_*0.1mV,val_4,0.1 mV,x 0.0001,3.818,1.07,0.516,99739.0,3.627450980345,3.999999999948,3.919193998245389,322093.0,0.0,65535.0,35095.312561899824,"Bank n = n-th parallel group in series, same as our Module n. Keep 2.5-4.3 V. "
+mapped,likely,existing,,BMS,Voltage29,V,bms.bank_voltages_8_*0.1mV,val_1,0.1 mV,x 0.0001,3.818,1.05,0.506,99739.0,3.627450980345,3.999999999948,3.91985710149388,315934.0,0.0,52204.0,35278.95026492875,"Bank n = n-th parallel group in series, same as our Module n. Keep 2.5-4.3 V. "
+mapped,likely,existing,,BMS,Voltage3,V,bms.bank_voltages_1_*0.1mV,val_3,0.1 mV,x 0.0001,3.818,1.12,0.547,99739.0,3.647058823482,3.999999999948,3.919968765485915,341673.0,0.0,65366.0,35229.6728480155,"Bank n = n-th parallel group in series, same as our Module n. Keep 2.5-4.3 V. "
+mapped,likely,existing,,BMS,Voltage30,V,bms.bank_voltages_8_*0.1mV,val_2,0.1 mV,x 0.0001,3.818,1.05,0.506,99739.0,3.647058823482,3.999999999948,3.919346356685228,315934.0,0.0,65501.0,35251.31420486557,"Bank n = n-th parallel group in series, same as our Module n. Keep 2.5-4.3 V. "
+mapped,likely,existing,,BMS,Voltage31,V,bms.bank_voltages_8_*0.1mV,val_3,0.1 mV,x 0.0001,3.818,1.05,0.506,99739.0,3.627450980345,3.999999999948,3.9197682421199342,315934.0,257.0,65511.0,35250.58016864282,"Bank n = n-th parallel group in series, same as our Module n. Keep 2.5-4.3 V. "
+mapped,likely,existing,,BMS,Voltage32,V,bms.bank_voltages_8_*0.1mV,val_4,0.1 mV,x 0.0001,3.818,1.05,0.506,99739.0,3.627450980345,3.999999999948,3.919546093685068,315934.0,0.0,65535.0,35254.368415555145,"Bank n = n-th parallel group in series, same as our Module n. Keep 2.5-4.3 V. "
+mapped,likely,new,,BMS,Voltage33,V,bms.bank_voltages_9_*0.1mV,val_1,0.1 mV,x 0.0001,,1.03,0.491,,,,,306925.0,0.0,40929.0,35265.4524069398,"Bank n = n-th parallel group in series, same as our Module n. Keep 2.5-4.3 V. We only have Voltage1-32, so this is a new field."
+mapped,likely,new,,BMS,Voltage34,V,bms.bank_voltages_9_*0.1mV,val_2,0.1 mV,x 0.0001,,1.03,0.491,,,,,306925.0,257.0,62542.0,35331.22228557465,"Bank n = n-th parallel group in series, same as our Module n. Keep 2.5-4.3 V. We only have Voltage1-32, so this is a new field."
+mapped,likely,existing,,BMS,Voltage4,V,bms.bank_voltages_1_*0.1mV,val_4,0.1 mV,x 0.0001,3.818,1.12,0.547,99739.0,3.647058823482,3.999999999948,3.920004741736872,341673.0,0.0,65535.0,35368.18432536373,"Bank n = n-th parallel group in series, same as our Module n. Keep 2.5-4.3 V. "
+mapped,likely,existing,,BMS,Voltage5,V,bms.bank_voltages_2_*0.1mV,val_1,0.1 mV,x 0.0001,3.818,1.12,0.544,99739.0,3.627450980345,3.999999999948,3.920314569996471,340126.0,1.0,61772.0,35108.10872735398,"Bank n = n-th parallel group in series, same as our Module n. Keep 2.5-4.3 V. "
+mapped,likely,existing,,BMS,Voltage6,V,bms.bank_voltages_2_*0.1mV,val_2,0.1 mV,x 0.0001,3.818,1.12,0.544,99739.0,3.647058823482,3.999999999948,3.9197542841209305,340126.0,0.0,65531.0,35248.78238946743,"Bank n = n-th parallel group in series, same as our Module n. Keep 2.5-4.3 V. "
+mapped,likely,existing,,BMS,Voltage7,V,bms.bank_voltages_2_*0.1mV,val_3,0.1 mV,x 0.0001,3.818,1.12,0.544,99739.0,3.627450980345,3.999999999948,3.91938547840075,340126.0,0.0,65460.0,35188.20161057961,"Bank n = n-th parallel group in series, same as our Module n. Keep 2.5-4.3 V. "
+mapped,likely,existing,,BMS,Voltage8,V,bms.bank_voltages_2_*0.1mV,val_4,0.1 mV,x 0.0001,3.818,1.12,0.544,99739.0,3.647058823482,3.999999999948,3.919833707101181,340126.0,0.0,65535.0,35215.31569771202,"Bank n = n-th parallel group in series, same as our Module n. Keep 2.5-4.3 V. "
+mapped,likely,existing,,BMS,Voltage9,V,bms.bank_voltages_3_*0.1mV,val_1,0.1 mV,x 0.0001,3.818,1.12,0.541,99739.0,3.607843137208,3.999999999948,3.914821016134677,337897.0,257.0,52183.0,35196.84227738038,"Bank n = n-th parallel group in series, same as our Module n. Keep 2.5-4.3 V. "
+mapped,exact,canonical,MaximumModuleVoltage,BMS,VoltageofHighest,V,bms.highest_bank_voltage_*0.1mV,value,0.1 mV,x 0.0001,3.818,1.13,0.55,99740.0,3.666666666619,3.999999999948,3.9212666658293354,343491.0,263.0,65535.0,35387.38650794344,Same as above.
+mapped,exact,canonical,MinimumModuleVoltage,BMS,VoltageofLeast,V,bms.lowest_bank_voltage_*0.1mV,value,0.1 mV,x 0.0001,3.818,1.13,0.55,99740.0,3.568627450934,3.960784313674,3.8913132968743698,343978.0,0.0,40865.0,34996.23179680096,Berkeley 'bank' = parallel cell group = our 'module'. e.g. 36226 -> 3.6226 V. Per-bank values in bms.bank_voltages_{1..9}_*0.1mV fields val_1..val_4 (bank 9 val_3/val_4 always 0 -> 34 banks).
+mapped,likely,canonical,BrakePressed,DRD,BrakePressed,bool,petals.can_pedal_pos,mechBrake,raw 0-255,1 if mechBrake > 0 else 0,3.83,2.2,7.444,100075.0,0.0,1.0,0.3714314264301773,4653682.0,0.0,255.0,14.516880397070535,"Ours is 0/1. Berkeley mechBrake is analog 0-255 (median 131 when pressed). Checked against deceleration (scripts/investigate_altitude_brake.py): mechBrake > 0 is the best rule - catches 54% of clear slowing, 42% of flagged seconds are clearly slowing, only 1.5% overlap with a real accelerator press. brakePos > 0 is worse."
+mapped,likely,existing,,DRD,SOC,%,soc_ukf,value,%,x 1,3.83,0.93,0.467,100075.0,0.0,104.0,59.454778915813144,286841.0,-3.591534014947331e+31,175.70291807733767,-1.2520992518319663e+26,"Berkeley UKF estimate vs our DRD SOC (0-104 %, our own algorithm), so not directly comparable. Keep 0-110. Alternative source: calculated_values.soc_coulomb_percent (coulomb counting)."
+mapped,exact,canonical,PackCurrent,ECU,PackCurrent,A,riedon.riedon_current_mA,value,mA,x -0.001,1.806,1.92,1.759,47189.0,-8.682383459393,41.519798581737,1.716446432619178,1098887.0,-2039577099.0,2056578334.0,5328.832756234263,"SIGN FLIP. Berkeley: negative = discharging (median -19.5 A at accelPos>120). UBC: positive = discharging (firmware soc.c, and CAN_log 2026-04-02 PackCurrent mean +1.7 A, max +41.5 A while driving). Riedon shunt has garbage spikes up to +-2e9 mA - filter |I| < 60 A."
+mapped,likely,canonical,AcceleratorPosition,MC,AcceleratorPosition,%,petals.can_pedal_pos,accelPos,raw 0-255,x 100/255,3.249,2.2,7.444,84885.0,0.0,99.5,8.553219061082642,4653682.0,0.0,255.0,31.653470305878223,Ours is 0-100 % (0-99.5 on 2026-04-02). Berkeley is 8-bit 0-255.
+mapped,exact,new,,MC,MotorRPMLeft,rpm,left_mcc.left_mcc_rpm,value,rpm,x 1,,1.91,1.807,,,,,1129339.0,-3.0305505877873517e+38,19502538752.0,-2.708471319678451e+32,Per-hub-motor RPM; we have one motor. Keep 0-2000 rpm (garbage to +-3e38). x 0.10499 = km/h (0.5570 m wheel - a constant in their code).
+mapped,exact,new,,MC,MotorRPMRight,rpm,right_mcc.right_mcc_rpm,value,rpm,x 1,,1.92,1.803,,,,,1127118.0,-3.230014699848928e+38,8.118222610747552e+33,-5.236041983048246e+32,Per-hub-motor RPM; we have one motor. Keep 0-2000 rpm (garbage to +-3e38). x 0.10499 = km/h (0.5570 m wheel - a constant in their code).
+mapped,likely,canonical,VehicleSpeed,MC,MotorRotatingSpeed,km/h,calculated_values.left_speed_mph,value,mph,x 1.609344,3.249,1.91,1.807,84886.0,0.0,47.04962255091,3.091373238968472,1129320.0,-1.9771015244158655e+37,1272326528.7813857,-1.7670098922923186e+31,"Berkeley has dual hub motors (left_mcc / right_mcc); left_speed_mph and right_speed_mph are RPM-derived like ours. Equivalent raw source: left_mcc.left_mcc_rpm x 0.10499 = km/h (0.5570 m wheel - exact in 100% of samples, a constant in their code). calculated_values.speed_mph only exists on some days."
+mapped,exact,canonical,MPPTInputCurrentA,MPPT,InputCurrentA,A,mppt1.telem,Iin_1mA,mA,x 0.001,,2.37,0.686,,,,,428481.0,0.0,65535.0,2527.790571810652,
+mapped,exact,canonical,MPPTInputCurrentB,MPPT,InputCurrentB,A,mppt2.telem,Iin_1mA,mA,x 0.001,0.469,2.35,0.68,12248.0,-0.0365876257419586,0.2000185698270797,0.0182892720889562,424773.0,0.0,65485.0,2710.354881313078,
+mapped,exact,canonical,MPPTInputCurrentC,MPPT,InputCurrentC,A,mppt3.telem,Iin_1mA,mA,x 0.001,0.469,2.32,0.669,12248.0,-0.0522466711699962,0.0934708639979362,-0.0032223228179953,417882.0,0.0,65478.0,2621.367053378705,
+mapped,exact,canonical,MPPTInputVoltageA,MPPT,InputVoltageA,V,mppt1.telem,Vin_10mV,10 mV,x 0.01,,2.37,0.686,,,,,428481.0,0.0,31497.0,4422.5107157610255,mppt1 -> A. Verified: Vin x Iin == mppt1.calculated_power (25.41 V x 0.525 A = 13.34 W).
+mapped,exact,canonical,MPPTInputVoltageB,MPPT,InputVoltageB,V,mppt2.telem,Vin_10mV,10 mV,x 0.01,0.469,2.35,0.68,12248.0,0.0,50.02421188354492,47.92083757208657,424773.0,0.0,55439.0,4147.443422722254,mppt2 -> B
+mapped,exact,canonical,MPPTInputVoltageC,MPPT,InputVoltageC,V,mppt3.telem,Vin_10mV,10 mV,x 0.01,0.469,2.32,0.669,12248.0,0.0,81.8857192993164,79.02863265423117,417882.0,0.0,34588.0,5572.833053349988,mppt3 -> C
+mapped,exact,canonical,MPPTOutputVoltageA,MPPT,OutputVoltageA,V,mppt1.telem,Vout_10mV,10 mV,x 0.01,,2.37,0.686,,,,,428481.0,0.0,65535.0,11951.852649242324,~139 V (pack side)
+mapped,exact,canonical,MPPTOutputVoltageB,MPPT,OutputVoltageB,V,mppt2.telem,Vout_10mV,10 mV,x 0.01,0.469,2.35,0.68,12245.0,0.0,144.0993194580078,137.29571524854094,424773.0,0.0,65526.0,11957.31944591582,
+mapped,exact,canonical,MPPTOutputVoltageC,MPPT,OutputVoltageC,V,mppt3.telem,Vout_10mV,10 mV,x 0.01,0.469,2.32,0.669,12245.0,0.0,144.34913635253906,137.4442367173643,417882.0,0.0,65532.0,11961.989494642028,
+mapped,likely,new,,MPPT,TemperatureA,C,mppt1.telem,temp_10mC,10 mC,x 0.01,,2.37,0.686,,,,,428481.0,0.0,65535.0,5137.294780865429,"One temperature per Berkeley MPPT; which sensor it is is unknown, so not merged into our Mosfet/Controller/ConnectorTemperature. Drop 65535."
+mapped,likely,new,,MPPT,TemperatureB,C,mppt2.telem,temp_10mC,10 mC,x 0.01,,2.35,0.68,,,,,424773.0,0.0,65535.0,5448.833398073794,"One temperature per Berkeley MPPT; which sensor it is is unknown, so not merged into our Mosfet/Controller/ConnectorTemperature. Drop 65535."
+mapped,likely,new,,MPPT,TemperatureC,C,mppt3.telem,temp_10mC,10 mC,x 0.01,,2.32,0.669,,,,,417882.0,0.0,65535.0,5241.21207900795,"One temperature per Berkeley MPPT; which sensor it is is unknown, so not merged into our Mosfet/Controller/ConnectorTemperature. Drop 65535."
+mapped,likely,canonical,Acceleration_X,TEL,Acceleration_X,mg,sensors.imu_accelerometer_m/s^2,val_3,raw int16 stored unsigned,-s16(v) / 100 / 9.80665 x 1000 - 1000 where s16(v) = v - 65536 if v > 32767 else v,2.796,2.13,4.368,73039.0,-1360.5439453125,0.0,-1003.3966210165692,2729516.0,0.0,65535.0,32988.732104885996,"Axes found from the data (scripts/investigate_imu.py, investigate_imu_ubc.py). Berkeley: val_1 forward (slope +0.90 vs d(speed)/dt), val_2 left (+-1.1 m/s^2 in 1 m/s^2 turns), val_3 up (quaternions, 4 deg tilt). Ours: Z forward (corr 0.96), Y left, X down (reads -1 g). Berkeley's gravity-removed accel has a slowly drifting bias (~1.5 m/s^2 std, gravity leaking through fusion error); ours includes gravity. Filter Berkeley spikes > 50 m/s^2."
+mapped,likely,canonical,Acceleration_Y,TEL,Acceleration_Y,mg,sensors.imu_accelerometer_m/s^2,val_2,raw int16 stored unsigned,s16(v) / 100 / 9.80665 x 1000 where s16(v) = v - 65536 if v > 32767 else v,2.814,2.13,4.368,73518.0,-991.6160278320312,824.4760131835938,7.5402465082423085,2729516.0,0.0,65535.0,32047.018997140884,"Axes found from the data (scripts/investigate_imu.py, investigate_imu_ubc.py). Berkeley: val_1 forward (slope +0.90 vs d(speed)/dt), val_2 left (+-1.1 m/s^2 in 1 m/s^2 turns), val_3 up (quaternions, 4 deg tilt). Ours: Z forward (corr 0.96), Y left, X down (reads -1 g). Berkeley's gravity-removed accel has a slowly drifting bias (~1.5 m/s^2 std, gravity leaking through fusion error); ours includes gravity. Filter Berkeley spikes > 50 m/s^2."
+mapped,likely,canonical,Acceleration_Z,TEL,Acceleration_Z,mg,sensors.imu_accelerometer_m/s^2,val_1,raw int16 stored unsigned,s16(v) / 100 / 9.80665 x 1000 where s16(v) = v - 65536 if v > 32767 else v,2.73,2.13,4.368,71306.0,-633.9119873046875,234.9720001220703,-64.2329913916056,2729516.0,0.0,65535.0,27808.282381565085,"Axes found from the data (scripts/investigate_imu.py, investigate_imu_ubc.py). Berkeley: val_1 forward (slope +0.90 vs d(speed)/dt), val_2 left (+-1.1 m/s^2 in 1 m/s^2 turns), val_3 up (quaternions, 4 deg tilt). Ours: Z forward (corr 0.96), Y left, X down (reads -1 g). Berkeley's gravity-removed accel has a slowly drifting bias (~1.5 m/s^2 std, gravity leaking through fusion error); ours includes gravity. Filter Berkeley spikes > 50 m/s^2."
+mapped,exact,new,,TEL,AltitudeCalculated,m,calculated_values.altitude_ft,value,ft,x 0.3048,,15.87,4.361,,,,,482806.0,541.353017349818,1066.8284815495956,775.2923955083376,"Berkeley-computed altitude. Matches GPSAltitude (median diff 0.1 m, no lag) but logged on its own schedule, so it can fill gaps or cross-check. Keep -500 to 9000 m. Migrated for location work (goal 3). Logs at ~16 Hz (8x GPS) but only on some days; berkeley_hz is measured over the whole week. Whether the extra rate is real information or interpolated GPS is unknown."
+mapped,likely,new,,TEL,AltitudeIMU,m,calculated_values.imu_altitude_ft,value,ft,x 0.3048,,15.88,4.378,,,,,482401.0,671.7322834645669,994.1272965879264,883.285509974576,"Berkeley's independent altitude estimate (source unknown, possibly barometric): ~32 m above GPS, changes in steps, corr 0.63 with GPS. A second altitude source for location work (goal 3). Keep -500 to 9000 m. Logs at ~16 Hz (8x GPS) but only on some days; berkeley_hz is measured over the whole week. Whether the extra rate is real information or interpolated GPS is unknown."
+mapped,likely,new,,TEL,GPSAltitude,m,sensors.gps_altitude_status_mm,altitude,"mm, int32 stored unsigned",(v > 2147483647 ? v - 4294967296 : v) x 0.001,,1.97,2.287,,,,,1429278.0,5974.0,4294905685.0,282960.3245484783,"No UBC equivalent. u-blox height, probably above mean sea level. Keep -500 to 9000 m. Fix was 3D 100% of the time. calculated_values.altitude_ft is the same value in feet (median diff 0.1 m); imu_altitude_ft is a coarse separate estimate (+32 m, stepwise) - both are migrated too (AltitudeCalculated, AltitudeIMU)."
+mapped,likely,new,,TEL,GPSFixType,enum,sensors.gps_altitude_status_mm,fixType,u-blox enum,x 1,,1.97,2.287,,,,,1429278.0,0.0,249.0,3.0030022151044093,"u-blox NAV-PVT fixType: 0 none, 1 dead reckoning, 2 2D, 3 3D, 4 GNSS+DR, 5 time only. Drop > 5 (garbage up to 249). Not merged into our GPSFix (0-12 on 2026-04-02, meaning not found in our repos)."
+mapped,exact,canonical,LatitudeRaw,TEL,GPSLatitude,deg,sensors.gps_position_deg,lat,deg,x 1,1.34,1.97,2.262,35007.0,0.0,49.19933319091797,41.28495225201611,1413273.0,-211.3890005,212.9339929,39.93859884335087,Both use signed degrees north. Filter |lat| > 90 garbage (Berkeley has values up to +-211).
+mapped,exact,canonical,LongitudeRaw,TEL,GPSLongitude,deg,sensors.gps_position_deg,lon,deg,x -1,1.34,1.97,2.262,35007.0,0.0,123.1461181640625,103.33660474565768,1413273.0,-212.9934426,214.7450879,-92.10712299116156,WE STORE LONGITUDE AS POSITIVE DEGREES WEST (CAN_log 2026-04-02: up to +123.15 in Vancouver). Berkeley uses standard signed degrees (-92.45 in Missouri). Filter |lon| > 180 garbage.
+mapped,likely,new,,TEL,GPSSatellitesUsed,count,sensors.gps_altitude_status_mm,siv,count,x 1,,1.97,2.287,,,,,1429278.0,0.0,255.0,15.345101512791771,"Satellites used in the fix (u-blox numSV). Keep 0-50. Not merged into our GPSSatCount (averages 0.17 on 2026-04-02, looks broken) or GPSSatInView (0/1)."
+mapped,likely,new,,TEL,LinearAcceleration_X,m/s^2,sensors.imu_accelerometer_m/s^2,val_1,"0.01 m/s^2, int16 stored unsigned",s16(v) / 100 where s16(v) = v - 65536 if v > 32767 else v,,2.13,4.368,,,,,2729516.0,0.0,65535.0,27808.282381565085,"BNO055 linear acceleration (gravity removed) in Berkeley's IMU frame: val_1 forward, val_2 left, val_3 up (found from the data). Keep |a| <= 50 m/s^2. Also feeds TEL/Acceleration_* (our frame, mg with gravity)."
+mapped,likely,new,,TEL,LinearAcceleration_Y,m/s^2,sensors.imu_accelerometer_m/s^2,val_2,"0.01 m/s^2, int16 stored unsigned",s16(v) / 100 where s16(v) = v - 65536 if v > 32767 else v,,2.13,4.368,,,,,2729516.0,0.0,65535.0,32047.018997140884,"BNO055 linear acceleration (gravity removed) in Berkeley's IMU frame: val_1 forward, val_2 left, val_3 up (found from the data). Keep |a| <= 50 m/s^2. Also feeds TEL/Acceleration_* (our frame, mg with gravity)."
+mapped,likely,new,,TEL,LinearAcceleration_Z,m/s^2,sensors.imu_accelerometer_m/s^2,val_3,"0.01 m/s^2, int16 stored unsigned",s16(v) / 100 where s16(v) = v - 65536 if v > 32767 else v,,2.13,4.368,,,,,2729516.0,0.0,65535.0,32988.732104885996,"BNO055 linear acceleration (gravity removed) in Berkeley's IMU frame: val_1 forward, val_2 left, val_3 up (found from the data). Keep |a| <= 50 m/s^2. Also feeds TEL/Acceleration_* (our frame, mg with gravity)."
+mapped,likely,new,,TEL,Orientation_W,unit quaternion,sensors.imu_quaternions,val_1,"1/16384, int16 stored unsigned",s16(v) / 16384 where s16(v) = v - 65536 if v > 32767 else v,,2.13,4.312,,,,,2694594.0,0.0,65535.0,29643.687252699292,"BNO055 orientation quaternion, order w, x, y, z (confirmed from the data: only w first keeps gravity fixed in the sensor frame). Sensor frame: 1 forward, 2 left, 3 up. Heading (yaw) is unreliable - it doesn't track GPS course - but yaw RATE does (corr 0.67). Drop samples where w^2+x^2+y^2+z^2 is not ~1."
+mapped,likely,new,,TEL,Orientation_X,unit quaternion,sensors.imu_quaternions,val_2,"1/16384, int16 stored unsigned",s16(v) / 16384 where s16(v) = v - 65536 if v > 32767 else v,,2.13,4.312,,,,,2694594.0,0.0,65535.0,34551.062501438064,"BNO055 orientation quaternion, order w, x, y, z (confirmed from the data: only w first keeps gravity fixed in the sensor frame). Sensor frame: 1 forward, 2 left, 3 up. Heading (yaw) is unreliable - it doesn't track GPS course - but yaw RATE does (corr 0.67). Drop samples where w^2+x^2+y^2+z^2 is not ~1."
+mapped,likely,new,,TEL,Orientation_Y,unit quaternion,sensors.imu_quaternions,val_3,"1/16384, int16 stored unsigned",s16(v) / 16384 where s16(v) = v - 65536 if v > 32767 else v,,2.13,4.312,,,,,2694594.0,0.0,65535.0,26612.8449536368,"BNO055 orientation quaternion, order w, x, y, z (confirmed from the data: only w first keeps gravity fixed in the sensor frame). Sensor frame: 1 forward, 2 left, 3 up. Heading (yaw) is unreliable - it doesn't track GPS course - but yaw RATE does (corr 0.67). Drop samples where w^2+x^2+y^2+z^2 is not ~1."
+mapped,likely,new,,TEL,Orientation_Z,unit quaternion,sensors.imu_quaternions,val_4,"1/16384, int16 stored unsigned",s16(v) / 16384 where s16(v) = v - 65536 if v > 32767 else v,,2.13,4.312,,,,,2694594.0,0.0,65535.0,33778.1183688526,"BNO055 orientation quaternion, order w, x, y, z (confirmed from the data: only w first keeps gravity fixed in the sensor frame). Sensor frame: 1 forward, 2 left, 3 up. Heading (yaw) is unreliable - it doesn't track GPS course - but yaw RATE does (corr 0.67). Drop samples where w^2+x^2+y^2+z^2 is not ~1."
+derived,likely,canonical,PackPower,(derived),,W,calculated_values.power,value,W,x -1,,1.92,1.759,,,,,1098861.0,-237302349.320579,9.128681066223525e+33,1.9567893199734105e+28,Same sign convention as riedon current (pack V x Berkeley current); flip so positive = discharge.
+derived,likely,canonical,ArrayPower,(derived),,W,mppt1/2/3.calculated_power,value,W,sum of the three,,2.37,,,,,,,,,,Also calculated_values.power_in_W (only on some days).
+derived,estimate,canonical,MotorCurrent,MC,BatteryCurrent,A,(derived) riedon.riedon_current_mA + mppt1/2/3.calculated_power / bms.pack_voltage_V,value,"mA, W, V",|I_bus| where I_bus = PackCurrent_ubc + sum(mpptN.calculated_power) / bms.pack_voltage_V (PackCurrent_ubc = riedon_current_mA x -0.001; align series to the nearest sample),3.249,1.13,,84886.0,0.0,57.0,2.1345687156892774,,,,,"Definitions: PackCurrent = net battery current; BatteryCurrent (MC) = current going to the motor, as measured by the motor controller (proprietary). Berkeley logs no motor-controller current, so estimate it at the HV bus: motor current = battery discharge + array current into the bus. Ignores auxiliary HV loads and MPPT losses (both small). Needed by sunbeam MotorPower -> Efficiency. Ours is unsigned (0-57 A) with direction in BatteryCurrentDirection."
+derived,estimate,canonical,MotorCurrentDirection,MC,BatteryCurrentDirection,0/1,(derived) sign of I_bus (see MotorCurrent),,,1 if I_bus < 0 (regen) else 0,3.249,1.13,,84886.0,0.0,1.0,0.6367716702400867,,,,,"Sunbeam MotorPower: direction 1 = negative current (regen), 0 = driving."
+derived,estimate,canonical,MPPTOutputCurrentA,MPPT,OutputCurrentA,A,(derived) mppt1.calculated_power / mppt1.telem Vout,value / Vout_10mV,W / 10 mV,mppt1.calculated_power / (Vout_10mV x 0.01),,2.37,,,,,,,,,,Berkeley MPPT does not report output current; assumes ~100% MPPT efficiency (overestimates by a few %). Not used by any sunbeam stage.
+derived,estimate,canonical,MPPTOutputCurrentB,MPPT,OutputCurrentB,A,(derived) mppt2.calculated_power / mppt2.telem Vout,value / Vout_10mV,W / 10 mV,mppt2.calculated_power / (Vout_10mV x 0.01),0.469,2.35,,12244.0,-0.0128124505281448,0.0822372883558273,0.0063871774143016,,,,,Berkeley MPPT does not report output current; assumes ~100% MPPT efficiency (overestimates by a few %). Not used by any sunbeam stage.
+derived,estimate,canonical,MPPTOutputCurrentC,MPPT,OutputCurrentC,A,(derived) mppt3.calculated_power / mppt3.telem Vout,value / Vout_10mV,W / 10 mV,mppt3.calculated_power / (Vout_10mV x 0.01),0.469,2.32,,12244.0,-0.0287576299160718,0.0667926147580146,-0.0018446290536427,,,,,Berkeley MPPT does not report output current; assumes ~100% MPPT efficiency (overestimates by a few %). Not used by any sunbeam stage.
+ubc_only,,existing,,BMS,AverageTemp,,,,,,3.818,,,99739.0,7.0,17.0,12.975686541874293,,,,,
+ubc_only,,existing,,BMS,BMSSelfTest,,,,,,3.818,,,99740.0,0.0,0.0,0.0,,,,,
+ubc_only,,existing,,BMS,Capacity,,,,,,3.818,,,99739.0,1.0,65290.0,25561.43611826868,,,,,
+ubc_only,,existing,,BMS,ChargeOverTemp,,,,,,3.818,,,99740.0,0.0,0.0,0.0,,,,,
+ubc_only,,existing,,BMS,ChargeOvercurrent,,,,,,3.818,,,99740.0,0.0,0.0,0.0,,,,,
+ubc_only,,existing,,BMS,DepthofDischarge,,,,,,3.818,,,99739.0,0.0,0.0,0.0,,,,,
+ubc_only,,existing,,BMS,HLIMActive,,,,,,3.818,,,99740.0,0.0,0.0,0.0,,,,,
+ubc_only,,existing,,BMS,HighTemp,,,,,,3.818,,,99740.0,0.0,0.0,0.0,,,,,
+ubc_only,,existing,,BMS,HighVoltage,,,,,,3.818,,,99740.0,0.0,0.0,0.0,,,,,
+ubc_only,,existing,,BMS,IndexofHighestModule,,,,,,3.818,,,99740.0,0.0,31.0,12.95562462402246,,,,,
+ubc_only,,existing,,BMS,IndexofHighestTemp,,,,,,3.818,,,99739.0,0.0,0.0,0.0,,,,,
+ubc_only,,existing,,BMS,IndexofLowestModule,,,,,,3.818,,,99740.0,8.0,23.0,19.965039101664328,,,,,
+ubc_only,,existing,,BMS,IndexofLowestTemp,,,,,,3.818,,,99739.0,0.0,4.0,0.0087027140837586,,,,,
+ubc_only,,existing,,BMS,IsoLost,,,,,,3.818,,,99740.0,0.0,0.0,0.0,,,,,
+ubc_only,,existing,,BMS,LLIMActive,,,,,,3.818,,,99740.0,0.0,0.0,0.0,,,,,
+ubc_only,,existing,,BMS,LowTemp,,,,,,3.818,,,99740.0,0.0,1.0,0.350872267896531,,,,,
+ubc_only,,existing,,BMS,LowVoltage,,,,,,3.818,,,99740.0,0.0,0.0,0.0,,,,,
+ubc_only,,existing,,BMS,MinTemp,,,,,,3.818,,,99739.0,-12.0,0.0,-0.0031782953508657,,,,,
+ubc_only,,existing,,BMS,Mod10_BalActive,,,,,,3.818,,,99739.0,0.0,1.0,0.0157009795566428,,,,,
+ubc_only,,existing,,BMS,Mod11_BalActive,,,,,,3.818,,,99739.0,0.0,1.0,0.0144076038460381,,,,,
+ubc_only,,existing,,BMS,Mod12_BalActive,,,,,,3.818,,,99739.0,0.0,1.0,0.026118168419575,,,,,
+ubc_only,,existing,,BMS,Mod13_BalActive,,,,,,3.818,,,99739.0,0.0,1.0,0.024925054391963,,,,,
+ubc_only,,existing,,BMS,Mod14_BalActive,,,,,,3.818,,,99739.0,0.0,1.0,0.059796067736793,,,,,
+ubc_only,,existing,,BMS,Mod15_BalActive,,,,,,3.818,,,99739.0,0.0,1.0,0.0609791555961058,,,,,
+ubc_only,,existing,,BMS,Mod16_BalActive,,,,,,3.818,,,99739.0,0.0,1.0,0.0591343406290418,,,,,
+ubc_only,,existing,,BMS,Mod17_BalActive,,,,,,3.818,,,99739.0,0.0,1.0,0.0285545273162955,,,,,
+ubc_only,,existing,,BMS,Mod18_BalActive,,,,,,3.818,,,99739.0,0.0,1.0,0.025656964677809,,,,,
+ubc_only,,existing,,BMS,Mod19_BalActive,,,,,,3.818,,,99739.0,0.0,1.0,0.0261081422512758,,,,,
+ubc_only,,existing,,BMS,Mod1_BalActive,,,,,,3.818,,,99739.0,0.0,1.0,0.0744743781269112,,,,,
+ubc_only,,existing,,BMS,Mod20_BalActive,,,,,,3.818,,,99739.0,0.0,1.0,0.0263287179538595,,,,,
+ubc_only,,existing,,BMS,Mod21_BalActive,,,,,,3.818,,,99739.0,0.0,1.0,0.0020854430062463,,,,,
+ubc_only,,existing,,BMS,Mod22_BalActive,,,,,,3.818,,,99739.0,0.0,1.0,0.0109786542876908,,,,,
+ubc_only,,existing,,BMS,Mod23_BalActive,,,,,,3.818,,,99739.0,0.0,1.0,0.0191098767783916,,,,,
+ubc_only,,existing,,BMS,Mod24_BalActive,,,,,,3.818,,,99739.0,0.0,1.0,0.0190797982734938,,,,,
+ubc_only,,existing,,BMS,Mod25_BalActive,,,,,,3.818,,,99739.0,0.0,1.0,0.0660523967555319,,,,,
+ubc_only,,existing,,BMS,Mod26_BalActive,,,,,,3.818,,,99739.0,0.0,1.0,0.0623928453263016,,,,,
+ubc_only,,existing,,BMS,Mod27_BalActive,,,,,,3.818,,,99739.0,0.0,1.0,0.0586530845506772,,,,,
+ubc_only,,existing,,BMS,Mod28_BalActive,,,,,,3.818,,,99739.0,0.0,1.0,0.0623427144848053,,,,,
+ubc_only,,existing,,BMS,Mod29_BalActive,,,,,,3.818,,,99739.0,0.0,1.0,0.0536400004010467,,,,,
+ubc_only,,existing,,BMS,Mod2_BalActive,,,,,,3.818,,,99739.0,0.0,1.0,0.075426864115341,,,,,
+ubc_only,,existing,,BMS,Mod30_BalActive,,,,,,3.818,,,99739.0,0.0,1.0,0.0651199631037006,,,,,
+ubc_only,,existing,,BMS,Mod31_BalActive,,,,,,3.818,,,99739.0,0.0,1.0,0.0714364491322351,,,,,
+ubc_only,,existing,,BMS,Mod32_BalActive,,,,,,3.818,,,99739.0,0.0,1.0,0.0816130099559851,,,,,
+ubc_only,,existing,,BMS,Mod3_BalActive,,,,,,3.818,,,99739.0,0.0,1.0,0.0782943482489297,,,,,
+ubc_only,,existing,,BMS,Mod4_BalActive,,,,,,3.818,,,99739.0,0.0,1.0,0.086064628680857,,,,,
+ubc_only,,existing,,BMS,Mod5_BalActive,,,,,,3.818,,,99739.0,0.0,1.0,0.0633252789781329,,,,,
+ubc_only,,existing,,BMS,Mod6_BalActive,,,,,,3.818,,,99739.0,0.0,1.0,0.0644582359959494,,,,,
+ubc_only,,existing,,BMS,Mod7_BalActive,,,,,,3.818,,,99739.0,0.0,1.0,0.0661526584385245,,,,,
+ubc_only,,existing,,BMS,Mod8_BalActive,,,,,,3.818,,,99739.0,0.0,1.0,0.0804900791064678,,,,,
+ubc_only,,existing,,BMS,Mod9_BalActive,,,,,,3.818,,,99739.0,0.0,1.0,0.0120113496225147,,,,,
+ubc_only,,existing,,BMS,Module1,,,,,,3.818,,,99739.0,0.0,0.0,0.0,,,,,
+ubc_only,,existing,,BMS,Module10,,,,,,3.818,,,99739.0,0.0,0.0,0.0,,,,,
+ubc_only,,existing,,BMS,Module11,,,,,,3.818,,,99739.0,0.0,0.0,0.0,,,,,
+ubc_only,,existing,,BMS,Module12,,,,,,3.818,,,99739.0,0.0,0.0,0.0,,,,,
+ubc_only,,existing,,BMS,Module13,,,,,,3.818,,,99739.0,0.0,0.0,0.0,,,,,
+ubc_only,,existing,,BMS,Module14,,,,,,3.818,,,99739.0,0.0,0.0,0.0,,,,,
+ubc_only,,existing,,BMS,Module15,,,,,,3.818,,,99739.0,0.0,0.0,0.0,,,,,
+ubc_only,,existing,,BMS,Module16,,,,,,3.818,,,99739.0,0.0,0.0,0.0,,,,,
+ubc_only,,existing,,BMS,Module17,,,,,,3.818,,,99739.0,0.0,0.0,0.0,,,,,
+ubc_only,,existing,,BMS,Module18,,,,,,3.818,,,99739.0,0.0,0.0,0.0,,,,,
+ubc_only,,existing,,BMS,Module19,,,,,,3.818,,,99739.0,0.0,0.0,0.0,,,,,
+ubc_only,,existing,,BMS,Module2,,,,,,3.818,,,99739.0,0.0,0.0,0.0,,,,,
+ubc_only,,existing,,BMS,Module20,,,,,,3.818,,,99739.0,0.0,0.0,0.0,,,,,
+ubc_only,,existing,,BMS,Module21,,,,,,3.818,,,99739.0,0.0,0.0,0.0,,,,,
+ubc_only,,existing,,BMS,Module22,,,,,,3.818,,,99739.0,0.0,0.0,0.0,,,,,
+ubc_only,,existing,,BMS,Module23,,,,,,3.818,,,99739.0,0.0,0.0,0.0,,,,,
+ubc_only,,existing,,BMS,Module24,,,,,,3.818,,,99739.0,0.0,0.0,0.0,,,,,
+ubc_only,,existing,,BMS,Module25,,,,,,3.818,,,99739.0,0.0,0.0,0.0,,,,,
+ubc_only,,existing,,BMS,Module26,,,,,,3.818,,,99739.0,0.0,0.0,0.0,,,,,
+ubc_only,,existing,,BMS,Module27,,,,,,3.818,,,99739.0,0.0,0.0,0.0,,,,,
+ubc_only,,existing,,BMS,Module28,,,,,,3.818,,,99739.0,0.0,0.0,0.0,,,,,
+ubc_only,,existing,,BMS,Module29,,,,,,3.818,,,99739.0,0.0,0.0,0.0,,,,,
+ubc_only,,existing,,BMS,Module3,,,,,,3.818,,,99739.0,0.0,0.0,0.0,,,,,
+ubc_only,,existing,,BMS,Module30,,,,,,3.818,,,99739.0,0.0,0.0,0.0,,,,,
+ubc_only,,existing,,BMS,Module31,,,,,,3.818,,,99739.0,0.0,0.0,0.0,,,,,
+ubc_only,,existing,,BMS,Module32,,,,,,3.818,,,99739.0,0.0,0.0,0.0,,,,,
+ubc_only,,existing,,BMS,Module4,,,,,,3.818,,,99739.0,0.0,0.0,0.0,,,,,
+ubc_only,,existing,,BMS,Module5,,,,,,3.818,,,99739.0,0.0,0.0,0.0,,,,,
+ubc_only,,existing,,BMS,Module6,,,,,,3.818,,,99739.0,0.0,0.0,0.0,,,,,
+ubc_only,,existing,,BMS,Module7,,,,,,3.818,,,99739.0,0.0,0.0,0.0,,,,,
+ubc_only,,existing,,BMS,Module8,,,,,,3.818,,,99739.0,0.0,0.0,0.0,,,,,
+ubc_only,,existing,,BMS,Module9,,,,,,3.818,,,99739.0,0.0,0.0,0.0,,,,,
+ubc_only,,existing,,BMS,MultiplexingBits,,,,,,26.455,,,691159.0,0.0,7.0,4.730593105204447,,,,,
+ubc_only,,existing,,BMS,NoECUCurrentMessage,,,,,,3.818,,,99740.0,0.0,1.0,0.5274513735712854,,,,,
+ubc_only,,existing,,BMS,OverTemp,,,,,,3.818,,,99740.0,0.0,0.0,0.0,,,,,
+ubc_only,,existing,,BMS,OverVoltage,,,,,,3.818,,,99740.0,0.0,0.0,0.0,,,,,
+ubc_only,,existing,,BMS,PackBalancingActive,,,,,,3.818,,,99740.0,0.0,1.0,0.1174453579306196,,,,,
+ubc_only,,existing,,BMS,RequestRegenOff,,,,,,3.818,,,99740.0,0.0,1.0,0.0089833567274914,,,,,
+ubc_only,,existing,,BMS,SOC,,,,,,3.818,,,99739.0,0.0,255.0,114.65221227403524,,,,,
+ubc_only,,existing,,BMS,SOH,,,,,,3.818,,,99739.0,0.0,0.0,0.0,,,,,
+ubc_only,,existing,,BMS,SlaveBoardComm,,,,,,3.818,,,99740.0,0.0,0.0,0.0,,,,,
+ubc_only,,existing,,BMS,TempOutofRange,,,,,,3.818,,,99740.0,0.0,1.0,0.0089833567274914,,,,,
+ubc_only,,existing,,BMS,UnderVoltage,,,,,,3.818,,,99740.0,0.0,0.0,0.0,,,,,
+ubc_only,,existing,,BMS,VoltOutofRange,,,,,,3.818,,,99740.0,0.0,0.0,0.0,,,,,
+ubc_only,,existing,,BMS,b0x00,,,,,,3.818,,,99739.0,0.0,0.0,0.0,,,,,
+ubc_only,,existing,,DRD,ADCMismatch,,,,,,3.83,,,100075.0,0.0,0.0,0.0,,,,,
+ubc_only,,existing,,DRD,ADCOutOfRange,,,,,,3.83,,,100075.0,0.0,0.0,0.0,,,,,
+ubc_only,,existing,,DRD,CurrentTimeout,,,,,,3.83,,,100075.0,0.0,1.0,0.0094429178116412,,,,,
+ubc_only,,existing,,DRD,DRDTimeSinceBootUp,,,,,,0.382,,,9982.0,1.0,2621.0,833.9900821478661,,,,,
+ubc_only,,existing,,DRD,DRDWatchdogReset,,,,,,3.83,,,100075.0,0.0,0.0,0.0,,,,,
+ubc_only,,existing,,DRD,Direction,,,,,,13.268,,,346661.0,0.0,1.0,0.9107773877072992,,,,,
+ubc_only,,existing,,DRD,DriveState,,,,,,3.83,,,100075.0,1.0,4.0,2.104291781164127,,,,,
+ubc_only,,existing,,DRD,DriveStateTimeout,,,,,,3.83,,,100075.0,0.0,1.0,0.0180564576567574,,,,,
+ubc_only,,existing,,DRD,EcoModeOn,,,,,,13.268,,,346661.0,0.0,0.0,0.0,,,,,
+ubc_only,,existing,,DRD,MotorCommFault,,,,,,3.83,,,100075.0,0.0,0.0,0.0,,,,,
+ubc_only,,existing,,DRD,RawADC1,,,,,,3.83,,,100075.0,0.0,2134.0,1057.3764876342743,,,,,
+ubc_only,,existing,,DRD,RawADC2,,,,,,3.83,,,100075.0,0.0,0.0,0.0,,,,,
+ubc_only,,existing,,DRD,RegenDAC,,,,,,13.268,,,346661.0,0.0,1023.0,270.29478943405803,,,,,
+ubc_only,,existing,,DRD,RegenEnabled,,,,,,3.83,,,100075.0,0.0,1.0,0.2178266300274794,,,,,
+ubc_only,,existing,,DRD,SOCTimeout,,,,,,3.83,,,100075.0,0.0,1.0,0.0108118910816887,,,,,
+ubc_only,,existing,,DRD,SpeedTimeout,,,,,,3.83,,,100075.0,0.0,1.0,0.0180564576567574,,,,,
+ubc_only,,existing,,DRD,ThrottleDAC,,,,,,13.268,,,346661.0,0.0,1023.0,94.70726444566884,,,,,
+ubc_only,,existing,,DRD,VoltageTimeout,,,,,,3.83,,,100075.0,0.0,1.0,0.0036772420684486,,,,,
+ubc_only,,existing,,ECU,COC,,,,,,1.806,,,47189.0,0.0,0.0,0.0,,,,,
+ubc_only,,existing,,ECU,DOC,,,,,,1.806,,,47189.0,0.0,0.0,0.0,,,,,
+ubc_only,,existing,,ECU,ESTOP_Pressed,,,,,,1.806,,,47189.0,0.0,1.0,0.0064209879421051,,,,,
+ubc_only,,existing,,ECU,LVCurrent,,,,,,1.806,,,47189.0,0.0,0.0,0.0,,,,,
+ubc_only,,existing,,ECU,PackOverChargeWarning,,,,,,1.806,,,47189.0,0.0,0.0,0.0,,,,,
+ubc_only,,existing,,ECU,PackOverDischargeWarning,,,,,,1.806,,,47189.0,0.0,0.0,0.0,,,,,
+ubc_only,,existing,,ECU,ResetFromWatchdog,,,,,,1.806,,,47189.0,0.0,0.0,0.0,,,,,
+ubc_only,,existing,,ECU,SuppBattVoltage,,,,,,1.806,,,47189.0,7.421,13.163,12.57038112695754,,,,,
+ubc_only,,existing,,ECU,VicorHeatSinkTemp,,,,,,1.806,,,47189.0,21.0,67.0,24.042213227658987,,,,,
+ubc_only,,existing,,MC,AcceleratorPositionError,,,,,,3.249,,,84886.0,0.0,0.0,0.0,,,,,
+ubc_only,,existing,,MC,AnalogSensorError,,,,,,3.249,,,84886.0,0.0,0.0,0.0,,,,,
+ubc_only,,existing,,MC,BatteryCurrentSensorAdjustError,,,,,,3.249,,,84886.0,0.0,0.0,0.0,,,,,
+ubc_only,,existing,,MC,BatteryCurrentSensorError,,,,,,3.249,,,84886.0,0.0,0.0,0.0,,,,,
+ubc_only,,existing,,MC,BatteryVoltage,,,,,,3.249,,,84886.0,38.5,124.5,121.57296256155314,,,,,
+ubc_only,,existing,,MC,BatteryVoltageSensorError,,,,,,3.249,,,84886.0,0.0,0.0,0.0,,,,,
+ubc_only,,existing,,MC,ControllerVoltageSensorError,,,,,,3.249,,,84886.0,0.0,0.0,0.0,,,,,
+ubc_only,,existing,,MC,DigitSWPosition,,,,,,3.249,,,84885.0,0.0,0.0,0.0,,,,,
+ubc_only,,existing,,MC,DriveActionStatus,,,,,,3.249,,,84885.0,0.0,3.0,2.0874595040348707,,,,,
+ubc_only,,existing,,MC,FETTemperature,,,,,,3.249,,,84886.0,10.0,45.0,25.872817661334025,,,,,
+ubc_only,,existing,,MC,FETThermistorError,,,,,,3.249,,,84886.0,0.0,0.0,0.0,,,,,
+ubc_only,,existing,,MC,HallSensorOpen,,,,,,3.249,,,84886.0,0.0,0.0,0.0,,,,,
+ubc_only,,existing,,MC,HallSensorShort,,,,,,3.249,,,84886.0,0.0,0.0,0.0,,,,,
+ubc_only,,existing,,MC,LeadAngle,,,,,,3.249,,,84886.0,0.0,0.0,0.0,,,,,
+ubc_only,,existing,,MC,MotorControlMode,,,,,,3.249,,,84885.0,0.0,0.0,0.0,,,,,
+ubc_only,,existing,,MC,MotorCurrentPeakAverage,,,,,,3.249,,,84886.0,0.0,204.0,9.569198690007775,,,,,
+ubc_only,,existing,,MC,MotorCurrentSensorAdjustError,,,,,,3.249,,,84886.0,0.0,0.0,0.0,,,,,
+ubc_only,,existing,,MC,MotorCurrentSensorUError,,,,,,3.249,,,84886.0,0.0,0.0,0.0,,,,,
+ubc_only,,existing,,MC,MotorCurrentSensorWError,,,,,,3.249,,,84886.0,0.0,0.0,0.0,,,,,
+ubc_only,,existing,,MC,MotorLock,,,,,,3.249,,,84886.0,0.0,1.0,0.000353415168579,,,,,
+ubc_only,,existing,,MC,MotorSystemError,,,,,,3.249,,,84886.0,0.0,1.0,0.000353415168579,,,,,
+ubc_only,,existing,,MC,OutputTargetValue,,,,,,3.249,,,84885.0,0.0,39.5,2.937715733050598,,,,,
+ubc_only,,existing,,MC,OverCurrentError,,,,,,3.249,,,84886.0,0.0,0.0,0.0,,,,,
+ubc_only,,existing,,MC,OverCurrentLimit,,,,,,3.249,,,84886.0,0.0,1.0,0.0023207596070023,,,,,
+ubc_only,,existing,,MC,OverHeatLevel,,,,,,3.249,,,84886.0,0.0,0.0,0.0,,,,,
+ubc_only,,existing,,MC,OverVoltageError,,,,,,3.249,,,84886.0,0.0,0.0,0.0,,,,,
+ubc_only,,existing,,MC,PWMDuty,,,,,,3.249,,,84886.0,0.0,0.0,0.0,,,,,
+ubc_only,,existing,,MC,PowerMode,,,,,,3.249,,,84885.0,0.0,0.0,0.0,,,,,
+ubc_only,,existing,,MC,PowerSystemError,,,,,,3.249,,,84886.0,0.0,0.0,0.0,,,,,
+ubc_only,,existing,,MC,RFU,,,,,,3.249,,,84886.0,0.0,0.0,0.0,,,,,
+ubc_only,,existing,,MC,RFU2,,,,,,3.249,,,84886.0,0.0,0.0,0.0,,,,,
+ubc_only,,existing,,MC,RFU3,,,,,,3.249,,,84886.0,0.0,0.0,0.0,,,,,
+ubc_only,,existing,,MC,RFU4,,,,,,3.249,,,84886.0,0.0,0.0,0.0,,,,,
+ubc_only,,existing,,MC,RFU5,,,,,,3.249,,,84886.0,0.0,0.0,0.0,,,,,
+ubc_only,,existing,,MC,RFU6,,,,,,3.249,,,84886.0,0.0,0.0,0.0,,,,,
+ubc_only,,existing,,MC,RFU7,,,,,,3.249,,,84886.0,0.0,0.0,0.0,,,,,
+ubc_only,,existing,,MC,RegenerationStatus,,,,,,3.249,,,84885.0,0.0,1.0,0.0312658302409141,,,,,
+ubc_only,,existing,,MC,RegenerationVRPosition,,,,,,3.249,,,84885.0,0.0,100.0,26.897779348530364,,,,,
+ubc_only,,existing,,MC,RequestForFrames,,,,,,3.31,,,86484.0,2.0,2.0,2.0,,,,,
+ubc_only,,existing,,MDI,MDITimeSinceBootUp,,,,,,0.381,,,9950.0,0.0,2626.0,834.9124623115578,,,,,
+ubc_only,,existing,,MDI,MDIWatchdogReset,,,,,,0.377,,,9852.0,0.0,0.0,0.0,,,,,
+ubc_only,,existing,,MEMORATOR,Day,,,,,,0.384,,,10036.0,2.0,2.0,2.0,,,,,
+ubc_only,,existing,,MEMORATOR,Hour,,,,,,0.384,,,10036.0,15.0,23.0,20.145277002789957,,,,,
+ubc_only,,existing,,MEMORATOR,Minute,,,,,,0.384,,,10036.0,0.0,59.0,28.026604224790752,,,,,
+ubc_only,,existing,,MEMORATOR,Month,,,,,,0.384,,,10036.0,4.0,4.0,4.0,,,,,
+ubc_only,,existing,,MEMORATOR,Second,,,,,,0.384,,,10036.0,0.0,59.0,29.39308489438023,,,,,
+ubc_only,,existing,,MEMORATOR,Year,,,,,,0.384,,,10036.0,26.0,26.0,26.0,,,,,
+ubc_only,,existing,,MPPT,Aux12VB,,,,,,0.469,,,12239.0,0.0,11.771552085876465,11.617019237300443,,,,,
+ubc_only,,existing,,MPPT,Aux12VC,,,,,,0.469,,,12239.0,0.0,11.794398307800291,11.635507526891724,,,,,
+ubc_only,,existing,,MPPT,Aux3VB,,,,,,0.469,,,12239.0,0.0,3.0142877101898193,3.0014117733210224,,,,,
+ubc_only,,existing,,MPPT,Aux3VC,,,,,,0.469,,,12239.0,0.0,3.008260488510132,2.9963779423943784,,,,,
+ubc_only,,existing,,MPPT,BatteryFullB,,,,,,0.468,,,12233.0,0.0,1.0,0.0080928635657647,,,,,
+ubc_only,,existing,,MPPT,BatteryFullC,,,,,,0.468,,,12233.0,0.0,1.0,0.0080928635657647,,,,,
+ubc_only,,existing,,MPPT,BatteryLowB,,,,,,0.468,,,12233.0,0.0,0.0,0.0,,,,,
+ubc_only,,existing,,MPPT,BatteryLowC,,,,,,0.468,,,12233.0,0.0,0.0,0.0,,,,,
+ubc_only,,existing,,MPPT,CANRXErrorCounterB,,,,,,0.468,,,12233.0,0.0,10.0,0.0035150821548271,,,,,
+ubc_only,,existing,,MPPT,CANRXErrorCounterC,,,,,,0.468,,,12233.0,0.0,10.0,0.0026158750919643,,,,,
+ubc_only,,existing,,MPPT,CANTXErrorCounterB,,,,,,0.468,,,12233.0,0.0,0.0,0.0,,,,,
+ubc_only,,existing,,MPPT,CANTXErrorCounterC,,,,,,0.468,,,12233.0,0.0,3.0,0.0002452382898716,,,,,
+ubc_only,,existing,,MPPT,CANTXOverflowCounterB,,,,,,0.468,,,12233.0,0.0,0.0,0.0,,,,,
+ubc_only,,existing,,MPPT,CANTXOverflowCounterC,,,,,,0.468,,,12233.0,0.0,0.0,0.0,,,,,
+ubc_only,,existing,,MPPT,ConnectorTemperatureB,,,,,,0.468,,,12232.0,0.0,20.662097930908203,16.831558685352633,,,,,
+ubc_only,,existing,,MPPT,ConnectorTemperatureC,,,,,,0.468,,,12232.0,0.0,20.24668312072754,16.560653255218146,,,,,
+ubc_only,,existing,,MPPT,ControllerTemperatureB,,,,,,0.469,,,12242.0,0.0,27.02505874633789,22.80310468684612,,,,,
+ubc_only,,existing,,MPPT,ControllerTemperatureC,,,,,,0.469,,,12242.0,0.0,26.39620780944824,22.2284098272132,,,,,
+ubc_only,,existing,,MPPT,DutyCycleMaxB,,,,,,0.468,,,12233.0,0.0,1.0,0.0352325676448949,,,,,
+ubc_only,,existing,,MPPT,DutyCycleMaxC,,,,,,0.468,,,12233.0,0.0,1.0,0.0069484182130303,,,,,
+ubc_only,,existing,,MPPT,DutyCycleMinB,,,,,,0.468,,,12233.0,0.0,0.0,0.0,,,,,
+ubc_only,,existing,,MPPT,DutyCycleMinC,,,,,,0.468,,,12233.0,0.0,0.0,0.0,,,,,
+ubc_only,,existing,,MPPT,GlobalMPPTB,,,,,,0.468,,,12233.0,0.0,1.0,0.0346603449685277,,,,,
+ubc_only,,existing,,MPPT,GlobalMPPTC,,,,,,0.468,,,12233.0,0.0,1.0,0.0076023869860214,,,,,
+ubc_only,,existing,,MPPT,HWOvercurrentB,,,,,,0.468,,,12233.0,0.0,0.0,0.0,,,,,
+ubc_only,,existing,,MPPT,HWOvercurrentC,,,,,,0.468,,,12233.0,0.0,0.0,0.0,,,,,
+ubc_only,,existing,,MPPT,HWOvervoltageB,,,,,,0.468,,,12233.0,0.0,0.0,0.0,,,,,
+ubc_only,,existing,,MPPT,HWOvervoltageC,,,,,,0.468,,,12233.0,0.0,0.0,0.0,,,,,
+ubc_only,,existing,,MPPT,InputCurrentMaxB,,,,,,0.468,,,12233.0,0.0,1.0,0.0062944494400392,,,,,
+ubc_only,,existing,,MPPT,InputCurrentMaxC,,,,,,0.468,,,12233.0,0.0,1.0,0.0026976211885882,,,,,
+ubc_only,,existing,,MPPT,InputCurrentMinB,,,,,,0.468,,,12233.0,0.0,1.0,0.0018801602223493,,,,,
+ubc_only,,existing,,MPPT,InputCurrentMinC,,,,,,0.468,,,12233.0,0.0,1.0,0.0018801602223493,,,,,
+ubc_only,,existing,,MPPT,LocalMPPTB,,,,,,0.468,,,12233.0,0.0,0.0,0.0,,,,,
+ubc_only,,existing,,MPPT,LocalMPPTC,,,,,,0.468,,,12233.0,0.0,0.0,0.0,,,,,
+ubc_only,,existing,,MPPT,LowArrayPowerB,,,,,,0.468,,,12233.0,0.0,0.0,0.0,,,,,
+ubc_only,,existing,,MPPT,LowArrayPowerC,,,,,,0.468,,,12233.0,0.0,0.0,0.0,,,,,
+ubc_only,,existing,,MPPT,MaxInputCurrentLimitB,,,,,,0.468,,,12235.0,7.0,7.0,7.0,,,,,
+ubc_only,,existing,,MPPT,MaxInputCurrentLimitC,,,,,,0.468,,,12235.0,7.0,7.0,7.0,,,,,
+ubc_only,,existing,,MPPT,MaxOutputVoltageLimitB,,,,,,0.468,,,12235.0,134.39999389648438,134.39999389648438,134.39999389648438,,,,,
+ubc_only,,existing,,MPPT,MaxOutputVoltageLimitC,,,,,,0.468,,,12235.0,134.39999389648438,134.39999389648438,134.39999389648438,,,,,
+ubc_only,,existing,,MPPT,ModeB,,,,,,0.468,,,12233.0,1.0,2.0,1.000735714869615,,,,,
+ubc_only,,existing,,MPPT,ModeC,,,,,,0.468,,,12233.0,1.0,2.0,1.000735714869615,,,,,
+ubc_only,,existing,,MPPT,MosfetOverheatB,,,,,,0.468,,,12233.0,0.0,0.0,0.0,,,,,
+ubc_only,,existing,,MPPT,MosfetOverheatC,,,,,,0.468,,,12233.0,0.0,0.0,0.0,,,,,
+ubc_only,,existing,,MPPT,MosfetTempFaultB,,,,,,0.468,,,12233.0,0.0,0.0,0.0,,,,,
+ubc_only,,existing,,MPPT,MosfetTempFaultC,,,,,,0.468,,,12233.0,0.0,1.0,0.0008992070628627,,,,,
+ubc_only,,existing,,MPPT,MosfetTemperatureB,,,,,,0.469,,,12242.0,0.0,22.431222915649418,18.328683587192536,,,,,
+ubc_only,,existing,,MPPT,MosfetTemperatureC,,,,,,0.469,,,12242.0,0.0,22.030916213989254,18.024610403257537,,,,,
+ubc_only,,existing,,MPPT,OutputVoltageBattSideB,,,,,,0.468,,,12232.0,0.0,144.02841186523438,137.23910989505626,,,,,
+ubc_only,,existing,,MPPT,OutputVoltageBattSideC,,,,,,0.468,,,12232.0,0.0,144.4239959716797,137.52621973410706,,,,,
+ubc_only,,existing,,MPPT,OutputVoltageMaxB,,,,,,0.468,,,12233.0,0.0,0.0,0.0,,,,,
+ubc_only,,existing,,MPPT,OutputVoltageMaxC,,,,,,0.468,,,12233.0,0.0,0.0,0.0,,,,,
+ubc_only,,existing,,MPPT,Reserved1B,,,,,,0.468,,,12233.0,0.0,0.0,0.0,,,,,
+ubc_only,,existing,,MPPT,Reserved1C,,,,,,0.468,,,12233.0,0.0,0.0,0.0,,,,,
+ubc_only,,existing,,MPPT,Reserved2B,,,,,,0.468,,,12233.0,128.0,128.0,128.0,,,,,
+ubc_only,,existing,,MPPT,Reserved2C,,,,,,0.468,,,12233.0,128.0,128.0,128.0,,,,,
+ubc_only,,existing,,MPPT,TestCounterB,,,,,,0.468,,,12233.0,0.0,127.0,61.14035804790321,,,,,
+ubc_only,,existing,,MPPT,TestCounterC,,,,,,0.468,,,12233.0,0.0,127.0,61.14035804790321,,,,,
+ubc_only,,existing,,MPPT,Undervoltage12VB,,,,,,0.468,,,12233.0,0.0,1.0,0.9908444371781248,,,,,
+ubc_only,,existing,,MPPT,Undervoltage12VC,,,,,,0.468,,,12233.0,0.0,1.0,0.9908444371781248,,,,,
+ubc_only,,existing,,STR,DRIVEMODE,,,,,,0.005,,,111.0,0.0,1.0,0.5585585585585585,,,,,
+ubc_only,,existing,,STR,HORNSIGNAL,,,,,,0.005,,,111.0,0.0,0.0,0.0,,,,,
+ubc_only,,existing,,STR,LTSSIGNAL,,,,,,0.005,,,111.0,0.0,1.0,0.018018018018018,,,,,
+ubc_only,,existing,,STR,RTSSIGNAL,,,,,,0.005,,,111.0,0.0,1.0,0.1081081081081081,,,,,
+ubc_only,,existing,,STR,STRTimeSinceBootUp,,,,,,0.338,,,8825.0,0.0,2628.0,608.5335977337111,,,,,
+ubc_only,,existing,,STR,STRWatchdogReset,,,,,,0.341,,,8910.0,0.0,0.0,0.0,,,,,
+ubc_only,,existing,,TEL,GPSDay,,,,,,1.392,,,36352.0,0.0,0.0,0.0,,,,,
+ubc_only,,existing,,TEL,GPSFix,,,,,,1.334,,,34851.0,0.0,12.0,5.378410949470603,,,,,
+ubc_only,,existing,,TEL,GPSHour,,,,,,1.392,,,36352.0,0.0,23.0,18.969547755281692,,,,,
+ubc_only,,existing,,TEL,GPSLatSide,,,,,,1.392,,,36352.0,0.0,78.0,65.61080545774648,,,,,
+ubc_only,,existing,,TEL,GPSLonSide,,,,,,1.392,,,36352.0,0.0,87.0,73.18128301056338,,,,,
+ubc_only,,existing,,TEL,GPSMinute,,,,,,1.392,,,36352.0,0.0,59.0,26.25035761443662,,,,,
+ubc_only,,existing,,TEL,GPSMonth,,,,,,1.392,,,36352.0,0.0,0.0,0.0,,,,,
+ubc_only,,existing,,TEL,GPSReadFail,,,,,,0.369,,,9639.0,0.0,0.0,0.0,,,,,
+ubc_only,,existing,,TEL,GPSSNR,,,,,,1.334,,,34851.0,0.0,46.0,1.0164414220538869,,,,,
+ubc_only,,existing,,TEL,GPSSatCount,,,,,,1.334,,,34851.0,0.0,16.0,0.1704685661817451,,,,,
+ubc_only,,existing,,TEL,GPSSatInView,,,,,,1.334,,,34851.0,0.0,1.0,0.6705403001348599,,,,,
+ubc_only,,existing,,TEL,GPSSecond,,,,,,1.392,,,36352.0,0.0,59.0,27.828125,,,,,
+ubc_only,,existing,,TEL,GPSYear,,,,,,1.392,,,36352.0,0.0,0.0,0.0,,,,,
+ubc_only,,existing,,TEL,Gyroscope_X,,,,,,2.796,,,73039.0,-54162.5,45255.0,-46.60924300716056,,,,,
+ubc_only,,existing,,TEL,Gyroscope_Y,,,,,,2.814,,,73518.0,-50951.25,35936.25,308.882569574798,,,,,
+ubc_only,,existing,,TEL,Gyroscope_Z,,,,,,2.73,,,71306.0,-23301.25,11865.0,-448.6492370908479,,,,,
+ubc_only,,existing,,TEL,IMUReadFail,,,,,,0.369,,,9639.0,0.0,0.0,0.0,,,,,
+ubc_only,,existing,,TEL,IMUWriteFail,,,,,,0.369,,,9639.0,0.0,0.0,0.0,,,,,
+ubc_only,,existing,,TEL,TELTimeSinceBootUp,,,,,,0.354,,,9238.0,0.0,2586.0,820.121563108898,,,,,
+ubc_only,,existing,,TEL,TELWatchdogReset,,,,,,0.369,,,9639.0,0.0,0.0,0.0,,,,,
+berkeley_only,,,,,,,bms.bank_voltages_9_*0.1mV,val_3,,,,,0.491,,,,,306925.0,0.0,44544.0,0.3152952675735114,
+berkeley_only,,,,,,,bms.bank_voltages_9_*0.1mV,val_4,,,,,0.491,,,,,306925.0,0.0,17436.0,0.5387863484564633,
+berkeley_only,,,,,,,bms.current_error_val,value,,,,,0.0,,,,,18.0,18.094999313354492,19.395999908447266,18.487499872843426,
+berkeley_only,,,,,,,bms.fan_setpoint,value,,,,,0.481,,,,,300342.0,0.0,170.0,52.54829161422645,
+berkeley_only,,,,,,,bms.fan_speed_1,val_1,,,,,0.46,,,,,287627.0,0.0,257.0,0.0062546283902415,
+berkeley_only,,,,,,,bms.fan_speed_1,val_2,,,,,0.46,,,,,287627.0,0.0,33280.0,12.469601254402404,
+berkeley_only,,,,,,,bms.fan_speed_1,val_3,,,,,0.46,,,,,287627.0,0.0,61844.0,5.058176040496893,
+berkeley_only,,,,,,,bms.fan_speed_1,val_4,,,,,0.46,,,,,287627.0,0.0,65535.0,3.0406463927239096,
+berkeley_only,,,,,,,bms.fan_speed_2,val_1,,,,,0.478,,,,,298327.0,0.0,257.0,0.0086247641011373,
+berkeley_only,,,,,,,bms.fan_speed_2,val_2,,,,,0.478,,,,,298327.0,0.0,33280.0,8.237370402276696,
+berkeley_only,,,,,,,bms.fan_speed_2,val_3,,,,,0.478,,,,,298327.0,0.0,65263.0,4.02888106004485,
+berkeley_only,,,,,,,bms.fan_speed_2,val_4,,,,,0.478,,,,,298327.0,0.0,65535.0,2.9010917550204978,
+berkeley_only,,,,,,,bms.heart_system_time_us,value,,,,,0.417,,,,,260553.0,32716.0,4294967223.0,1980943486.234954,
+berkeley_only,,,,,,,bms.last_error_current_A,value,,,,,0.048,,,,,30184.0,0.0,21326127104.0,706537.4890524592,
+berkeley_only,,,,,,,bms.last_error_voltage_V,value,,,,,0.048,,,,,30168.0,0.0,2.6942999362945557,0.0031258451925984,
+berkeley_only,,,,,,,bms.last_shutoff_error,errorMissingMeasurement,,,,,0.046,,,,,28847.0,,,,
+berkeley_only,,,,,,,bms.last_shutoff_error,errorOnAux,,,,,0.046,,,,,28847.0,,,,
+berkeley_only,,,,,,,bms.last_shutoff_error,errorOverCharge,,,,,0.046,,,,,28847.0,,,,
+berkeley_only,,,,,,,bms.last_shutoff_error,errorOverCurrent,,,,,0.046,,,,,28847.0,,,,
+berkeley_only,,,,,,,bms.last_shutoff_error,errorOverTempCharge,,,,,0.046,,,,,28847.0,,,,
+berkeley_only,,,,,,,bms.last_shutoff_error,errorOverTempDischarge,,,,,0.046,,,,,28847.0,,,,
+berkeley_only,,,,,,,bms.last_shutoff_error,errorOverVoltage,,,,,0.046,,,,,28847.0,,,,
+berkeley_only,,,,,,,bms.last_shutoff_error,errorUnderTempCharge,,,,,0.046,,,,,28847.0,,,,
+berkeley_only,,,,,,,bms.last_shutoff_error,errorUnderTempDischarge,,,,,0.046,,,,,28847.0,,,,
+berkeley_only,,,,,,,bms.last_shutoff_error,errorUnderVoltage,,,,,0.046,,,,,28847.0,,,,
+berkeley_only,,,,,,,bms.pack_temps_1_centicelsius,val_1,,,,,0.478,,,,,298668.0,257.0,61778.0,52158.7034432882,
+berkeley_only,,,,,,,bms.pack_temps_1_centicelsius,val_2,,,,,0.478,,,,,298668.0,257.0,65495.0,52134.876019526695,
+berkeley_only,,,,,,,bms.pack_temps_1_centicelsius,val_3,,,,,0.478,,,,,298668.0,257.0,65532.0,52097.4888772818,
+berkeley_only,,,,,,,bms.pack_temps_1_centicelsius,val_4,,,,,0.478,,,,,298668.0,257.0,65535.0,52084.05855665823,
+berkeley_only,,,,,,,bms.pack_temps_3_centicelsius,val_1,,,,,0.438,,,,,273827.0,257.0,60250.0,32741.806779462942,
+berkeley_only,,,,,,,bms.pack_temps_3_centicelsius,val_2,,,,,0.438,,,,,273827.0,257.0,65535.0,32750.605984800623,
+berkeley_only,,,,,,,bms.pack_temps_3_centicelsius,val_3,,,,,0.438,,,,,273827.0,257.0,65532.0,32717.694642968007,
+berkeley_only,,,,,,,bms.pack_temps_3_centicelsius,val_4,,,,,0.438,,,,,273827.0,257.0,65535.0,32707.163964839114,
+berkeley_only,,,,,,,bms.pack_temps_4_centicelsius,val_1,,,,,0.417,,,,,260258.0,1023.0,52223.0,32749.82299871666,
+berkeley_only,,,,,,,bms.pack_temps_4_centicelsius,val_2,,,,,0.417,,,,,260258.0,445.0,65535.0,32753.9958733257,
+berkeley_only,,,,,,,bms.pack_temps_4_centicelsius,val_3,,,,,0.417,,,,,260258.0,257.0,65535.0,32690.759223539717,
+berkeley_only,,,,,,,bms.pack_temps_4_centicelsius,val_4,,,,,0.417,,,,,260258.0,257.0,65535.0,32677.80964273913,
+berkeley_only,,,,,,,bms.shutoff_error,errorMissingMeasurement,,,,,0.01,,,,,3393.0,,,,
+berkeley_only,,,,,,,bms.shutoff_error,errorOnAux,,,,,0.01,,,,,3393.0,,,,
+berkeley_only,,,,,,,bms.shutoff_error,errorOverCharge,,,,,0.01,,,,,3393.0,,,,
+berkeley_only,,,,,,,bms.shutoff_error,errorOverCurrent,,,,,0.01,,,,,3393.0,,,,
+berkeley_only,,,,,,,bms.shutoff_error,errorOverTempCharge,,,,,0.01,,,,,3393.0,,,,
+berkeley_only,,,,,,,bms.shutoff_error,errorOverTempDischarge,,,,,0.01,,,,,3393.0,,,,
+berkeley_only,,,,,,,bms.shutoff_error,errorOverVoltage,,,,,0.01,,,,,3393.0,,,,
+berkeley_only,,,,,,,bms.shutoff_error,errorUnderTempCharge,,,,,0.01,,,,,3393.0,,,,
+berkeley_only,,,,,,,bms.shutoff_error,errorUnderTempDischarge,,,,,0.01,,,,,3393.0,,,,
+berkeley_only,,,,,,,bms.shutoff_error,errorUnderVoltage,,,,,0.01,,,,,3393.0,,,,
+berkeley_only,,,,,,,bms.startup,value,,,,,0.0,,,,,27.0,0.0,0.0,0.0,
+berkeley_only,,,,,,,calculated_values.adjusted_coulomb_count,value,,,,,0.254,,,,,154564.0,-100082408.0,2.406428084449562e+17,791058531628.934,
+berkeley_only,,,,,,,calculated_values.charge_shunt_Ah,value,,,,,0.251,,,,,27784.0,-6.869113399940487,4.730761669535806,0.3768145796796859,
+berkeley_only,,,,,,,calculated_values.energy_in_Wh,value,,,,,0.251,,,,,27784.0,0.0,1923.1127670761464,658.9364871318221,
+berkeley_only,,,,,,,calculated_values.energy_net_Wh,value,,,,,0.251,,,,,27784.0,-914.8737901457964,598.7080675897383,40.032781973815375,
+berkeley_only,,,,,,,calculated_values.energy_out_Wh,value,,,,,0.251,,,,,27784.0,0.0,2228.3094991850894,698.9692691056292,
+berkeley_only,,,,,,,calculated_values.moving_time_s,value,,,,,0.254,,,,,27932.0,0.0,18647.965877000603,9589.72087245566,
+berkeley_only,,,,,,,calculated_values.odometer_mi,value,,,,,0.254,,,,,27932.0,0.0,131.20909230366988,65.57590231645294,
+berkeley_only,,,,,,,calculated_values.power_in_W,value,,,,,1.639,,,,,181428.0,0.0,17368.27999,485.1237870458256,
+berkeley_only,,,,,,,calculated_values.power_net_W,value,,,,,1.639,,,,,181428.0,-7229.353163322448,5699.196916870117,-96.37022801031377,
+berkeley_only,,,,,,,calculated_values.power_out_W,value,,,,,1.639,,,,,181428.0,-7139.337483322448,16735.82505739044,388.7535590355113,
+berkeley_only,,,,,,,calculated_values.right_speed_mph,value,,,,,1.803,,,,,1127097.0,-2.1072299577152175e+37,5.2962489271545434e+32,-3.41600615729505e+31,
+berkeley_only,,,,,,,calculated_values.soc_coulomb_percent,value,,,,,0.401,,,,,145478.0,1.9605433316848315,90.21095421658175,45.97326729555708,
+berkeley_only,,,,,,,calculated_values.soc_innovation_V,value,,,,,0.401,,,,,145478.0,-0.1819287462864713,1.1056291835006884,0.0010067034717263,
+berkeley_only,,,,,,,calculated_values.speed_mph,value,,,,,0.254,,,,,27932.0,0.0,43.11675904015618,15.492780999947431,
+berkeley_only,,,,,,,calculated_values.stopped_time_s,value,,,,,0.254,,,,,27932.0,0.0,11891.497651000422,5725.363368903262,
+berkeley_only,,,,,,,front_lights.heart_lights_front_time_us,value,,,,,0.225,,,,,140767.0,32716.0,4294196261.0,1982074037.4727244,
+berkeley_only,,,,,,,front_lights.lights_front_core_status,temperature_centicelsius,,,,,0.226,,,,,141353.0,306.0,65524.0,3825.8184545075096,
+berkeley_only,,,,,,,front_lights.lights_front_core_status,vref_bandgap_mV,,,,,0.226,,,,,141353.0,258.0,49545.0,3281.6383239124743,
+berkeley_only,,,,,,,hvpdb.hvpdb_core_status_mA,temperature_centicelsius,,,,,0.513,,,,,320391.0,296.0,64265.0,3631.534646728529,
+berkeley_only,,,,,,,hvpdb.hvpdb_core_status_mA,vref_bandgap_mV,,,,,0.513,,,,,320391.0,279.0,65352.0,3384.809370425511,
+berkeley_only,,,,,,,hvpdb.hvpdb_heartbeat,value,,,,,0.511,,,,,319501.0,32711.0,4294664445.0,1977771238.0042973,
+berkeley_only,,,,,,,hvpdb.hvpdb_state,value,,,,,0.512,,,,,319997.0,0.0,253.0,1.9997968730956852,
+berkeley_only,,,,,,,left_mcc.heart_left_mcc_time_us,value,,,,,0.232,,,,,145050.0,167071.0,4294147751.0,1104864467.2221234,
+berkeley_only,,,,,,,mileage.hill_active,avg_grade_pct,,,,,0.005,,,,,547.0,0.177984457155252,38907.31189329214,997.1990733569196,
+berkeley_only,,,,,,,mileage.hill_active,avg_moving_mph,,,,,0.005,,,,,533.0,2.1037660766299213,32.46743394373107,25.12339699998465,
+berkeley_only,,,,,,,mileage.hill_active,avg_mph,,,,,0.006,,,,,609.0,0.0,32.52782180070546,21.953604841781644,
+berkeley_only,,,,,,,mileage.hill_active,avg_w_net,,,,,0.006,,,,,609.0,-8590.32628678588,2346.476374849801,373.7471629879992,
+berkeley_only,,,,,,,mileage.hill_active,climb_ft,,,,,0.006,,,,,609.0,50.00144480369033,361.2782316705443,81.62983852399607,
+berkeley_only,,,,,,,mileage.hill_active,complete,,,,,0.006,,,,,609.0,0.0,0.0,0.0,
+berkeley_only,,,,,,,mileage.hill_active,distance_mi,,,,,0.006,,,,,609.0,0.0,6.386125939007314,1.6940530066449344,
+berkeley_only,,,,,,,mileage.hill_active,duration_s,,,,,0.006,,,,,609.0,0.0374071598052978,875.7979321479797,262.35602465012585,
+berkeley_only,,,,,,,mileage.hill_active,end_alt_ft,,,,,0.006,,,,,609.0,591.42310911772,1066.8284815495956,864.0561372264552,
+berkeley_only,,,,,,,mileage.hill_active,end_mi,,,,,0.006,,,,,609.0,1.606734096723264,129.79972867407204,49.63989674739271,
+berkeley_only,,,,,,,mileage.hill_active,hill_id,,,,,0.006,,,,,609.0,1.0,16.0,6.111658456486043,
+berkeley_only,,,,,,,mileage.hill_active,moving_s,,,,,0.006,,,,,609.0,0.0,876.3483859999851,237.467237458122,
+berkeley_only,,,,,,,mileage.hill_active,soc_per_mi,,,,,0.005,,,,,547.0,-43870.5044005964,5.693947213416083,-1121.8177555843529,
+berkeley_only,,,,,,,mileage.hill_active,soc_spent_pct,,,,,0.006,,,,,609.0,-1.142053693915777,3.965086403976384,0.674731276634093,
+berkeley_only,,,,,,,mileage.hill_active,start_alt_ft,,,,,0.006,,,,,609.0,541.353017349818,1010.5996067682704,782.4262987024571,
+berkeley_only,,,,,,,mileage.hill_active,start_mi,,,,,0.006,,,,,609.0,1.0603159378473708,129.1567344788924,47.94584374074768,
+berkeley_only,,,,,,,mileage.hill_active,stopped_s,,,,,0.006,,,,,609.0,0.0,525.3450689999952,24.98345134154336,
+berkeley_only,,,,,,,mileage.hill_active,wh_in,,,,,0.006,,,,,609.0,0.0192628322567145,167.33831729289773,39.60674915143923,
+berkeley_only,,,,,,,mileage.hill_active,wh_net,,,,,0.006,,,,,609.0,-60.50111018318736,66.93793567842397,11.800439271671824,
+berkeley_only,,,,,,,mileage.hill_active,wh_out,,,,,0.006,,,,,609.0,0.0582101778006161,149.30682339435066,51.40718842311091,
+berkeley_only,,,,,,,mileage.hill_active,wh_per_100ft_climb,,,,,0.006,,,,,609.0,-113.13169652559344,85.822173164818,14.843076795539796,
+berkeley_only,,,,,,,mileage.hill_active,wh_per_mi,,,,,0.005,,,,,547.0,-2324071.3065179484,84.10605356080582,-59464.317342787166,
+berkeley_only,,,,,,,mileage.hill_summary,avg_grade_pct,,,,,0.001,,,,,21.0,0.2048567442316887,3.143571618001461,1.2412346642150145,
+berkeley_only,,,,,,,mileage.hill_summary,avg_moving_mph,,,,,0.001,,,,,21.0,18.740238760322857,32.46743394373107,26.426708197941156,
+berkeley_only,,,,,,,mileage.hill_summary,avg_mph,,,,,0.001,,,,,21.0,17.782687319242765,32.52782180070546,26.345039085399343,
+berkeley_only,,,,,,,mileage.hill_summary,avg_w_net,,,,,0.001,,,,,21.0,-74.11912685788211,2172.526695109109,599.6348221249913,
+berkeley_only,,,,,,,mileage.hill_summary,climb_ft,,,,,0.001,,,,,21.0,50.92610921727169,133.57817461337447,68.05028307543843,
+berkeley_only,,,,,,,mileage.hill_summary,complete,,,,,0.001,,,,,21.0,1.0,1.0,1.0,
+berkeley_only,,,,,,,mileage.hill_summary,distance_mi,,,,,0.001,,,,,21.0,0.3275128935438083,6.386125939007314,1.786547323839198,
+berkeley_only,,,,,,,mileage.hill_summary,duration_s,,,,,0.001,,,,,21.0,41.916873931884766,875.7979321479797,244.6140314624423,
+berkeley_only,,,,,,,mileage.hill_summary,end_alt_ft,,,,,0.001,,,,,21.0,596.1433108304512,1017.7761774790774,828.743063345157,
+berkeley_only,,,,,,,mileage.hill_summary,end_mi,,,,,0.001,,,,,21.0,10.239606167543462,129.79972867407204,67.18640504059888,
+berkeley_only,,,,,,,mileage.hill_summary,hill_id,,,,,0.001,,,,,21.0,1.0,16.0,7.190476190476191,
+berkeley_only,,,,,,,mileage.hill_summary,moving_s,,,,,0.001,,,,,21.0,41.42595600000368,876.3483859999851,244.06987642857084,
+berkeley_only,,,,,,,mileage.hill_summary,soc_per_mi,,,,,0.001,,,,,21.0,-0.0855294263678909,4.352839942818273,0.8837130288473853,
+berkeley_only,,,,,,,mileage.hill_summary,soc_spent_pct,,,,,0.001,,,,,21.0,-0.5462016882764047,1.5485744637224812,0.7519798180288216,
+berkeley_only,,,,,,,mileage.hill_summary,start_alt_ft,,,,,0.001,,,,,21.0,541.353017349818,945.1792038243432,760.6927802697189,
+berkeley_only,,,,,,,mileage.hill_summary,start_mi,,,,,0.001,,,,,21.0,9.912093273999654,129.1567344788924,65.39985771675967,
+berkeley_only,,,,,,,mileage.hill_summary,stopped_s,,,,,0.001,,,,,21.0,0.0,14.117528000006132,0.6722632380955301,
+berkeley_only,,,,,,,mileage.hill_summary,wh_in,,,,,0.001,,,,,21.0,0.8315577227919064,167.33831729289773,36.36133840644003,
+berkeley_only,,,,,,,mileage.hill_summary,wh_net,,,,,0.001,,,,,21.0,-18.031493898540816,66.67055000168688,22.651864833264433,
+berkeley_only,,,,,,,mileage.hill_summary,wh_out,,,,,0.001,,,,,21.0,15.10279552689633,149.30682339435066,59.0132032397045,
+berkeley_only,,,,,,,mileage.hill_summary,wh_per_100ft_climb,,,,,0.001,,,,,21.0,-26.104179167494916,80.42468029857541,32.89683178812896,
+berkeley_only,,,,,,,mileage.hill_summary,wh_per_mi,,,,,0.001,,,,,21.0,-3.2436090554984216,77.236592468485,22.72304164192912,
+berkeley_only,,,,,,,mileage.win10,ah_per_mi,,,,,0.395,,,,,9206.0,-21.02058996064318,973.7913718482156,214.1332531880499,
+berkeley_only,,,,,,,mileage.win10,ah_per_mi_shunt,,,,,0.4,,,,,9946.0,-19.025853326316984,0.3145558519780581,-0.1068600667309167,
+berkeley_only,,,,,,,mileage.win10,avg_moving_mph,,,,,0.404,,,,,10087.0,1.376066796079042,33.184598693310484,25.522150811000113,
+berkeley_only,,,,,,,mileage.win10,avg_w_in,,,,,0.475,,,,,11937.0,42.02820438913954,699.116449621355,521.2215575062326,
+berkeley_only,,,,,,,mileage.win10,avg_w_net,,,,,0.475,,,,,11937.0,-645.4463858264637,592.3270537954988,-60.36439555190165,
+berkeley_only,,,,,,,mileage.win10,avg_w_out,,,,,0.475,,,,,11937.0,26.67807531101928,1017.4895237875058,460.8571619543259,
+berkeley_only,,,,,,,mileage.win10,covered_mi,,,,,0.475,,,,,11937.0,0.0,10.04825400894407,7.79797474205999,
+berkeley_only,,,,,,,mileage.win10,elapsed_s,,,,,0.475,,,,,11937.0,2.0992250442504883,5359.802826881409,1754.1361196800283,
+berkeley_only,,,,,,,mileage.win10,max_mph,,,,,0.475,,,,,11937.0,0.0,43.11675904015618,30.5783308782107,
+berkeley_only,,,,,,,mileage.win10,moving_s,,,,,0.475,,,,,11937.0,0.0,1790.1802100000823,1082.7730632909002,
+berkeley_only,,,,,,,mileage.win10,net_climb_ft,,,,,0.475,,,,,11937.0,-183.88398641113588,187.97426863334871,-28.798290711840416,
+berkeley_only,,,,,,,mileage.win10,odometer_mi,,,,,0.475,,,,,11937.0,7.8443992633773,131.20909230366988,79.63653018058102,
+berkeley_only,,,,,,,mileage.win10,projected_range_mi,,,,,0.221,,,,,4380.0,64.50278835611334,355006.8666038574,2382.9940730661187,
+berkeley_only,,,,,,,mileage.win10,sd_mph,,,,,0.404,,,,,10086.0,0.2446341314727722,11.392095354112772,5.506984214885313,
+berkeley_only,,,,,,,mileage.win10,soc_now_pct,,,,,0.475,,,,,11937.0,52.368517179028245,77.70335608137493,62.38639911795846,
+berkeley_only,,,,,,,mileage.win10,soc_per_100ft_climb,,,,,0.302,,,,,7041.0,-29.13179268469886,19.90003530956302,1.3369081175925648,
+berkeley_only,,,,,,,mileage.win10,soc_per_mi,,,,,0.371,,,,,8663.0,-0.5090423082053632,0.9183913988528694,0.0125037075138488,
+berkeley_only,,,,,,,mileage.win10,soc_spent_pct,,,,,0.371,,,,,8663.0,-5.093640960398723,9.18460048780721,0.125045658862368,
+berkeley_only,,,,,,,mileage.win10,stopped_s,,,,,0.475,,,,,11937.0,0.0,3715.11903600029,628.5615307069925,
+berkeley_only,,,,,,,mileage.win10,wh_in,,,,,0.475,,,,,11937.0,0.0245074053384888,922.2871283405,267.1524114925214,
+berkeley_only,,,,,,,mileage.win10,wh_net,,,,,0.475,,,,,11937.0,-647.639623737428,243.23169429600395,-71.44752145198783,
+berkeley_only,,,,,,,mileage.win10,wh_out,,,,,0.475,,,,,11937.0,0.0155564677292478,360.0826711050333,195.70489004053152,
+berkeley_only,,,,,,,mileage.win10,wh_per_100ft_climb,,,,,0.313,,,,,7774.0,-2335.007136635097,2545.4095400884403,70.65289996339149,
+berkeley_only,,,,,,,mileage.win10,wh_per_mi,,,,,0.4,,,,,9946.0,-2512.9116210928355,40.70513547780289,-14.368464063449313,
+berkeley_only,,,,,,,mileage.win10,wh_per_mi_in,,,,,0.4,,,,,9946.0,3.897281137470404,2764.458237139917,40.4475963842255,
+berkeley_only,,,,,,,mileage.win10,wh_per_mi_net,,,,,0.4,,,,,9946.0,-2512.9116210928355,40.70513547780289,-14.368464063449313,
+berkeley_only,,,,,,,mileage.win10,wh_per_mi_out,,,,,0.4,,,,,9946.0,17.94677702705323,251.54661604706695,26.079132320775887,
+berkeley_only,,,,,,,mileage.win2,ah_per_mi,,,,,0.399,,,,,9788.0,-21.02058996064318,1712.3456656943588,213.36943334984431,
+berkeley_only,,,,,,,mileage.win2,ah_per_mi_shunt,,,,,0.4,,,,,9945.0,-19.025853326316984,0.3145558519780581,-0.1425608332975983,
+berkeley_only,,,,,,,mileage.win2,avg_moving_mph,,,,,0.404,,,,,10086.0,1.376066796079042,33.97101158265929,25.829704263891884,
+berkeley_only,,,,,,,mileage.win2,avg_w_in,,,,,0.475,,,,,11936.0,42.02820438913954,742.2383551214934,535.740825862211,
+berkeley_only,,,,,,,mileage.win2,avg_w_net,,,,,0.475,,,,,11936.0,-645.4463858264637,1000.6701905080574,-75.17932024469302,
+berkeley_only,,,,,,,mileage.win2,avg_w_out,,,,,0.475,,,,,11936.0,26.67807531101928,1195.082539581742,460.56150561751497,
+berkeley_only,,,,,,,mileage.win2,covered_mi,,,,,0.475,,,,,11936.0,0.0,2.0456194218014616,1.646959714769617,
+berkeley_only,,,,,,,mileage.win2,elapsed_s,,,,,0.475,,,,,11936.0,2.0992250442504883,4484.105891942978,719.229084486716,
+berkeley_only,,,,,,,mileage.win2,max_mph,,,,,0.475,,,,,11936.0,0.0,43.11675904015618,28.067599956899056,
+berkeley_only,,,,,,,mileage.win2,moving_s,,,,,0.475,,,,,11936.0,0.0,474.8302380000714,230.97322152422697,
+berkeley_only,,,,,,,mileage.win2,net_climb_ft,,,,,0.475,,,,,11936.0,-118.48378311163412,115.00824708987729,-6.060607163635033,
+berkeley_only,,,,,,,mileage.win2,odometer_mi,,,,,0.475,,,,,11936.0,7.8443992633773,131.20909230366988,79.63221009408099,
+berkeley_only,,,,,,,mileage.win2,projected_range_mi,,,,,0.21,,,,,4729.0,40.40121160428384,169558.77008374463,1019.9644414558228,
+berkeley_only,,,,,,,mileage.win2,sd_mph,,,,,0.404,,,,,10085.0,0.2446341314727722,11.025938438867051,4.646793730153859,
+berkeley_only,,,,,,,mileage.win2,soc_now_pct,,,,,0.475,,,,,11936.0,52.368517179028245,77.70335608137493,62.385375471228784,
+berkeley_only,,,,,,,mileage.win2,soc_per_100ft_climb,,,,,0.193,,,,,4465.0,-8.448746243705855,23.182384828510727,1.6848365764629236,
+berkeley_only,,,,,,,mileage.win2,soc_per_mi,,,,,0.394,,,,,9669.0,-2.929718566913277,1.5571965152394387,-0.1232095557978019,
+berkeley_only,,,,,,,mileage.win2,soc_spent_pct,,,,,0.394,,,,,9669.0,-5.8781276507277695,3.115258181843224,-0.2472560901136673,
+berkeley_only,,,,,,,mileage.win2,stopped_s,,,,,0.475,,,,,11936.0,0.0,3715.11903600029,460.8768047502703,
+berkeley_only,,,,,,,mileage.win2,wh_in,,,,,0.475,,,,,11936.0,0.0245074053384888,752.7023233547645,116.16558390258018,
+berkeley_only,,,,,,,mileage.win2,wh_net,,,,,0.475,,,,,11936.0,-647.639623737428,71.19203187152218,-71.1676194188413,
+berkeley_only,,,,,,,mileage.win2,wh_out,,,,,0.475,,,,,11936.0,0.0155564677292478,128.59525733212251,44.99796448373911,
+berkeley_only,,,,,,,mileage.win2,wh_per_100ft_climb,,,,,0.201,,,,,4722.0,-327.58843740299875,2545.4095400884403,109.8404228619898,
+berkeley_only,,,,,,,mileage.win2,wh_per_mi,,,,,0.4,,,,,9945.0,-2512.9116210928355,40.70513547780289,-19.040238480876692,
+berkeley_only,,,,,,,mileage.win2,wh_per_mi_in,,,,,0.4,,,,,9945.0,2.467144038630176,2764.458237139917,44.35993333753455,
+berkeley_only,,,,,,,mileage.win2,wh_per_mi_net,,,,,0.4,,,,,9945.0,-2512.9116210928355,40.70513547780289,-19.040238480876692,
+berkeley_only,,,,,,,mileage.win2,wh_per_mi_out,,,,,0.4,,,,,9945.0,11.110285661122855,251.54661604706695,25.31969485665788,
+berkeley_only,,,,,,,mileage.win25,ah_per_mi,,,,,0.387,,,,,8266.0,-21.02058996064318,848.4512457424586,208.63804059638875,
+berkeley_only,,,,,,,mileage.win25,ah_per_mi_shunt,,,,,0.4,,,,,9946.0,-19.025853326316984,0.3145558519780581,-0.1095125252781785,
+berkeley_only,,,,,,,mileage.win25,avg_moving_mph,,,,,0.404,,,,,10087.0,1.376066796079042,30.2160900918994,25.683917001689128,
+berkeley_only,,,,,,,mileage.win25,avg_w_in,,,,,0.475,,,,,11937.0,42.02820438913954,699.116449621355,492.74690172812984,
+berkeley_only,,,,,,,mileage.win25,avg_w_net,,,,,0.475,,,,,11937.0,-645.4463858264637,505.93951142911567,-53.40727327907094,
+berkeley_only,,,,,,,mileage.win25,avg_w_out,,,,,0.475,,,,,11937.0,26.67807531101928,705.0779415027916,439.3396284490548,
+berkeley_only,,,,,,,mileage.win25,covered_mi,,,,,0.475,,,,,11937.0,0.0,25.019989252256902,17.487967439006706,
+berkeley_only,,,,,,,mileage.win25,elapsed_s,,,,,0.475,,,,,11937.0,2.0992250442504883,7650.908231973648,3493.434476695948,
+berkeley_only,,,,,,,mileage.win25,max_mph,,,,,0.475,,,,,11937.0,0.0,43.11675904015618,31.98041184068013,
+berkeley_only,,,,,,,mileage.win25,moving_s,,,,,0.475,,,,,11937.0,0.0,3606.2659710001208,2385.761910485706,
+berkeley_only,,,,,,,mileage.win25,net_climb_ft,,,,,0.475,,,,,11937.0,-227.24189985211777,103.6887320364882,-67.85163267007489,
+berkeley_only,,,,,,,mileage.win25,odometer_mi,,,,,0.475,,,,,11937.0,7.8443992633773,131.20909230366988,79.63653018058102,
+berkeley_only,,,,,,,mileage.win25,projected_range_mi,,,,,0.191,,,,,3698.0,112.6242460636491,357352.6727506263,2835.321172341023,
+berkeley_only,,,,,,,mileage.win25,sd_mph,,,,,0.404,,,,,10086.0,0.2446341314727722,11.392095354112772,6.25780899221978,
+berkeley_only,,,,,,,mileage.win25,soc_now_pct,,,,,0.475,,,,,11937.0,52.368517179028245,77.70335608137493,62.38639911795846,
+berkeley_only,,,,,,,mileage.win25,soc_per_100ft_climb,,,,,0.249,,,,,5321.0,-12.691677887732531,19.336304330532705,-1.0199464715362452,
+berkeley_only,,,,,,,mileage.win25,soc_per_mi,,,,,0.31,,,,,6628.0,-0.2113899650895798,0.4964697317743293,0.0346245575626409,
+berkeley_only,,,,,,,mileage.win25,soc_spent_pct,,,,,0.31,,,,,6628.0,-5.286200891457689,12.412309553903434,0.8657656529020196,
+berkeley_only,,,,,,,mileage.win25,stopped_s,,,,,0.475,,,,,11937.0,0.0,3768.507170000296,1025.8693568151684,
+berkeley_only,,,,,,,mileage.win25,wh_in,,,,,0.475,,,,,11937.0,0.0245074053384888,1341.5044442980109,510.60782185182904,
+berkeley_only,,,,,,,mileage.win25,wh_net,,,,,0.475,,,,,11937.0,-647.639623737428,428.7026590159036,-71.56648016504481,
+berkeley_only,,,,,,,mileage.win25,wh_out,,,,,0.475,,,,,11937.0,0.0155564677292478,731.953370058991,439.04134168677984,
+berkeley_only,,,,,,,mileage.win25,wh_per_100ft_climb,,,,,0.325,,,,,8064.0,-2335.007136635097,2545.4095400884403,-17.912399778213086,
+berkeley_only,,,,,,,mileage.win25,wh_per_mi,,,,,0.4,,,,,9946.0,-2512.9116210928355,40.70513547780289,-14.733901276018392,
+berkeley_only,,,,,,,mileage.win25,wh_per_mi_in,,,,,0.4,,,,,9946.0,3.897281137470404,2764.458237139917,41.82491001488988,
+berkeley_only,,,,,,,mileage.win25,wh_per_mi_net,,,,,0.4,,,,,9946.0,-2512.9116210928355,40.70513547780289,-14.733901276018392,
+berkeley_only,,,,,,,mileage.win25,wh_per_mi_out,,,,,0.4,,,,,9946.0,19.965658083022173,251.54661604706695,27.0910087388712,
+berkeley_only,,,,,,,mileage.win5,ah_per_mi,,,,,0.398,,,,,9609.0,-21.02058996064318,1141.6328386953091,212.32862318326687,
+berkeley_only,,,,,,,mileage.win5,ah_per_mi_shunt,,,,,0.4,,,,,9946.0,-19.025853326316984,0.3145558519780581,-0.1098159932609701,
+berkeley_only,,,,,,,mileage.win5,avg_moving_mph,,,,,0.404,,,,,10087.0,1.376066796079042,33.53505063340938,25.703765693342653,
+berkeley_only,,,,,,,mileage.win5,avg_w_in,,,,,0.475,,,,,11937.0,42.02820438913954,710.3262123447499,530.9307658794353,
+berkeley_only,,,,,,,mileage.win5,avg_w_net,,,,,0.475,,,,,11937.0,-645.4463858264637,732.4530383694256,-64.76836131562314,
+berkeley_only,,,,,,,mileage.win5,avg_w_out,,,,,0.475,,,,,11937.0,26.67807531101928,1112.382130855866,466.1624045638078,
+berkeley_only,,,,,,,mileage.win5,covered_mi,,,,,0.475,,,,,11937.0,0.0,5.043246514374616,4.0348407362338286,
+berkeley_only,,,,,,,mileage.win5,elapsed_s,,,,,0.475,,,,,11937.0,2.0992250442504883,4810.80682182312,1115.239116995261,
+berkeley_only,,,,,,,mileage.win5,max_mph,,,,,0.475,,,,,11937.0,0.0,43.11675904015618,29.398197284087864,
+berkeley_only,,,,,,,mileage.win5,moving_s,,,,,0.475,,,,,11937.0,0.0,994.2696069999728,560.6517709674561,
+berkeley_only,,,,,,,mileage.win5,net_climb_ft,,,,,0.475,,,,,11937.0,-151.4389477263528,154.29432439542188,-14.435458495541331,
+berkeley_only,,,,,,,mileage.win5,odometer_mi,,,,,0.475,,,,,11937.0,7.8443992633773,131.20909230366988,79.63653018058102,
+berkeley_only,,,,,,,mileage.win5,projected_range_mi,,,,,0.206,,,,,4570.0,52.03936043336402,286898.3564436806,1234.0224049605729,
+berkeley_only,,,,,,,mileage.win5,sd_mph,,,,,0.404,,,,,10086.0,0.2446341314727722,11.392095354112772,5.134347687355618,
+berkeley_only,,,,,,,mileage.win5,soc_now_pct,,,,,0.475,,,,,11937.0,52.368517179028245,77.70335608137493,62.38639911795846,
+berkeley_only,,,,,,,mileage.win5,soc_per_100ft_climb,,,,,0.242,,,,,5380.0,-18.09707161434621,21.27354537181092,1.385377214521336,
+berkeley_only,,,,,,,mileage.win5,soc_per_mi,,,,,0.386,,,,,9332.0,-1.0922881630240129,1.1847552586385035,-0.0023923751213418,
+berkeley_only,,,,,,,mileage.win5,soc_spent_pct,,,,,0.386,,,,,9332.0,-5.465315013472043,5.926608774216547,-0.0119801459599706,
+berkeley_only,,,,,,,mileage.win5,stopped_s,,,,,0.475,,,,,11937.0,0.0,3715.11903600029,521.5706586940007,
+berkeley_only,,,,,,,mileage.win5,wh_in,,,,,0.475,,,,,11937.0,0.0245074053384888,815.6669960099351,174.44885823254478,
+berkeley_only,,,,,,,mileage.win5,wh_net,,,,,0.475,,,,,11937.0,-647.639623737428,142.4257086552782,-70.65334392627263,
+berkeley_only,,,,,,,mileage.win5,wh_out,,,,,0.475,,,,,11937.0,0.0155564677292478,221.29806585823067,103.79551430627168,
+berkeley_only,,,,,,,mileage.win5,wh_per_100ft_climb,,,,,0.251,,,,,5751.0,-494.82019092065934,2545.4095400884403,84.03821250726774,
+berkeley_only,,,,,,,mileage.win5,wh_per_mi,,,,,0.4,,,,,9946.0,-2512.9116210928355,40.70513547780289,-14.75108957126731,
+berkeley_only,,,,,,,mileage.win5,wh_per_mi_in,,,,,0.4,,,,,9946.0,3.0125914376411003,2764.458237139917,40.50063250635421,
+berkeley_only,,,,,,,mileage.win5,wh_per_mi_net,,,,,0.4,,,,,9946.0,-2512.9116210928355,40.70513547780289,-14.75108957126731,
+berkeley_only,,,,,,,mileage.win5,wh_per_mi_out,,,,,0.4,,,,,9946.0,13.86785110052337,251.54661604706695,25.74954293508668,
+berkeley_only,,,,,,,mileage.win50,ah_per_mi,,,,,0.365,,,,,6371.0,-21.02058996064318,555.7104190921004,150.42484492797274,
+berkeley_only,,,,,,,mileage.win50,ah_per_mi_shunt,,,,,0.4,,,,,9946.0,-19.025853326316984,0.3145558519780581,-0.1138417670905119,
+berkeley_only,,,,,,,mileage.win50,avg_moving_mph,,,,,0.404,,,,,10087.0,1.376066796079042,30.2160900918994,25.47707369544097,
+berkeley_only,,,,,,,mileage.win50,avg_w_in,,,,,0.475,,,,,11937.0,42.02820438913954,699.116449621355,454.5413538145472,
+berkeley_only,,,,,,,mileage.win50,avg_w_net,,,,,0.475,,,,,11937.0,-645.4463858264637,505.93951142911567,-38.65785476172146,
+berkeley_only,,,,,,,mileage.win50,avg_w_out,,,,,0.475,,,,,11937.0,26.67807531101928,652.4808621345011,415.8834990528215,
+berkeley_only,,,,,,,mileage.win50,covered_mi,,,,,0.475,,,,,11937.0,0.0,50.02210302758237,27.112283481771932,
+berkeley_only,,,,,,,mileage.win50,elapsed_s,,,,,0.475,,,,,11937.0,2.0992250442504883,10280.449609041214,5366.648533623373,
+berkeley_only,,,,,,,mileage.win50,max_mph,,,,,0.475,,,,,11937.0,0.0,43.11675904015618,32.96118395118371,
+berkeley_only,,,,,,,mileage.win50,moving_s,,,,,0.475,,,,,11937.0,0.0,7002.902691000225,3725.713736235187,
+berkeley_only,,,,,,,mileage.win50,net_climb_ft,,,,,0.475,,,,,11937.0,-244.87789913372353,48.06667794041118,-95.040919168231,
+berkeley_only,,,,,,,mileage.win50,odometer_mi,,,,,0.475,,,,,11937.0,7.8443992633773,131.20909230366988,79.63653018058102,
+berkeley_only,,,,,,,mileage.win50,projected_range_mi,,,,,0.485,,,,,3013.0,184.11974020773135,262114.0775336957,1677.4900914746509,
+berkeley_only,,,,,,,mileage.win50,sd_mph,,,,,0.404,,,,,10086.0,0.2446341314727722,11.392095354112772,6.701666848710401,
+berkeley_only,,,,,,,mileage.win50,soc_now_pct,,,,,0.475,,,,,11937.0,52.368517179028245,77.70335608137493,62.38639911795846,
+berkeley_only,,,,,,,mileage.win50,soc_per_100ft_climb,,,,,0.462,,,,,3288.0,-19.65343220561108,13.997757567306882,-2.5926978578515256,
+berkeley_only,,,,,,,mileage.win50,soc_per_mi,,,,,0.485,,,,,3457.0,-0.0669843021420545,0.2916864138345374,0.065841020105332,
+berkeley_only,,,,,,,mileage.win50,soc_spent_pct,,,,,0.485,,,,,3457.0,-3.3495707984149874,14.584347890950395,3.2923380357986898,
+berkeley_only,,,,,,,mileage.win50,stopped_s,,,,,0.475,,,,,11937.0,1.3012989999997444,5571.992580000381,1516.168439559279,
+berkeley_only,,,,,,,mileage.win50,wh_in,,,,,0.475,,,,,11937.0,0.0245074053384888,1780.291117477914,730.5507507626662,
+berkeley_only,,,,,,,mileage.win50,wh_net,,,,,0.475,,,,,11937.0,-914.8737901457964,534.6883111575335,-50.15617852704029,
+berkeley_only,,,,,,,mileage.win50,wh_out,,,,,0.475,,,,,11937.0,0.0155564677292478,1229.1051709240808,680.3945722356175,
+berkeley_only,,,,,,,mileage.win50,wh_per_100ft_climb,,,,,0.371,,,,,9202.0,-2335.007136635097,2545.4095400884403,-22.430034377882723,
+berkeley_only,,,,,,,mileage.win50,wh_per_mi,,,,,0.4,,,,,9946.0,-2512.9116210928355,40.70513547780289,-15.35679389901284,
+berkeley_only,,,,,,,mileage.win50,wh_per_mi_in,,,,,0.4,,,,,9946.0,3.897281137470404,2764.458237139917,43.0921361544533,
+berkeley_only,,,,,,,mileage.win50,wh_per_mi_net,,,,,0.4,,,,,9946.0,-2512.9116210928355,40.70513547780289,-15.35679389901284,
+berkeley_only,,,,,,,mileage.win50,wh_per_mi_out,,,,,0.4,,,,,9946.0,21.838633692345987,251.54661604706695,27.73534225544016,
+berkeley_only,,,,,,,mppt1.calculated_power,value,,,,,0.686,,,,,428480.0,0.0,16885.7481,112.93701868332256,
+berkeley_only,,,,,,,mppt2.calculated_power,value,,,,,0.68,,,,,424770.0,0.0,16883.3427,113.67665214021709,
+berkeley_only,,,,,,,mppt3.calculated_power,value,,,,,0.669,,,,,417878.0,0.0,16889.39532,146.49871576117908,
+berkeley_only,,,,,,,petals.can_pedal_pos,brakePos,,,,,7.444,,,,,4653682.0,0.0,224.0,3.577638523646437,
+berkeley_only,,,,,,,petals.heart_petals_time_us,value,,,,,0.248,,,,,155139.0,32720.0,4294228985.0,2001204920.7587905,
+berkeley_only,,,,,,,petals.petal_core_status,temperature_centicelsius,,,,,,,,,,1.0,4847.0,4847.0,4847.0,
+berkeley_only,,,,,,,petals.petal_core_status,vref_bandgap_mV,,,,,,,,,,1.0,3280.0,3280.0,3280.0,
+berkeley_only,,,,,,,rear_lights.heart_lights_rear_time_us,value,,,,,0.228,,,,,142557.0,32740.0,4294228985.0,1958999264.3739836,
+berkeley_only,,,,,,,rear_lights.lights_rear_core_status,temperature_centicelsius,,,,,0.231,,,,,144235.0,270.0,25334.0,3872.901258363088,
+berkeley_only,,,,,,,rear_lights.lights_rear_core_status,vref_bandgap_mV,,,,,0.231,,,,,144235.0,279.0,65505.0,3306.9750199327486,
+berkeley_only,,,,,,,riedon.riedon_can_read,value,,,,,0.553,,,,,345425.0,2.0,203.0,4.0005645219656945,
+berkeley_only,,,,,,,riedon.riedon_coulomb_count,value,,,,,0.552,,,,,345100.0,-9.03351451077366e+18,9.22323129936642e+18,76896196354072.72,
+berkeley_only,,,,,,,right_mcc.heart_mcc_right_time_us,value,,,,,0.242,,,,,151299.0,151794.0,4294904240.0,2024737839.000522,
+berkeley_only,,,,,,,steering.can_steering_lap_data,avgPwr,,,,,0.017,,,,,9061.0,-32253.0,16469.0,-371.3981900452489,
+berkeley_only,,,,,,,steering.can_steering_lap_data,avgSpeed,,,,,0.017,,,,,9061.0,0.0,229.0,24.56572122282309,
+berkeley_only,,,,,,,steering.can_steering_lap_data,capacityUsed,,,,,0.017,,,,,9061.0,-11891.0,30002.0,-628.2681823198322,
+berkeley_only,,,,,,,steering.can_steering_lap_data,lapTime,,,,,0.017,,,,,9061.0,173.0,4981.0,874.8209910605893,
+berkeley_only,,,,,,,steering.can_steering_lap_data,lap_id,,,,,0.017,,,,,9061.0,1.0,80.0,5.825736673656329,
+berkeley_only,,,,,,,steering.steering_can_brake_limit_mA,value,,,,,4.278,,,,,2672917.0,0.0,255.0,59.563411808148174,
+berkeley_only,,,,,,,steering.steering_can_heart,value,,,,,0.247,,,,,154206.0,32715.0,4294106501.0,1775000006.4022217,
+berkeley_only,,,,,,,steering.steering_core_status,value,,,,,0.249,,,,,155321.0,18285569.0,4291825279.0,214983955.39993948,
+berkeley_only,,,,,,,steering.steering_drive_control_mA,value,,,,,4.237,,,,,2647417.0,1.0,223.0,7.568815188540377,
+berkeley_only,,,,,,,steering.steering_hazard_lights_mA,value,,,,,4.297,,,,,2685300.0,0.0,2.0,0.0102059360220459,
+berkeley_only,,,,,,,steering.steering_lights,value,,,,,4.289,,,,,2679880.0,0.0,225.0,0.5694288550233593,
+berkeley_only,,,,,,,strobe.heart_strobe_time_us,value,,,,,0.429,,,,,267656.0,32716.0,4294728982.0,2125415523.134288,
+berkeley_only,,,,,,,telemetry.heart_telem_time_us,value,,,,,0.24,,,,,150253.0,1001009.0,1.152921508410667e+18,116666373639393.72,
