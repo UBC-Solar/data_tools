@@ -6,7 +6,7 @@
 Which of our TEL Acceleration_Y / _Z points forward and which sideways (counterpart to investigate_imu.py).
 
 Usage: uv run scripts/investigate_imu_ubc.py [START STOP]   (default: 2026-04-02, our busiest 2026 day)
-Reads CAN_log on the team server (UBC_INFLUX_URL / UBC_INFLUX_TOKEN in .env).
+Reads CAN_log on the team server (UBC_INFLUX_URL / UBC_INFLUX_TOKEN / UBC_INFLUX_ORG in .env).
 Our accelerations are milli-g WITH gravity; our longitude is degrees west, positive.
 """
 from pathlib import Path
@@ -23,11 +23,12 @@ from influxdb_client.client.warnings import MissingPivotFunction
 warnings.simplefilter("ignore", MissingPivotFunction)
 
 ROOT = Path(__file__).resolve().parent.parent
-ORG_ID, CAR = "8a0b66d77a331e96", "Brightside"
+CAR = "Brightside"
 START, STOP = (sys.argv[1], sys.argv[2]) if len(sys.argv) == 3 else ("2026-04-02T00:00:00Z", "2026-04-03T00:00:00Z")
 G = 9.80665
 
 load_dotenv(ROOT / ".env")
+ORG_ID = os.environ["UBC_INFLUX_ORG"]
 query_api = InfluxDBClient(url=os.environ["UBC_INFLUX_URL"], token=os.environ["UBC_INFLUX_TOKEN"], org=ORG_ID, timeout=600_000).query_api()
 
 

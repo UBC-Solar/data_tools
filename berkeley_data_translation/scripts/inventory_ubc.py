@@ -8,7 +8,7 @@ with the same stats as inventory_berkeley.py. Fields are queried a few at a time
 querying a whole measurement (e.g. all BMS cell fields) times out the team server's proxy.
 
 Usage: uv run scripts/inventory_ubc.py
-Needs UBC_INFLUX_URL and UBC_INFLUX_TOKEN in .env. Writes mapping/ubc_schema.csv. Per-batch
+Needs UBC_INFLUX_URL, UBC_INFLUX_TOKEN and UBC_INFLUX_ORG (the team org's ID) in .env. Writes mapping/ubc_schema.csv. Per-batch
 results are cached in mapping/.inventory_cache_ubc/ so a rerun resumes where it stopped.
 """
 from pathlib import Path
@@ -25,12 +25,12 @@ warnings.simplefilter("ignore", MissingPivotFunction)
 
 ROOT = Path(__file__).resolve().parent.parent
 BUCKET = "CAN_log"
-ORG_ID = "8a0b66d77a331e96"
 CAR = "Brightside"
 START, STOP = "2026-04-02T00:00:00Z", "2026-04-03T00:00:00Z"  # busiest 2026 driving day
 BATCH = 10  # fields per query
 
 load_dotenv(ROOT / ".env")
+ORG_ID = os.environ["UBC_INFLUX_ORG"]
 client = InfluxDBClient(url=os.environ["UBC_INFLUX_URL"], token=os.environ["UBC_INFLUX_TOKEN"], org=ORG_ID, timeout=600_000)
 query_api = client.query_api()
 
@@ -86,7 +86,7 @@ for i, m in enumerate(measurements, 1):
         batch = fields[j:j + BATCH]
         cached = cache / f"{m}_{j:04d}_{batch[0]}.csv"
         if cached.exists():
-            rows.append(pd.read_csv(cached))
+            rows.append(pd.read_csv(cached) if cached.stat().st_size else pd.DataFrame())  # empty batch -> empty file
             continue
         out = stats(m, batch)
         out.to_csv(cached, index=False)

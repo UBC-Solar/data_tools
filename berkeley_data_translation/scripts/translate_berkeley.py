@@ -5,25 +5,28 @@
 """
 Translate Berkeley's telemetry into our format and write it to the local CAN_log bucket.
 
-Usage:
-  uv run scripts/translate_berkeley.py --dry-run        # convert and report, write nothing
-  uv run scripts/translate_berkeley.py                  # replace all car="Berkeley" data in local CAN_log
-  uv run scripts/translate_berkeley.py --only SOC,GPSAltitude --dry-run   # --only always needs --dry-run
+Usage (from berkeley_data_translation/; --with-editable .. provides data_tools for the time shift):
+  uv run --with-editable .. scripts/translate_berkeley.py --dry-run        # convert and report, write nothing
+  uv run --with-editable .. scripts/translate_berkeley.py                  # replace all car="Berkeley" data in local CAN_log
+  uv run --with-editable .. scripts/translate_berkeley.py --only SOC,GPSAltitude --dry-run   # --only always needs --dry-run
 
 Reads mapping/berkeley_to_ubc.csv (the raw_type / scale / offset / keep_min / keep_max / drop_raw /
-transform columns) and the local berkeley_asc_2026 bucket. Every assumption is listed in ASSUMPTIONS.md.
-Writes mapping/translation_report.csv with read / dropped / written counts per UBC field.
+transform columns) and the local berkeley_asc_2026 bucket. The assumptions behind each mapping are in
+that file's notes column; the time shift, filters and estimates are explained next to their code below.
+Every day is converted before anything is deleted or written, so a conversion error leaves CAN_log as it was.
+A real (non-dry) run writes mapping/translation_report.csv with read / dropped / written counts per UBC
+field, which check_counts.py compares against the database.
 """
 from collections import defaultdict
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 import argparse
 import os
-import tomllib
 import warnings
 
 import numpy as np
 import pandas as pd
+from data_tools.localization import TemporalLocalization
 from dotenv import load_dotenv
 from influxdb_client import InfluxDBClient
 from influxdb_client.client.warnings import MissingPivotFunction
@@ -36,7 +39,6 @@ SRC_BUCKET, ORG = "berkeley_asc_2026", "calsol"
 DEST_BUCKET, CAR = "CAN_log", "Berkeley"
 FIRST_DAY, LAST_DAY = datetime(2026, 7, 25, tzinfo=timezone.utc), datetime(2026, 8, 1, tzinfo=timezone.utc)
 ALIGN = pd.Timedelta("1s")  # nearest-sample tolerance when combining different Berkeley messages
-TEMPORAL_TOML = ROOT.parent / "data_tools" / "data_tools" / "localization" / "temporal_localization.toml"
 
 # Sanity limits on the raw inputs of the estimates (after unit conversion)
 PACK_V = (50.001, 160)
@@ -46,13 +48,11 @@ MPPT_VOUT = (10, 160)    # V; below 10 V the division blows up
 
 
 def our_shift() -> timedelta:
-    """The hours data_tools adds back to our timestamps on these dates (stored = real UTC - shift)."""
-    table = tomllib.loads(TEMPORAL_TOML.read_text())
-    shifts = {datetime.fromisoformat(k).date(): v["shift"] for k, v in table.items()}
-    applicable = [shifts[d] for d in sorted(shifts) if d <= FIRST_DAY.date()]
-    later = [d for d in shifts if FIRST_DAY.date() < d <= LAST_DAY.date()]
-    assert applicable and not later, "Berkeley's dates straddle a temporal_localization period"
-    return timedelta(hours=applicable[-1])
+    """The shift data_tools adds back to our timestamps on these dates (stored = real UTC - shift)."""
+    shifts = {TemporalLocalization.localize(FIRST_DAY + timedelta(days=d)) for d in range((LAST_DAY - FIRST_DAY).days + 1)}
+    if len(shifts) != 1:
+        raise SystemExit(f"Berkeley's dates straddle a temporal_localization period: {sorted(shifts)}")
+    return shifts.pop()
 
 
 def read(query_api, measurement: str, fields: list[str], start: datetime, stop: datetime) -> pd.DataFrame:
@@ -63,8 +63,8 @@ def read(query_api, measurement: str, fields: list[str], start: datetime, stop: 
         f'|> pivot(rowKey: ["_time"], columnKey: ["_field"], valueColumn: "_value")', org=ORG)
     if isinstance(df, list):
         df = pd.concat(df) if df else pd.DataFrame()
-    if df.empty:
-        return pd.DataFrame(columns=fields)
+    if df.empty:  # keep a datetime index so merges with other series still work
+        return pd.DataFrame(columns=fields, index=pd.DatetimeIndex([], tz="UTC", name="_time"), dtype=float)
     df = df.set_index("_time").sort_index()
     df = df[~df.index.duplicated()]
     return df.reindex(columns=fields).astype(float)
@@ -118,7 +118,7 @@ def spike_mask(measurement: str, df: pd.DataFrame, bad_frame: pd.Series) -> dict
         km = np.hypot((good.lat - med.lat) * 111.0, (good.lon - med.lon) * 111.0 * np.cos(np.radians(med.lat)))
         spike = (km > SPIKE_KM).reindex(df.index, fill_value=False)
         return {"lat": spike, "lon": spike}
-    if measurement == "sensors.gps_altitude_status_mm":
+    if measurement == "sensors.gps_altitude_status_mm" and "altitude" in df:  # not read by e.g. --only GPSFixType
         alt = to_signed(good.altitude.dropna(), "s32") / 1000
         alt = alt[(alt > -500) & (alt < 9000)]
         med = alt.rolling(SPIKE_WINDOW, center=True, min_periods=5).median()
@@ -133,6 +133,33 @@ def nearest(base: pd.DatetimeIndex, s: pd.Series, name: str) -> pd.Series:
     return pd.merge_asof(left, right, on="t", direction="nearest", tolerance=ALIGN).set_index("t")[name]
 
 
+def write(client, converted: list, shift: timedelta):
+    """Replace all car=Berkeley data in CAN_log with the converted series."""
+    buckets = client.buckets_api()
+    if buckets.find_bucket_by_name(DEST_BUCKET) is None:
+        org_id = client.organizations_api().find_organizations(org=ORG)[0].id
+        buckets.create_bucket(bucket_name=DEST_BUCKET, org_id=org_id)
+    client.delete_api().delete(FIRST_DAY - shift - timedelta(days=1), LAST_DAY - shift + timedelta(days=2),
+                               f'car="{CAR}"', bucket=DEST_BUCKET, org=ORG)
+    write_api = client.write_api(write_options=SYNCHRONOUS)
+    print(f"Writing {len(converted)} series", flush=True)
+    try:
+        for board, field, values, estimated in converted:
+            df = values.rename(field).to_frame()
+            df.index = df.index - shift
+            df["car"] = CAR
+            tags = ["car"]
+            if estimated:
+                df["estimated"] = "true"
+                tags.append("estimated")
+            for i in range(0, len(df), 200_000):
+                write_api.write(DEST_BUCKET, ORG, record=df.iloc[i:i + 200_000], data_frame_measurement_name=board,
+                                data_frame_tag_columns=tags)
+    except BaseException:
+        print(f"\nWrite stopped partway: CAN_log holds only part of car={CAR}. Rerun to replace it.")
+        raise
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--dry-run", action="store_true", help="convert and report, write nothing")
@@ -145,7 +172,7 @@ def main():
     client = InfluxDBClient(url=os.environ["INFLUX_URL"], token=os.environ["INFLUX_TOKEN"], org=ORG, timeout=600_000)
     query_api = client.query_api()
     shift = our_shift()
-    print(f"Shifting Berkeley timestamps by -{shift} (from {TEMPORAL_TOML.name})")
+    print(f"Shifting Berkeley timestamps by -{shift} (from data_tools temporal localization)")
 
     table = pd.read_csv(ROOT / "mapping" / "berkeley_to_ubc.csv", dtype=str, keep_default_na=False)
     table = table[table["transform"] != "skip"]
@@ -154,42 +181,31 @@ def main():
     linear = table[table["transform"].isin(["", "threshold>0"])]
     estimates = table[table["transform"].str.startswith("estimate")]
 
-    if not args.dry_run:
-        buckets = client.buckets_api()
-        if buckets.find_bucket_by_name(DEST_BUCKET) is None:
-            org_id = client.organizations_api().find_organizations(org=ORG)[0].id
-            buckets.create_bucket(bucket_name=DEST_BUCKET, org_id=org_id)
-        client.delete_api().delete(FIRST_DAY - shift - timedelta(days=1), LAST_DAY - shift + timedelta(days=2),
-                                   f'car="{CAR}"', bucket=DEST_BUCKET, org=ORG)
-        write_api = client.write_api(write_options=SYNCHRONOUS)
-
     report = defaultdict(lambda: defaultdict(int))
+    converted = []  # (board, field, values, estimated); written only after every day has converted
 
     def emit(board: str, field: str, values: pd.Series, estimated: bool):
         values = values.dropna()
         report[field]["written"] += len(values)
-        if args.dry_run or values.empty:
-            return
-        df = values.rename(field).to_frame()
-        df.index = df.index - shift
-        df["car"] = CAR
-        tags = ["car"]
-        if estimated:
-            df["estimated"] = "true"
-            tags.append("estimated")
-        for i in range(0, len(df), 200_000):
-            write_api.write(DEST_BUCKET, ORG, record=df.iloc[i:i + 200_000], data_frame_measurement_name=board,
-                            data_frame_tag_columns=tags)
+        if not args.dry_run and not values.empty:
+            converted.append((board, field, values, estimated))
 
     day = FIRST_DAY
     while day <= LAST_DAY:
         start, stop = day, day + timedelta(days=1)
         print(f"{start:%Y-%m-%d}", end=" ", flush=True)
+        day_reads = {}  # Berkeley measurement -> DataFrame, so the estimates reuse what the linear rows read
+
+        def read_day(measurement: str, field: str) -> pd.Series:
+            df = day_reads.get(measurement)
+            if df is None or field not in df:
+                df = read(query_api, measurement, [field], start, stop)
+            return df[field]
 
         # Linear rows, one read per Berkeley measurement
         for measurement, rows in linear.groupby("berkeley_measurement"):
             fields = sorted(set(rows.berkeley_field) | set(JOINT_FIELDS.get(measurement, [])))
-            df = read(query_api, measurement, fields, start, stop)
+            df = day_reads[measurement] = read(query_api, measurement, fields, start, stop)
             if df.empty:
                 continue
             bad_frame = joint_mask(measurement, df)
@@ -223,9 +239,9 @@ def main():
         if not estimates.empty:
             power, vout = {}, {}
             for n in "123":
-                p = read(query_api, f"mppt{n}.calculated_power", ["value"], start, stop)["value"]
+                p = read_day(f"mppt{n}.calculated_power", "value")
                 power[n] = p[in_range(p, *MPPT_P)]
-                v = read(query_api, f"mppt{n}.telem", ["Vout_10mV"], start, stop)["Vout_10mV"]
+                v = read_day(f"mppt{n}.telem", "Vout_10mV")
                 v = v[v != 65535] * 0.01
                 vout[n] = v[in_range(v, *MPPT_VOUT)]
             for _, r in estimates[estimates["transform"] == "estimate_mppt_out_current"].iterrows():
@@ -240,8 +256,8 @@ def main():
 
             motor = estimates[estimates["transform"].isin(["estimate_motor_current", "estimate_motor_direction"])]
             if not motor.empty:
-                i_pack = read(query_api, "riedon.riedon_current_mA", ["value"], start, stop)["value"] * -0.001
-                v_pack = read(query_api, "bms.pack_voltage_V", ["value"], start, stop)["value"]
+                i_pack = read_day("riedon.riedon_current_mA", "value") * -0.001
+                v_pack = read_day("bms.pack_voltage_V", "value")
                 n_read = len(i_pack)
                 i_pack = i_pack[in_range(i_pack, *PACK_I)]
                 v_pack = v_pack[in_range(v_pack, *PACK_V)]
@@ -258,13 +274,16 @@ def main():
         day = stop
     print()
 
+    if not args.dry_run:
+        write(client, converted, shift)
+
     out = pd.DataFrame(report).T.fillna(0).astype(int)
     cols = ["read", "dropped_placeholder", "dropped_bad_frame", "dropped_spike", "dropped_out_of_range", "dropped_unaligned", "written"]
     out = out.reindex(columns=cols, fill_value=0)
     out["written_pct"] = (100 * out.written / out["read"].where(out["read"] > 0)).round(1)
     meta = table.drop_duplicates("ubc_field").set_index("ubc_field")[["ubc_measurement", "berkeley_measurement", "berkeley_field", "transform"]]
     out = meta.join(out, how="right").rename_axis("ubc_field").sort_values(["ubc_measurement", "written_pct"])
-    if not args.only:
+    if not args.dry_run:  # the report records what is in the database, so a dry run leaves it alone
         out.to_csv(ROOT / "mapping" / "translation_report.csv")
     with pd.option_context("display.width", 200, "display.max_rows", 200):
         print(out[cols + ["written_pct"]].sort_values("written_pct").head(25).to_string())
