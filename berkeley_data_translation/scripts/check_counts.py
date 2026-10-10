@@ -27,8 +27,11 @@ query_api = InfluxDBClient(url=os.environ["INFLUX_URL"], token=os.environ["INFLU
 df = query_api.query_data_frame(
     'from(bucket: "CAN_log") |> range(start: 2026-07-20T00:00:00Z, stop: 2026-08-05T00:00:00Z) '
     '|> filter(fn: (r) => r.car == "Berkeley") |> group(columns: ["_measurement", "_field"]) |> count()')
-db = df.set_index("_field")["_value"]
-report = pd.read_csv(ROOT / "mapping" / "translation_report.csv", index_col="ubc_field")["written"]
+db = df.set_index("_field")["_value"] if not df.empty else pd.Series(dtype=int)  # empty = nothing written yet
+report_path = ROOT / "mapping" / "translation_report.csv"
+if not report_path.exists():
+    raise SystemExit(f"No {report_path.name}: the last translate_berkeley.py write did not finish. Rerun it.")
+report = pd.read_csv(report_path, index_col="ubc_field")["written"]
 cmp = pd.concat({"db": db, "report": report}, axis=1).fillna(0).astype(int)
 bad = cmp[cmp.db != cmp.report]
 print(f"{len(cmp)} fields; db total {cmp.db.sum():,}, report total {cmp.report.sum():,}; mismatches: {len(bad)}")

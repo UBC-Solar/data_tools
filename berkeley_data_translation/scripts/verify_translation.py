@@ -1,11 +1,13 @@
 # /// script
 # requires-python = ">=3.11"
-# dependencies = ["python-dotenv"]
+# dependencies = ["python-dotenv", "ubc-solar-data-tools"]
+# [tool.uv.sources]
+# ubc-solar-data-tools = { path = "../..", editable = true }
 # ///
 """
 Check the translated Berkeley data the way our tools will see it: through data_tools.
 
-Usage: uv run --with-editable .. scripts/verify_translation.py [START_UTC]   e.g. 2026-07-30T18:00
+Usage: uv run scripts/verify_translation.py [START_UTC]   e.g. 2026-07-30T18:00
 Queries the local CAN_log with car="Berkeley" for one real race hour (default 2026-07-30 18:00-19:00 UTC,
 13:00 CDT). Times passed in are REAL UTC; data_tools applies the 7 h shift itself.
 """

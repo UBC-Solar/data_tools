@@ -86,13 +86,19 @@ for i, m in enumerate(measurements, 1):
         batch = fields[j:j + BATCH]
         cached = cache / f"{m}_{j:04d}_{batch[0]}.csv"
         if cached.exists():
-            rows.append(pd.read_csv(cached) if cached.stat().st_size else pd.DataFrame())  # empty batch -> empty file
+            try:
+                rows.append(pd.read_csv(cached))
+            except pd.errors.EmptyDataError:  # a batch with no data was cached as an empty file
+                rows.append(pd.DataFrame())
             continue
         out = stats(m, batch)
         out.to_csv(cached, index=False)
         rows.append(out)
 
-out = pd.concat([r for r in rows if not r.empty], ignore_index=True)
+rows = [r for r in rows if not r.empty]
+if not rows:
+    raise SystemExit(f"No {CAR} data in {BUCKET} between {START} and {STOP}: check UBC_INFLUX_ORG and the dates")
+out = pd.concat(rows, ignore_index=True)
 span = (pd.to_datetime(out["last_time"]) - pd.to_datetime(out["first_time"])).dt.total_seconds()
 out["avg_hz"] = (out["count"] / span.where(span > 0)).round(3)
 out = out.rename(columns={"_measurement": "measurement", "_field": "field"}).sort_values(["measurement", "field"])

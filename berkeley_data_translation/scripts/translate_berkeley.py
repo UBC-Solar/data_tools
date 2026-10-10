@@ -1,14 +1,16 @@
 # /// script
 # requires-python = ">=3.11"
-# dependencies = ["influxdb-client", "pandas", "numpy", "python-dotenv"]
+# dependencies = ["influxdb-client", "pandas", "numpy", "python-dotenv", "ubc-solar-data-tools"]
+# [tool.uv.sources]
+# ubc-solar-data-tools = { path = "../..", editable = true }
 # ///
 """
 Translate Berkeley's telemetry into our format and write it to the local CAN_log bucket.
 
-Usage (from berkeley_data_translation/; --with-editable .. provides data_tools for the time shift):
-  uv run --with-editable .. scripts/translate_berkeley.py --dry-run        # convert and report, write nothing
-  uv run --with-editable .. scripts/translate_berkeley.py                  # replace all car="Berkeley" data in local CAN_log
-  uv run --with-editable .. scripts/translate_berkeley.py --only SOC,GPSAltitude --dry-run   # --only always needs --dry-run
+Usage (from berkeley_data_translation/; data_tools, for the time shift, comes from this repo):
+  uv run scripts/translate_berkeley.py --dry-run        # convert and report, write nothing
+  uv run scripts/translate_berkeley.py                  # replace all car="Berkeley" data in local CAN_log
+  uv run scripts/translate_berkeley.py --only SOC,GPSAltitude --dry-run   # --only always needs --dry-run
 
 Reads mapping/berkeley_to_ubc.csv (the raw_type / scale / offset / keep_min / keep_max / drop_raw /
 transform columns) and the local berkeley_asc_2026 bucket. The assumptions behind each mapping are in
@@ -200,7 +202,7 @@ def main():
             df = day_reads.get(measurement)
             if df is None or field not in df:
                 df = read(query_api, measurement, [field], start, stop)
-            return df[field]
+            return df[field].dropna()  # a multi-field read has NaN where only a sibling field reported
 
         # Linear rows, one read per Berkeley measurement
         for measurement, rows in linear.groupby("berkeley_measurement"):
@@ -275,6 +277,7 @@ def main():
     print()
 
     if not args.dry_run:
+        (ROOT / "mapping" / "translation_report.csv").unlink(missing_ok=True)  # no stale report if the write fails
         write(client, converted, shift)
 
     out = pd.DataFrame(report).T.fillna(0).astype(int)
