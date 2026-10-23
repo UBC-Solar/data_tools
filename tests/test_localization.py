@@ -78,15 +78,15 @@ def test_all_names():
 def test_temporal_localization():
     client = InfluxDBClient()
 
-    # 10AM EDT = 2PM UTC
-    start_time = datetime(2024, 7, 16, 13, 59, 0, tzinfo=timezone.utc)
-    end_time = datetime(2024, 7, 16, 14, 1, 0, tzinfo=timezone.utc)
+    # 10AM CDT = 3PM UTC
+    start_time = datetime(2024, 7, 16, 14, 59, 0, tzinfo=timezone.utc)
+    end_time = datetime(2024, 7, 16, 15, 1, 0, tzinfo=timezone.utc)
 
     ts = client.query_time_series(start_time, end_time, CanonicalName.VehicleSpeed)
     assert ts[0] == 0.0  # We start stopped
 
     # Make sure the time we think it is the actual returned time
-    assert (ts.datetime_x_axis[0] - datetime(2024, 7, 16, 13, 59, 0, tzinfo=timezone.utc)) < timedelta(minutes=2)
+    assert (ts.datetime_x_axis[0] - datetime(2024, 7, 16, 14, 59, 0, tzinfo=timezone.utc)) < timedelta(minutes=2)
 
     # This is right before we started driving, should return no data.
     with pytest.raises(ValueError):

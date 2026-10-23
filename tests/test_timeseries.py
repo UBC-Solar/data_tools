@@ -99,7 +99,29 @@ def test_datetime_index():
     with pytest.raises(IndexError): 
         _ = time_series_1[time5]
 
-def test_datetime_slice(): 
+def test_datetime_index_edges():
+    base = 946684800.0  # January 1st, 2000 in UNIX time
+    time_series = quick_gen_timeseries(np.array([4, 13]) + base, [1, 2, 3, 3, 3, 2, 4, 5, 4, 1])
+
+    # Both endpoints are inclusive
+    assert time_series[datetime.datetime.fromtimestamp(base + 4, tz=datetime.timezone.utc)] == 1
+    assert time_series[datetime.datetime.fromtimestamp(base + 13, tz=datetime.timezone.utc)] == 1
+
+    with pytest.raises(IndexError):
+        _ = time_series[datetime.datetime.fromtimestamp(base + 3.9, tz=datetime.timezone.utc)]
+
+    # A single element only covers its own start time
+    single = quick_gen_timeseries(np.array([4, 4]) + base, [7])
+    assert single[datetime.datetime.fromtimestamp(base + 4, tz=datetime.timezone.utc)] == 7
+
+    with pytest.raises(IndexError):
+        _ = single[datetime.datetime.fromtimestamp(base + 5, tz=datetime.timezone.utc)]
+
+    empty = quick_gen_timeseries(np.array([4, 4]) + base, [])
+    with pytest.raises(IndexError):
+        _ = empty[datetime.datetime.fromtimestamp(base + 4, tz=datetime.timezone.utc)]
+
+def test_datetime_slice():
     y_data_1 = [1, 2, 3, 3, 3, 2, 4, 5, 4, 1, 3, 4, 6, 7, 3, 4]
     x_data_1 = np.array([4, 19])
 
