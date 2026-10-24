@@ -18,3 +18,7 @@ shift = 6
 [2025-07-23]  # 2025-07-23 –
 # Back in Vancouver, same issue as 2025-04-01 – 2025-06-23.
 shift = 7
+
+[2026-10-01]  # 2026-10-01 –
+# Back in Vancouver, same issue as 2025-04-01 – 2025-06-23.
+shift = 0
