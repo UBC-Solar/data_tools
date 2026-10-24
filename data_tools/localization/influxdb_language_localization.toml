@@ -82,3 +82,7 @@ LongitudeRaw = ["GPSLongitude", "TEL", "", 3]
 Acceleration_X = ["Acceleration_X", "TEL", "", 10]
 Acceleration_Y = ["Acceleration_Y", "TEL", "", 10]
 Acceleration_Z = ["Acceleration_Z", "TEL", "", 10]
+
+[2026-10-24]   # 2026-10-24 –
+PackVoltage = ["TotalVoltage", "MST", "V", 10]
+PackCurrent = ["PackCurrent", "HVC", "A", 10]
