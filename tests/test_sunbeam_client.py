@@ -36,7 +36,9 @@ class FakeServer:
         if url.endswith("/events"):
             return FakeResponse(200, [{"name": "FSGP_2024_Day_1"}, {"name": "realtime"}])
         if url.endswith("/signals"):
-            return FakeResponse(200, [{"name": "MotorPower"}, {"name": "PackPower"}])
+            # PackPower is defined for the event but no worker has written it
+            with_data = (params or {}).get("with_data") == "true"
+            return FakeResponse(200, [{"name": "MotorPower"}] + ([] if with_data else [{"name": "PackPower"}]))
         if "/nope/" in url:
             return FakeResponse(404, {"detail": "Event 'FSGP_2024_Day_1' has no signal named 'nope'."})
 
@@ -75,7 +77,8 @@ def test_lists_events_and_signals(server):
     client = SunbeamClient("http://sunbeam:8000")
 
     assert client.list_events() == ["FSGP_2024_Day_1", "realtime"]
-    assert client.list_signals("FSGP_2024_Day_1") == ["MotorPower", "PackPower"]
+    assert client.list_signals("FSGP_2024_Day_1") == ["MotorPower"]
+    assert client.list_signals("FSGP_2024_Day_1", with_data=False) == ["MotorPower", "PackPower"]
 
 
 def test_time_series_pages_through_everything(server):

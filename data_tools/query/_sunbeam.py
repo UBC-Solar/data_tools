@@ -148,15 +148,22 @@ class SunbeamClient:
         """
         return [event["name"] for event in self._get("/events", timeout=timeout)]
 
-    def list_signals(self, event: str, timeout: float = 5) -> list[str]:
+    def list_signals(self, event: str, with_data: bool = True, timeout: float = 5) -> list[str]:
         """
         Obtain the names of the signals Sunbeam has for an event.
 
         :param event: The name of the event.
+        :param with_data: List only signals with data to query, so that ``get_time_series`` works for every name
+            listed. ``False`` also lists signals the event defines that no worker has written yet.
         :param timeout: The amount of time to wait for a request to return.
         :raises KeyError: If there is no such event.
         """
-        return [signal["name"] for signal in self._get(f"/events/{quote(event, safe='')}/signals", timeout=timeout)]
+        signals = self._get(
+            f"/events/{quote(event, safe='')}/signals",
+            params={"with_data": "true" if with_data else "false"},
+            timeout=timeout,
+        )
+        return [signal["name"] for signal in signals]
 
     def get_time_series(self, event: str, signal: str, timeout: float = 30) -> TimeSeries:
         """
