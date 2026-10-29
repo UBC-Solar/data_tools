@@ -750,7 +750,39 @@ class TimeSeries(np.ndarray):
         return new_wave
 
     @staticmethod
-    def generate_timeseries(x_axis: list, 
+    def from_samples(timestamps,
+                     values,
+                     period: float,
+                     units: Unit | str = None,
+                     meta: dict = None) -> "TimeSeries":
+        """
+        Create a TimeSeries from timestamped samples, re-interpolated onto an even grid of ``period`` seconds.
+        Missing values (``None`` or NaN) are dropped first, so they are interpolated across rather than kept.
+
+        :param timestamps: Sample times, ascending: UTC UNIX timestamps in seconds, or timezone-aware datetimes.
+        :param values: The sample at each timestamp.
+        :param float period: Time between elements of the result, in seconds.
+        :param str | Unit units: Units of the data, dimensionless if ``None``.
+        :param dict meta: Metadata for the TimeSeries.
+        :raises ValueError: If there are no (non-missing) samples, or ``timestamps`` and ``values`` differ in length.
+        :return: Homogenized TimeSeries, with timezone-aware UTC start and stop times.
+        """
+        if len(timestamps) != len(values):
+            raise ValueError(f"Got {len(timestamps)} timestamps but {len(values)} values!")
+
+        times = np.array([
+            t.timestamp() if isinstance(t, datetime.datetime) else float(t) for t in timestamps
+        ], dtype=float)
+        data = np.array([np.nan if v is None else v for v in values], dtype=float)
+
+        present = ~np.isnan(data)
+        if not present.any():
+            raise ValueError("Cannot create a TimeSeries without any samples!")
+
+        return TimeSeries.generate_timeseries(times[present], data[present], period, units, meta=meta)
+
+    @staticmethod
+    def generate_timeseries(x_axis: list,
                             y_axis: list, 
                             period: float, 
                             units: Unit | str, 
@@ -759,7 +791,7 @@ class TimeSeries(np.ndarray):
         """
         Creates a TimeSeries from a non-homogeneous / not evenly spaces set of data with a specified period. Useful for converting weirder data into a neat TimeSeries.
 
-        :param list x_axis: Data point times
+        :param list x_axis: Data point times, as ascending UNIX timestamps in seconds
         :param list y_axis: Data points
         :param float period: Time between data points in seconds
         :param str | Unit units: Units of the TimeSeries
@@ -773,23 +805,28 @@ class TimeSeries(np.ndarray):
             meta = {}
 
         # Get the x-axis in relative seconds (first element is t=0)
-        rel_x_axis = x_axis.copy()
-        rel_x_axis -= x_axis[0]  # Subtract off first time, so the x_axis starts at 0
+        x_axis = np.asarray(x_axis, dtype=float)
+        rel_x_axis = x_axis - x_axis[0]
 
-        # Reshape the x-axis to have the right number of elements for needed period
+        # Reshape the x-axis to have the right number of elements for needed period. Spans within a thousandth of a
+        # period of a whole number of periods are that number: UNIX timestamps only carry ~0.2 us of precision, which
+        # would otherwise add an extra element (0.2 s / 0.1 s -> 2.000002)
         temporal_length: float = rel_x_axis[-1]  # Total time of the query in seconds
-        desired_num_elements: int = math.ceil(temporal_length / period)
+        desired_num_elements: int = math.ceil(temporal_length / period - 1e-3)
         desired_x_axis = np.linspace(0, temporal_length, desired_num_elements + 1, endpoint=True)
 
         # Re-interpolate our data on x-axis
-        wave = np.array(y_axis).reshape(-1)
+        wave = np.array(y_axis, dtype=float).reshape(-1)
         wave_interpolated = np.interp(desired_x_axis, rel_x_axis, wave)
 
-        actual_granularity = np.mean(np.diff(desired_x_axis))
+        # A single data point spans no time, so its x-axis has no spacing to measure
+        actual_granularity = float(np.mean(np.diff(desired_x_axis))) if desired_num_elements > 0 else period
+
+        start_time = datetime.datetime.fromtimestamp(x_axis[0], tz=timezone)
 
         new_wave = TimeSeries(wave_interpolated, 
-                              start_time = datetime.datetime.fromtimestamp(x_axis[0], tz = timezone),
-                              stop_time = datetime.datetime.fromtimestamp(x_axis[0], tz = timezone),
+                              start_time = start_time,
+                              stop_time = start_time + datetime.timedelta(seconds=temporal_length),
                               period = actual_granularity,
                               length = temporal_length,
                               units = units,

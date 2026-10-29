@@ -40,31 +40,23 @@ poetry install --no-root --with docs --with test
 ```
 
 ## Getting Started
-An example of querying data from Sunbeam (along with the involved data types)
+An example of querying data from Sunbeam. Signals are referenced by name, within an event that is also
+referenced by name, and come back as a `TimeSeries`.
 ```python
 from data_tools.query import SunbeamClient
-from data_tools.schema import CanonicalPath, Result, UnwrappedError
 from data_tools.collections import TimeSeries
 
-# CanonicalPath represents a path in the Sunbeam filesystem
-motor_power_path = CanonicalPath(   
-    origin="production",              # Use the production pipeline
-    event="FSGP_2024_Day_1",          # Get from Day 1
-    source="power",                   # Power Stage contains power calculations
-    name="MotorPower"                 # Get MotorPower from the Power Stage
-)
-motor_power_day_one_result: Result = SunbeamClient().get_file(path=motor_power_path)
+# Uses $SUNBEAM_URL, or http://localhost:8000
+client = SunbeamClient()
 
-# The Result type can contain an error or the data, so unwrap it to reveal the data (if the query worked!)
-# MotorPower is a TimeSeries
-try:
-    motor_power_day_one: TimeSeries = motor_power_day_one_result.unwrap()
+print(client.list_events())                     # e.g. ["FSGP_2024_Day_1", "realtime"]
+print(client.list_signals("FSGP_2024_Day_1"))   # e.g. ["MotorPower", "PackPower", ...]
 
-# If `unwrap` is to reveal an error, it will raise an `UnwrappedError`.
-except UnwrappedError as e:
-    print("Query failed!")
-    raise e
+# All of MotorPower for Day 1 (raises KeyError if the event or signal doesn't exist)
+motor_power_day_one: TimeSeries = client.get_time_series("FSGP_2024_Day_1", "MotorPower")
 
+print(motor_power_day_one.units, motor_power_day_one.meta["source"])
+motor_power_day_one.plot()
 ```
 
 Example of querying data from InfluxDB and plotting it as a `TimeSeries`.
@@ -73,9 +65,9 @@ Example of querying data from InfluxDB and plotting it as a `TimeSeries`.
 
 ```python
 from data_tools.collections import TimeSeries
-from data_tools.query import DBClient
+from data_tools.query import InfluxDBClient
 
-client = DBClient()
+client = InfluxDBClient()
 
 # ISO 8601-compliant times corresponding to pre-competition testing
 start = "2024-07-07T02:23:57Z" 

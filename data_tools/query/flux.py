@@ -79,6 +79,16 @@ class ParameterizedFluxStatement:
         return self._priority
 
 
+def _format_filter_fields(fields: List[str]) -> str:
+    condition = " or ".join(f'r._field == "{field}"' for field in fields)
+    return f'filter(fn:(r) => {condition}) '
+
+
+def _format_keep(columns: List[str]) -> str:
+    quoted = ", ".join(f'"{column}"' for column in columns)
+    return f'keep(columns: [{quoted}]) '
+
+
 class FluxQuery:
     """
     Represent a Flux query: a collection of ``FluxStatement`` chained together to form a complete query
@@ -103,6 +113,17 @@ class FluxQuery:
 
     _car_formatter: FluxFormatter = lambda args: f'filter(fn:(r) => r.car == "{args[0]}") '
     _car_statement = ParameterizedFluxStatement(formatter=_car_formatter, priority=3)
+
+    _filter_fields_statement = ParameterizedFluxStatement(formatter=_format_filter_fields, priority=3)
+
+    # Selectors reduce each table, so they follow every filter
+    _last_formatter: FluxFormatter = lambda args: 'last() '
+    _last_statement = ParameterizedFluxStatement(formatter=_last_formatter, priority=4)
+
+    _limit_formatter: FluxFormatter = lambda args: f'limit(n: {args[0]}) '
+    _limit_statement = ParameterizedFluxStatement(formatter=_limit_formatter, priority=4)
+
+    _keep_statement = ParameterizedFluxStatement(formatter=_format_keep, priority=5)
 
     def __init__(self):
         """
@@ -167,6 +188,55 @@ class FluxQuery:
         if field is not None:
             new_statement = FluxQuery._filter_field_statement.get([field])
             self._statements.append(new_statement)
+
+        return self
+
+    def filter_fields(self, fields: List[str]):
+        """
+        Filter for any of several fields, such as ``["PackCurrent", "TotalPackVoltage"]``.
+
+        :param List[str] fields: the fields to keep; must not be empty.
+        :return: this FluxQuery with the new statement inserted
+        """
+        fields = list(fields)
+        assert fields, "Must filter for at least one field!"
+
+        new_statement = FluxQuery._filter_fields_statement.get(fields)
+        self._statements.append(new_statement)
+
+        return self
+
+    def last(self):
+        """
+        Keep only the most recent point of each table (series), such as the latest value of each field.
+
+        :return: this FluxQuery with the new statement inserted
+        """
+        self._statements.append(FluxQuery._last_statement.get([]))
+
+        return self
+
+    def limit(self, n: int):
+        """
+        Keep only the first ``n`` points of each table (series).
+
+        :param int n: the number of points to keep, positive.
+        :return: this FluxQuery with the new statement inserted
+        """
+        assert isinstance(n, int) and n > 0, f"Limit must be a positive `int`, not {n!r}!"
+
+        self._statements.append(FluxQuery._limit_statement.get([str(n)]))
+
+        return self
+
+    def keep(self, columns: List[str]):
+        """
+        Drop every column but ``columns``, such as ``["_field", "_value", "_time"]``.
+
+        :param List[str] columns: the columns to keep.
+        :return: this FluxQuery with the new statement inserted
+        """
+        self._statements.append(FluxQuery._keep_statement.get(list(columns)))
 
         return self
 

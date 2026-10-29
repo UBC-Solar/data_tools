@@ -1,8 +1,11 @@
 import base64
+from datetime import datetime, timezone
+from urllib.parse import quote
 from dotenv import load_dotenv
+import numpy as np
 import os
 import requests
-from data_tools.schema import File, Result, CanonicalPath
+from data_tools.collections import TimeSeries
 import dill
 import json
 
@@ -104,105 +107,131 @@ class SunbeamClient:
         """
         Create a client to connect to the Sunbeam API.
 
-        Uses the `SUNBEAM_URL` environment variable if ``api_url`` is not set, or by default "api.sunbeam.ubcsolar.com".
+        Uses the ``SUNBEAM_URL`` environment variable if ``api_url`` is not set, or by default
+        "http://localhost:8000". A URL without a scheme is assumed to be ``http://``.
         """
         if api_url is None:
-            api_url = os.getenv("SUNBEAM_URL") if "SUNBEAM_URL" in os.environ.keys() else "api.sunbeam.ubcsolar.com"
+            api_url = os.getenv("SUNBEAM_URL", "http://localhost:8000")
 
-        self._base_url = api_url
+        if "://" not in api_url:
+            api_url = "http://" + api_url
 
-    @property
-    def cache(self):
+        self._base_url = api_url.rstrip("/")
+
+    def _get(self, path: str, params: dict = None, timeout: float = 5):
         """
-        Acquire an interface to the Sunbeam Cache API, descended from this client.
+        GET a path of the API and decode its JSON.
+
+        :raises KeyError: If the API reports that the event or signal doesn't exist.
+        :raises RuntimeError: For any other error response, with the API's reason.
+        :raises requests.exceptions.RequestException: If the request itself failed, e.g. timed out.
         """
-        return SunbeamCache(self._base_url + "/cache")
-
-    def distinct(self, key: str, filters: dict[str, str], timeout: float = 5) -> list[str]:
-        """
-        Obtain the distinct values of a given key, subject to a filter.
-
-        For example, if you want to see the distinct events processed by a certain pipeline,
-        you can set `key` to `"event"` and `filter` to `{"origin": "your_pipeline"}`.
-
-        As another example, if you wanted to see the events processed by a certain pipeline where the "power" stage
-        was processed, you can set `key` to `"event"` and `filter` to `{"origin": "your_pipeline", "source": "power"}`.
-
-        :param key: Name of the field for which we want to get the distinct values.
-        :param filters: A mapping which filters the query to have items match this filter's values by field.
-        :param timeout: The amount of time to wait for a request to return.
-        :raises requests.exceptions.Timeout: If the request times out.
-        :return: The values corresponding the `key` field of matching items.
-        """
-        url_components: list[str] = [self._base_url, "files", "distinct"]
-        url = "http://" + "/".join(url_components)
-        data = {"key": key}
-        data.update(filters)
-
-        response = requests.post(url, data=data, timeout=timeout)
+        response = requests.get(f"{self._base_url}{path}", params=params, timeout=timeout)
 
         if response.status_code == 200:
-            return json.loads(response.text)
+            return response.json()
 
-        # Otherwise, acquire and wrap the error
-        else:
-            # Try to extract the error and capture it
-            response.raise_for_status()
+        try:
+            detail = response.json().get("detail", response.reason)
+        except ValueError:
+            detail = response.reason
 
-    def get_file(self, origin: str = None, event: str = None, source: str = None, name: str = None, path: CanonicalPath = None, timeout: float = 5) -> Result[File | Exception]:
+        if response.status_code == 404:
+            raise KeyError(detail)
+        raise RuntimeError(f"{response.status_code}: {detail}")
+
+    def list_events(self, timeout: float = 5) -> list[str]:
         """
-        Get a File from the Sunbeam API.
+        Obtain the names of the events Sunbeam knows about.
 
-        You must provide either a ``CanonicalPath`` object directory by setting ``path``, OR provide ALL the
-        individual path elements ``origin``, ``event``, ``source``, and ``name``.
-
-        :return: A ``Result`` wrapping a ``File`` or an ``Exception``
         :param timeout: The amount of time to wait for a request to return.
-        :raises requests.exceptions.Timeout: If the request times out.
-        :raises AssertionError: If ``path`` was not provided and any of ``origin``, ``event``, ``source``, ``name`` are None.
         """
-        # Start the url as api.sunbeam.ubcsolar.com/files
-        url_components: list[str] = [self._base_url, "files"]
+        return [event["name"] for event in self._get("/events", timeout=timeout)]
 
-        # Prefer using ``path`` to build the URL
-        if path is not None:
-            url_components.extend(path.unwrap())
+    def list_signals(self, event: str, with_data: bool = True, timeout: float = 5) -> list[str]:
+        """
+        Obtain the names of the signals Sunbeam has for an event.
 
+        :param event: The name of the event.
+        :param with_data: List only signals with data to query, so that ``get_time_series`` works for every name
+            listed. ``False`` also lists signals the event defines that no worker has written yet.
+        :param timeout: The amount of time to wait for a request to return.
+        :raises KeyError: If there is no such event.
+        """
+        signals = self._get(
+            f"/events/{quote(event, safe='')}/signals",
+            params={"with_data": "true" if with_data else "false"},
+            timeout=timeout,
+        )
+        return [signal["name"] for signal in signals]
+
+    def get_time_series(self, event: str, signal: str, timeout: float = 30) -> TimeSeries:
+        """
+        Get all the data Sunbeam has for one signal of an event.
+
+        The ``TimeSeries`` has the signal's units, and a period of ``1 / frequency`` when Sunbeam knows the
+        signal's frequency (otherwise the typical spacing of its samples). Its ``meta`` holds ``event``,
+        ``signal``, ``source`` (``"raw"`` or ``"derived"``), ``description``, and ``frequency``.
+
+        :param event: The name of the event.
+        :param signal: The name of the signal.
+        :param timeout: The amount of time to wait for each request (long signals take several) to return.
+        :raises KeyError: If there is no such event, or the event has no such signal.
+        :raises ValueError: If the signal has no data.
+        :raises requests.exceptions.Timeout: If a request times out.
+        """
+        path = f"/events/{quote(event, safe='')}/signals/{quote(signal, safe='')}/data"
+
+        # The API returns at most a page of the MOST RECENT samples before ``end``; walk backwards until a page
+        # isn't truncated. Timestamps are epoch milliseconds, ascending.
+        pages: list[dict] = []
+        params: dict = {}
+        while True:
+            page = self._get(path, params=params, timeout=timeout)
+            pages.append(page)
+            if not page["truncated"] or not page["timestamps"]:
+                break
+            earliest = datetime.fromtimestamp(page["timestamps"][0] / 1000, tz=timezone.utc)
+            params = {"end": earliest.isoformat()}
+
+        timestamps: list[int] = []
+        values: list = []
+        # Newest page first, each older one prepended
+        for page in pages:
+            # A sample that rounded up to the newer page's first millisecond comes back in both pages
+            keep = len(page["timestamps"])
+            while timestamps and keep and page["timestamps"][keep - 1] >= timestamps[0]:
+                keep -= 1
+            timestamps = page["timestamps"][:keep] + timestamps
+            values = page["values"][:keep] + values
+
+        if not any(value is not None for value in values):
+            raise ValueError(f"Sunbeam has no data for {signal!r} in {event!r}!")
+
+        latest = pages[0]
+        frequency = latest["frequency"]
+        seconds = np.array(timestamps, dtype=float) / 1000
+
+        if frequency:
+            period = 1 / frequency
+        elif len(seconds) > 1:
+            period = float(np.median(np.diff(seconds)))
         else:
-            # Make sure if we are using the individual path elements, all of them were provided
-            if None in [origin, event, source, name]:
-                raise AssertionError("All of ``origin``, ``event``, ``source``, and ``name`` cannot be none!")
+            period = 1.0
 
-            url_components.extend([origin, event, source, name])
-
-        # Build the path, and set file_type=bin to request the binary data of the File we want
-        url = "http://" + "/".join(url_components)
-        params = {'file_type': "bin"}
-
-        response = requests.get(url, params=params, timeout=timeout)
-
-        # If we got the File successfully, wrap and return the deserialized File object
-        if response.status_code == 200:
-            serialized_data = response.content
-            return Result.Ok(dill.loads(serialized_data))
-
-        # Otherwise, acquire and wrap the error
-        else:
-            # Try to extract the error and capture it
-            try:
-                response.raise_for_status()
-
-            except requests.exceptions.HTTPError as e:
-                return Result.Err(e)
-
-            # We didn't capture an error, but we still didn't get an OK error code, so wrap
-            # the response message in a RuntimeError
-            if isinstance(response.reason, bytes):
-                reason = response.reason.decode("utf-8")
-            else:
-                reason = response.reason
-
-            return Result.Err(RuntimeError(reason))
+        return TimeSeries.from_samples(
+            seconds,
+            values,
+            period=period,
+            units=latest["unit"] or None,
+            meta={
+                "event": event,
+                "signal": signal,
+                "source": latest["source"],
+                "description": latest["description"],
+                "frequency": frequency,
+            },
+        )
 
     def is_alive(self, timeout: float = 0.5):
         """
@@ -211,18 +240,12 @@ class SunbeamClient:
         :param timeout: The time to wait for a response.
         :return: `True` if the Sunbeam API is available, and `False` otherwise.
         """
-        url_components: list[str] = [self._base_url, "health"]
-        url = "http://" + "/".join(url_components)
-
         try:
-            response = requests.get(url, timeout=timeout)
+            response = requests.get(f"{self._base_url}/health", timeout=timeout)
 
         except requests.exceptions.RequestException:  # Base class for exceptions from `requests`
             return False
 
         # Check the status code.
         # If the health check responds with an error code, something odd is going on.
-        if response.status_code == 200:
-            return True
-        else:
-            return False
+        return response.status_code == 200
