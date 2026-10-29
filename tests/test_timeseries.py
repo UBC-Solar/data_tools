@@ -541,6 +541,13 @@ def test_timeseries_generation():
     assert np.allclose(ts, [1, 2, 3, 4])
     assert ts.units == "meter"
 
+
+def test_timeseries_generation_stops_at_the_last_point():
+    ts = TimeSeries.generate_timeseries([946684801.0, 946684804.0], [1, 4], 1, "m")
+
+    assert ts.stop.timestamp() == 946684804.0
+    assert ts.length == 3.0
+
 def test_merge():
     # Basic merge with gap filling
     y1 = [1, 2, 3]
@@ -611,3 +618,44 @@ def test_convert_to():
 
     with pytest.raises(ValueError): 
         _ = ts1.convert_to("ft")
+
+def test_from_samples_regrids_onto_the_period():
+    start = datetime.datetime(2024, 7, 16, 14, 0, tzinfo=datetime.timezone.utc)
+    timestamps = [start.timestamp() + t for t in (0.0, 1.0, 2.0)]
+
+    series = TimeSeries.from_samples(timestamps, [0.0, 10.0, 20.0], period=0.5, units="W", meta={"signal": "P"})
+
+    assert list(series) == pytest.approx([0.0, 5.0, 10.0, 15.0, 20.0])
+    assert series.period == pytest.approx(0.5)
+    assert series.start == start
+    assert series.stop == start + datetime.timedelta(seconds=2)
+    assert series.length == pytest.approx(2.0)
+    assert str(series.units) == "watt"
+    assert series.meta == {"signal": "P"}
+
+
+def test_from_samples_accepts_datetimes_and_drops_missing_values():
+    start = datetime.datetime(2024, 7, 16, 14, 0, tzinfo=datetime.timezone.utc)
+    timestamps = [start + datetime.timedelta(seconds=t) for t in range(4)]
+
+    series = TimeSeries.from_samples(timestamps, [None, 1.0, float("nan"), 3.0], period=1.0)
+
+    assert series.start == start + datetime.timedelta(seconds=1)
+    assert list(series) == pytest.approx([1.0, 2.0, 3.0])
+    assert series.units.dimensionless
+    assert series.meta == {}
+
+
+def test_from_samples_single_sample():
+    series = TimeSeries.from_samples([1_720_000_000.0], [4.0], period=0.1)
+
+    assert list(series) == [4.0]
+    assert (series.length, series.period) == (0.0, 0.1)
+
+
+def test_from_samples_rejects_empty_and_mismatched_input():
+    with pytest.raises(ValueError, match="without any samples"):
+        TimeSeries.from_samples([1.0], [None], period=1.0)
+
+    with pytest.raises(ValueError, match="2 timestamps but 1 values"):
+        TimeSeries.from_samples([1.0, 2.0], [1.0], period=1.0)
