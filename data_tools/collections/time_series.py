@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import math
 import pandas as pd
 import copy
+import operator
 import warnings
 from pint.registry import Unit
 
@@ -133,184 +134,79 @@ class TimeSeries(np.ndarray):
     def ureg(self):
         return TimeSeries.UnitRegistry
 
+    def _operands(self, other, default_units) -> tuple["TimeSeries", Unit, np.ndarray]:
+        """
+        Unpack the right-hand side of an arithmetic operation with this TimeSeries.
+
+        :param other: A TimeSeries (aligned with this one first), a pint Quantity, or anything else NumPy can
+            operate on, which is taken to be in ``default_units``.
+        :return: The left-hand side (this TimeSeries, or its aligned copy), and the units and values of ``other``.
+        """
+        if isinstance(other, TimeSeries):
+            lhs, rhs = TimeSeries.align(self, other)
+            return lhs, rhs.units, np.asarray(rhs)
+
+        if isinstance(other, self.ureg.Quantity):
+            return self, other.units, np.asarray(other.magnitude)
+
+        return self, default_units, np.asarray(other)
+
+    def _with_values(self, values: np.ndarray, units: Unit) -> "TimeSeries":
+        result = self.promote(values)
+        result._units = units
+        return result
+
+    def _additive(self, other, op) -> "TimeSeries":
+        """
+        Apply ``op(self, other)`` for an operation whose operands must share units (``+``, ``-``). ``other`` is
+        converted to this TimeSeries' units, which the result keeps; plain numbers are assumed to be in them already.
+
+        :raises ValueError: If ``other`` has units of a different dimensionality.
+        """
+        lhs, other_units, other_values = self._operands(other, default_units=self.units)
+
+        if other_units.dimensionality != lhs.units.dimensionality:
+            raise ValueError(f"Incompatible units: {lhs.units} and {other_units}")
+
+        if other_units != lhs.units:
+            # 1 * unit turns it into a quantity rather than a pure unit
+            other_values = other_values * (1 * other_units).to(lhs.units).magnitude
+
+        return lhs._with_values(op(np.asarray(lhs), other_values), lhs.units)
+
+    def _multiplicative(self, other, op) -> "TimeSeries":
+        """
+        Apply ``op(self, other)`` for an operation whose units compose (``*``, ``/``). Plain numbers are
+        dimensionless.
+        """
+        lhs, other_units, other_values = self._operands(other, default_units=self.ureg.dimensionless)
+
+        return lhs._with_values(op(np.asarray(lhs), other_values), op(lhs.units, other_units))
+
     def __add__(self, other):
-        if isinstance(other, TimeSeries):
-            self_aligned, other_aligned = TimeSeries.align(self, other)
+        return self._additive(other, operator.add)
 
-            # Check dimensionalilty
-            if not self_aligned.units.dimensionality == other_aligned.units.dimensionality:
-                raise ValueError(
-                    f"Incompatible units: {self_aligned.units} and {other_aligned.units}"
-                )
+    def __radd__(self, other):
+        return self._additive(other, operator.add)
 
-            # Convert other to self's units
-            factor = (1 * other_aligned.units).to(self_aligned.units).magnitude # 1 * unit turns it into a quanity rather than pure unit
-            converted_other = np.asarray(other_aligned) * factor
-
-            raw_sum = np.ndarray.__add__(self_aligned, converted_other)
-
-            result: TimeSeries = self_aligned.promote(raw_sum)
-            result._units = self_aligned.units
-            return result
-        
-        elif isinstance(other, self.ureg.Quantity):
-             # Check dimensionalilty
-            if not self.units.dimensionality == other.units.dimensionality:
-                raise ValueError(
-                    f"Incompatible units: {self.units} and {other.units}"
-                )
-
-            # Convert other to self's units
-            factor = (1 * other.units).to(self.units).magnitude # 1 * unit turns it into a quality rather than pure unit
-            converted_other = other.magnitude * factor
-
-            raw_sum = np.ndarray.__add__(self, converted_other)
-
-            result: TimeSeries = self.promote(raw_sum)
-            result._units = self.units
-            return result
-        
-        else:
-            raw_sum = np.ndarray.__add__(self, other) # Assumption being that the added value is the same unit as the TimeSeries
-            result = self.promote(raw_sum)
-            result._units = self.units
-            return result
-    
     def __sub__(self, other):
-        if isinstance(other, TimeSeries):
-            # Align time series
-            self_aligned, other_aligned = TimeSeries.align(self, other)
+        return self._additive(other, operator.sub)
 
-            # Check dimensionality
-            if not self_aligned.units.dimensionality == other_aligned.units.dimensionality:
-                raise ValueError(
-                    f"Incompatible units: {self_aligned.units} and {other_aligned.units}"
-                )
-
-            # Convert other to self's units
-            factor = (1 * other_aligned.units).to(self_aligned.units).magnitude #  1 * unit turns it into a quality rather than pure unit
-            converted_other = np.asarray(other_aligned) * factor
-
-            # Perform subtraction
-            raw_sub = np.ndarray.__sub__(self_aligned, converted_other)
-
-            result = self_aligned.promote(raw_sub)
-            result._units = self_aligned.units
-            return result
-        
-        elif isinstance(other, self.ureg.Quantity):
-            
-             # Check dimensionality
-            if not self.units.dimensionality == other.units.dimensionality:
-                raise ValueError(
-                    f"Incompatible units: {self.units} and {other.units}"
-                )
-
-            # Convert other to self's units
-            factor = (1 * other.units).to(self.units).magnitude # 1 * unit turns it into a quality rather than pure unit
-            converted_other = other.magnitude * factor
-
-            raw_sum = np.ndarray.__sub__(self, converted_other)
-
-            result: TimeSeries = self.promote(raw_sum)
-            result._units = self.units
-            return result
-        
-        else:
-            # Scalar subtraction, assuming other is in the same units
-            raw_sub = np.ndarray.__sub__(self, other)
-            result = self.promote(raw_sub)
-            result._units = self.units
-            return result 
+    def __rsub__(self, other):
+        return self._additive(other, lambda lhs, rhs: rhs - lhs)
 
     def __mul__(self, other):
-
-        if isinstance(other, TimeSeries): # If TimeSeries
-            self_aligned, other_aligned = TimeSeries.align(self, other)
-
-            raw_product = np.ndarray.__mul__(self_aligned, other_aligned)
-
-            result = self_aligned.promote(raw_product)
-
-            # Compose units
-            result._units = self_aligned.units * other_aligned.units
-
-            return result
-        
-        elif isinstance(other, self.ureg.Quantity): # If Pint Quantity
-            raw_product = np.ndarray.__mul__(self, other.magnitude)
-
-            result = self.promote(raw_product)
-
-            result._units = self.units * other.units
-
-            return result
-
-        else:
-            raw_product = np.ndarray.__mul__(self, other)
-
-            result = self.promote(raw_product)
-            result._units = self.units
-            return result
-
-    def __truediv__(self, other):
-        if isinstance(other, TimeSeries):
-            self_aligned, other_aligned = TimeSeries.align(self, other)
-
-            raw_product = np.ndarray.__truediv__(self_aligned, other_aligned)
-
-            result = self_aligned.promote(raw_product)
-
-            # Compose units
-            result._units = self_aligned.units / other_aligned.units
-
-            return result
-        
-        elif isinstance(other, self.ureg.Quantity):
-
-            raw_product = np.ndarray.__truediv__(self, other.magnitude)
-
-            result = self.promote(raw_product)
-
-            # Compose units
-            result._units = self.units/other.units
-
-            return result
-
-        else:
-            raw_product = np.ndarray.__truediv__(self, other)
-
-            result = self.promote(raw_product)
-            result._units = self.units
-            return result
-        
-    def __radd__(self, other):
-        return self.__add__(other)
+        return self._multiplicative(other, operator.mul)
 
     def __rmul__(self, other):
-        return self.__mul__(other)
-    
-    def __rsub__(self, other):
-        # This might not be the wanted implementation, but its also really unintuitive to subtract a time series from an integer so I dont know what the desired output is
-        raw_sub =  np.ndarray.__sub__(self, other) # other - self = -(self - other)
-        result = -1 * self.promote(raw_sub)
-        
-        # Units for scalar - TimeSeries are typically -self.units
-        result._units = self.units # Magnitude is negative, units remain same
-            
-        return result
-    
+        return self._multiplicative(other, operator.mul)
+
+    def __truediv__(self, other):
+        return self._multiplicative(other, operator.truediv)
+
     def __rtruediv__(self, other):
-        # reverses the division: other / self
-        # This logic only triggers when the numerator is not a TimeSeries, meaning in this case it is only ever a unitless other (float or integer). 
-        # Currently there is no implementation of multiplying or dividing by pint quantities    
+        return self._multiplicative(other, lambda lhs, rhs: rhs / lhs)
 
-        raw_product = np.ndarray.__rtruediv__(self, other)
-        result = self.promote(raw_product)
-        result._units = 1 / self.units 
-
-        return result
-            
     @property
     def x_axis(self) -> np.ndarray:
         """
