@@ -3,8 +3,9 @@ import datetime
 import matplotlib.pyplot as plt
 import math
 import pandas as pd
-import re
 import copy
+import operator
+import warnings
 from pint.registry import Unit
 
 
@@ -19,15 +20,23 @@ class TimeSeries(np.ndarray):
     """
     UnitRegistry = unit_registry
 
+    # How far a given ``length`` or ``stop`` may disagree with the one derived from ``period``, in seconds, as
+    # the larger of an absolute amount (datetimes only carry microseconds) and a fraction of the period
+    _ABS_TOLERANCE = 1e-5
+    _REL_TOLERANCE = 1e-3
+
     # __new__ and __array_finalize__ are mandatory to ensure that
     # `TimeSeries` properly acts like a ndarray when necessary.
-    def __new__(cls, input_array, 
-                start_time: datetime.datetime = None, 
-                stop_time: datetime.datetime = None,
-                period: float = None,
-                length: float = None,
-                units = None,
-                meta: dict = None):
+    def __new__(
+            cls,
+            input_array,
+            start_time: datetime.datetime = None,
+            stop_time: datetime.datetime = None,
+            period: float = None,
+            length: float = None,
+            units = None,
+            meta: dict = None
+    ):
         obj = np.asarray(input_array).view(cls)
         obj._start = start_time
         obj._stop = stop_time
@@ -35,11 +44,13 @@ class TimeSeries(np.ndarray):
         obj._period = period
         obj._length = length
         obj._meta = meta
+
         return obj
 
     def __array_finalize__(self, obj):
         if obj is None:
             return
+
         self._start = getattr(obj, '_start', None)
         self._stop = getattr(obj, '_stop', None)
         self._units = getattr(obj, '_units', None)
@@ -47,14 +58,28 @@ class TimeSeries(np.ndarray):
         self._period = getattr(obj, '_period', None)
         self._meta = getattr(obj, '_meta', None)
 
-    def __init__(self, input_array, 
-                 start_time: datetime.datetime, 
-                 stop_time: datetime.datetime,
-                 period: float,
-                 length: float,
+    def __init__(self, input_array,
+                 start_time: datetime.datetime = None,
+                 stop_time: datetime.datetime = None,
+                 period: float = None,
+                 length: float = None,
                  units: Unit | str = None,
                  meta: dict = None):
-
+        """
+        :param input_array: The evenly-spaced data.
+        :param datetime.datetime start_time: Timezone-aware time of the first element.
+        :param datetime.datetime stop_time: Optional, timezone-aware time of the last element. Derived from
+            ``start_time`` and ``period`` when they are given, so it only needs to be given in their place.
+        :param float period: Time between elements in seconds. If not given, it is derived from ``length`` (or
+            ``stop_time``) and the number of elements.
+        :param float length: Optional, time between the first and last element in seconds. Like ``stop_time``,
+            derived from ``period`` when it is given.
+        :param str | Unit units: Units of the data, dimensionless if ``None``.
+        :param dict meta: Metadata for the TimeSeries.
+        :raises ValueError: If ``start_time`` or ``stop_time`` is naive.
+        :warns UserWarning: If ``length`` or ``stop_time`` disagrees with ``period``, in which case the length and
+            stop are derived from ``period``.
+        """
         # Check if the start and stop are not naive
         if start_time is not None:
             if start_time.tzinfo is None:
@@ -64,9 +89,32 @@ class TimeSeries(np.ndarray):
             if stop_time.tzinfo is None:
                 raise ValueError("The end time does not have an assigned timezone!")
 
+        num_elements = self._num_elements()
+        stop_length = (stop_time - start_time).total_seconds() \
+            if start_time is not None and stop_time is not None else None
+
+        # Derive the period from whichever span was given
+        if period is None and num_elements > 1:
+            span = length if length is not None else stop_length
+            if span is not None:
+                period = span / (num_elements - 1)
+
+        # Anything else given should agree with the period, which wins: the x–axis is evenly spaced by it
+        if period is not None:
+            derived_length = period * max(num_elements - 1, 0)
+            tolerance = max(TimeSeries._ABS_TOLERANCE, TimeSeries._REL_TOLERANCE * abs(period))
+            for name, given in (("length", length), ("stop_time", stop_length)):
+                if given is not None and abs(given - derived_length) > tolerance:
+                    warnings.warn(
+                        f"The {name} implies a length of {given} s, but {num_elements} elements with a period "
+                        f"of {period} s span {derived_length} s! Using {derived_length} s.",
+                        stacklevel=2
+                    )
 
         self._start: datetime.datetime = start_time
+        # Only used when there is no period to derive them from
         self._stop: datetime.datetime = stop_time
+        self._length: float = length if length is not None else stop_length
 
         # Setting units
         if units is None:
@@ -83,198 +131,92 @@ class TimeSeries(np.ndarray):
 
         self._period: float = period
 
-        self._length: float = length
-
-        self._meta = meta
+    def _num_elements(self) -> int:
+        return self.shape[0] if self.ndim > 0 else 1
 
     @property
     def ureg(self):
         return TimeSeries.UnitRegistry
 
+    def _operands(self, other, default_units) -> tuple["TimeSeries", Unit, np.ndarray]:
+        """
+        Unpack the right-hand side of an arithmetic operation with this TimeSeries.
+
+        :param other: A TimeSeries (aligned with this one first), a pint Quantity, or anything else NumPy can
+            operate on, which is taken to be in ``default_units``.
+        :return: The left-hand side (this TimeSeries, or its aligned copy), and the units and values of ``other``.
+        """
+        if isinstance(other, TimeSeries):
+            lhs, rhs = TimeSeries.align(self, other)
+            return lhs, rhs.units, np.asarray(rhs)
+
+        if isinstance(other, self.ureg.Quantity):
+            return self, other.units, np.asarray(other.magnitude)
+
+        return self, default_units, np.asarray(other)
+
+    def _with_values(self, values: np.ndarray, units: Unit) -> "TimeSeries":
+        result = self.promote(values)
+        result._units = units
+        return result
+
+    def _additive(self, other, op) -> "TimeSeries":
+        """
+        Apply ``op(self, other)`` for an operation whose operands must share units (``+``, ``-``). ``other`` is
+        converted to this TimeSeries' units, which the result keeps; plain numbers are assumed to be in them already.
+
+        :raises ValueError: If ``other`` has units of a different dimensionality.
+        """
+        lhs, other_units, other_values = self._operands(other, default_units=self.units)
+
+        if other_units.dimensionality != lhs.units.dimensionality:
+            raise ValueError(f"Incompatible units: {lhs.units} and {other_units}")
+
+        if other_units != lhs.units:
+            # 1 * unit turns it into a quantity rather than a pure unit
+            other_values = other_values * (1 * other_units).to(lhs.units).magnitude
+
+        return lhs._with_values(op(np.asarray(lhs), other_values), lhs.units)
+
+    def _multiplicative(self, other, op) -> "TimeSeries":
+        """
+        Apply ``op(self, other)`` for an operation whose units compose (``*``, ``/``). Plain numbers are
+        dimensionless.
+        """
+        lhs, other_units, other_values = self._operands(other, default_units=self.ureg.dimensionless)
+
+        return lhs._with_values(op(np.asarray(lhs), other_values), op(lhs.units, other_units))
+
     def __add__(self, other):
-        if isinstance(other, TimeSeries):
-            self_aligned, other_aligned = TimeSeries.align(self, other)
+        return self._additive(other, operator.add)
 
-            # Check dimensionalilty
-            if not self_aligned.units.dimensionality == other_aligned.units.dimensionality:
-                raise ValueError(
-                    f"Incompatible units: {self_aligned.units} and {other_aligned.units}"
-                )
+    def __radd__(self, other):
+        return self._additive(other, operator.add)
 
-            # Convert other to self's units
-            factor = (1 * other_aligned.units).to(self_aligned.units).magnitude # 1 * unit turns it into a quanity rather than pure unit
-            converted_other = np.asarray(other_aligned) * factor
-
-            raw_sum = np.ndarray.__add__(self_aligned, converted_other)
-
-            result: TimeSeries = self_aligned.promote(raw_sum)
-            result._units = self_aligned.units
-            return result
-        
-        elif isinstance(other, self.ureg.Quantity):
-             # Check dimensionalilty
-            if not self.units.dimensionality == other.units.dimensionality:
-                raise ValueError(
-                    f"Incompatible units: {self.units} and {other.units}"
-                )
-
-            # Convert other to self's units
-            factor = (1 * other.units).to(self.units).magnitude # 1 * unit turns it into a quality rather than pure unit
-            converted_other = other.magnitude * factor
-
-            raw_sum = np.ndarray.__add__(self, converted_other)
-
-            result: TimeSeries = self.promote(raw_sum)
-            result._units = self.units
-            return result
-        
-        else:
-            raw_sum = np.ndarray.__add__(self, other) # Assumption being that the added value is the same unit as the TimeSeries
-            result = self.promote(raw_sum)
-            result._units = self.units
-            return result
-    
     def __sub__(self, other):
-        if isinstance(other, TimeSeries):
-            # Align time series
-            self_aligned, other_aligned = TimeSeries.align(self, other)
+        return self._additive(other, operator.sub)
 
-            # Check dimensionality
-            if not self_aligned.units.dimensionality == other_aligned.units.dimensionality:
-                raise ValueError(
-                    f"Incompatible units: {self_aligned.units} and {other_aligned.units}"
-                )
-
-            # Convert other to self's units
-            factor = (1 * other_aligned.units).to(self_aligned.units).magnitude #  1 * unit turns it into a quality rather than pure unit
-            converted_other = np.asarray(other_aligned) * factor
-
-            # Perform subtraction
-            raw_sub = np.ndarray.__sub__(self_aligned, converted_other)
-
-            result = self_aligned.promote(raw_sub)
-            result._units = self_aligned.units
-            return result
-        
-        elif isinstance(other, self.ureg.Quantity):
-            
-             # Check dimensionality
-            if not self.units.dimensionality == other.units.dimensionality:
-                raise ValueError(
-                    f"Incompatible units: {self.units} and {other.units}"
-                )
-
-            # Convert other to self's units
-            factor = (1 * other.units).to(self.units).magnitude # 1 * unit turns it into a quality rather than pure unit
-            converted_other = other.magnitude * factor
-
-            raw_sum = np.ndarray.__sub__(self, converted_other)
-
-            result: TimeSeries = self.promote(raw_sum)
-            result._units = self.units
-            return result
-        
-        else:
-            # Scalar subtraction, assuming other is in the same units
-            raw_sub = np.ndarray.__sub__(self, other)
-            result = self.promote(raw_sub)
-            result._units = self.units
-            return result 
+    def __rsub__(self, other):
+        return self._additive(other, lambda lhs, rhs: rhs - lhs)
 
     def __mul__(self, other):
-
-        if isinstance(other, TimeSeries): # If TimeSeries
-            self_aligned, other_aligned = TimeSeries.align(self, other)
-
-            raw_product = np.ndarray.__mul__(self_aligned, other_aligned)
-
-            result = self_aligned.promote(raw_product)
-
-            # Compose units
-            result._units = self_aligned.units * other_aligned.units
-
-            return result
-        
-        elif isinstance(other, self.ureg.Quantity): # If Pint Quantity
-            raw_product = np.ndarray.__mul__(self, other.magnitude)
-
-            result = self.promote(raw_product)
-
-            result._units = self.units * other.units
-
-            return result
-
-        else:
-            raw_product = np.ndarray.__mul__(self, other)
-
-            result = self.promote(raw_product)
-            result._units = self.units
-            return result
-
-    def __truediv__(self, other):
-        if isinstance(other, TimeSeries):
-            self_aligned, other_aligned = TimeSeries.align(self, other)
-
-            raw_product = np.ndarray.__truediv__(self_aligned, other_aligned)
-
-            result = self_aligned.promote(raw_product)
-
-            # Compose units
-            result._units = self_aligned.units / other_aligned.units
-
-            return result
-        
-        elif isinstance(other, self.ureg.Quantity):
-
-            raw_product = np.ndarray.__truediv__(self, other.magnitude)
-
-            result = self.promote(raw_product)
-
-            # Compose units
-            result._units = self.units/other.units
-
-            return result
-
-        else:
-            raw_product = np.ndarray.__truediv__(self, other)
-
-            result = self.promote(raw_product)
-            result._units = self.units
-            return result
-        
-    def __radd__(self, other):
-        return self.__add__(other)
+        return self._multiplicative(other, operator.mul)
 
     def __rmul__(self, other):
-        return self.__mul__(other)
-    
-    def __rsub__(self, other):
-        # This might not be the wanted implementation, but its also really unintuitive to subtract a time series from an integer so I dont know what the desired output is
-        raw_sub =  np.ndarray.__sub__(self, other) # other - self = -(self - other)
-        result = -1 * self.promote(raw_sub)
-        
-        # Units for scalar - TimeSeries are typically -self.units
-        result._units = self.units # Magnitude is negative, units remain same
-            
-        return result
-    
+        return self._multiplicative(other, operator.mul)
+
+    def __truediv__(self, other):
+        return self._multiplicative(other, operator.truediv)
+
     def __rtruediv__(self, other):
-        # reverses the division: other / self
-        # This logic only triggers when the numerator is not a TimeSeries, meaning in this case it is only ever a unitless other (float or integer). 
-        # Currently there is no implementation of multiplying or dividing by pint quantities    
+        return self._multiplicative(other, lambda lhs, rhs: rhs / lhs)
 
-        raw_product = np.ndarray.__rtruediv__(self, other)
-        result = self.promote(raw_product)
-        result._units = 1 / self.units 
-
-        return result
-            
     @property
     def x_axis(self) -> np.ndarray:
         """
         This wave's x–axis in relative seconds, such that the first element is ``t=0``.
         """
-        relative_x_axis = np.linspace(0.0, self._length, len(self))
+        relative_x_axis = np.linspace(0.0, self.length, len(self))
 
         return relative_x_axis
 
@@ -298,8 +240,10 @@ class TimeSeries(np.ndarray):
         """
         Total time between the first and last element of this wave's data
         """
+        if self._period is None:
+            return self._length
 
-        return self._length
+        return self._period * max(self._num_elements() - 1, 0)
 
     @property
     def period(self) -> float:
@@ -347,7 +291,11 @@ class TimeSeries(np.ndarray):
         """
         UTC datetime of the last data element
         """
-        return self._stop
+        length = self.length
+        if self._start is None or self._period is None or length is None:
+            return self._stop
+
+        return self._start + datetime.timedelta(seconds=length)
 
     def __getitem__(self, item):
         data_to_slice = self
@@ -361,21 +309,22 @@ class TimeSeries(np.ndarray):
             if num_elements == 0:
                 raise IndexError("Cannot index an empty TimeSeries by datetime!")
 
+            if item.tzinfo is None:
+                raise ValueError("The index does not have an assigned timezone!")
+
             item_ts = item.timestamp()
 
             # Same values as unix_x_axis[0] and unix_x_axis[-1], without building the whole axis on every lookup
             start_timestamp: float = self.start.timestamp()
-            stop_timestamp: float = start_timestamp + self._length if num_elements > 1 else start_timestamp
+            stop_timestamp: float = start_timestamp + self.length if num_elements > 1 else start_timestamp
 
             if item_ts > stop_timestamp or item_ts < start_timestamp:
+                tz = self.start.tzinfo
                 raise IndexError(
                     f"Datetime {item} is out of bounds! "
-                    f"Range: [{datetime.datetime.fromtimestamp(start_timestamp)}, "
-                    f"{datetime.datetime.fromtimestamp(stop_timestamp)}]"
+                    f"Range: [{datetime.datetime.fromtimestamp(start_timestamp, tz)}, "
+                    f"{datetime.datetime.fromtimestamp(stop_timestamp, tz)}]"
                 )
-            
-            if item.tzinfo is None:
-                raise ValueError("The index does not have an assigned timezone!")
 
             dt = stop_timestamp - start_timestamp
 
@@ -386,7 +335,16 @@ class TimeSeries(np.ndarray):
 
             return data_to_slice.interpolate_indices(interpolation_index)
 
-        return super(TimeSeries, data_to_slice).__getitem__(item)
+        result = super(TimeSeries, data_to_slice).__getitem__(item)
+
+        # A forward slice is still evenly spaced: move its x–axis to the elements it kept
+        if isinstance(item, slice) and isinstance(result, TimeSeries) and self.ndim == 1:
+            kept = range(len(self))[item]
+            if kept.step > 0 and len(kept) > 0 and self._start is not None and self._period is not None:
+                result._start = self._start + datetime.timedelta(seconds=kept.start * self._period)
+                result._period = self._period * kept.step
+
+        return result
 
     @property
     def meta(self) -> dict:
@@ -406,12 +364,19 @@ class TimeSeries(np.ndarray):
         :param bool show: Show plots (disable if you want to stack multiple plots, for example).
         """
 
+        meta = self.meta or {}
+
+        # InfluxDB series name a measurement and field; Sunbeam series an event and signal
+        name = meta.get("field", meta.get("signal"))
+        group = meta.get("measurement", meta.get("event"))
+
         fig, ax = plt.subplots()
 
-        ax.set_title(f"{self.meta['measurement']}: {self.meta['field']}")
-        ax.set_ylabel(self.units if self.units != "" else "Arbitrary Units")
-        ax.set_xlabel("Time (s)")
-        ax.plot(self.datetime_x_axis, self, label=self.meta['field'])
+        ax.set_title(f"{group}: {name}" if group is not None else (name or ""))
+        dimensionless = self.units is None or self.units == self.ureg.dimensionless
+        ax.set_ylabel("Arbitrary Units" if dimensionless else str(self.units))
+        ax.set_xlabel("Time")
+        ax.plot(self.datetime_x_axis, np.asarray(self), label=name)
 
         if show:
             plt.show()
@@ -450,15 +415,21 @@ class TimeSeries(np.ndarray):
         :param array: plain ndarray to be promoted
         :return: new, promoted TimeSeries with the same properties as this TimeSeries
         """
-        meta: dict = self.meta
+        # A copy, so that changing one TimeSeries' metadata doesn't change the other's
+        meta: dict = copy.copy(self.meta)
 
-        return TimeSeries(array, 
-                          self.start, 
-                          self.stop,  
-                          self.period, 
-                          self.length, 
-                          self.units,
-                          meta)
+        # With a period, the stop and length follow from it (and the length of ``array``)
+        unspaced = self.period is None
+
+        return TimeSeries(
+            array,
+            self.start,
+            stop_time=self.stop if unspaced else None,
+            period=self.period,
+            length=self.length if unspaced else None,
+            units=self.units,
+            meta=meta
+        )
     
     def interpolate_indices(self, i: float) -> float:
         """ Function which interpolates between the two nearest indices
@@ -517,26 +488,17 @@ class TimeSeries(np.ndarray):
             relative_stop = dt
 
         # Finding indexes to slice with
-        start_index = math.ceil((relative_start/self.period).total_seconds()) 
-        stop_index = math.floor((relative_stop/self.period).total_seconds())
+        start_index = math.ceil((relative_start / self.period).total_seconds())
+        stop_index = min(math.floor((relative_stop / self.period).total_seconds()), len(self) - 1)
 
-        # Find new start and end time
-        new_start_time = datetime.timedelta(seconds = start_index * self.period) + self.start
-        new_stop_time = datetime.timedelta(seconds = stop_index * self.period) + self.start
-        y_data = []
-        for i in range(start_index, stop_index + 1):
-            y_data.append(self[i])
-        
-        if self.start.tzinfo is not None:
-            new_start_time = new_start_time.replace(tzinfo = self.start.tzinfo)
-            new_stop_time = new_stop_time.replace(tzinfo = self.stop.tzinfo)
+        new_series = TimeSeries(
+            np.array(self)[start_index:stop_index + 1],
+            self.start + datetime.timedelta(seconds = start_index * self.period),
+            period = self.period,
+            units = self.units,
+            meta = copy.copy(self.meta)
+        )
 
-        new_series = TimeSeries(y_data, 
-                                new_start_time,
-                                new_stop_time,
-                                self._period,
-                                length = (new_stop_time - new_start_time).total_seconds(),
-                                units = self.units)
         return new_series
     
     def shift(self, shift: float | datetime.timedelta):
@@ -548,26 +510,24 @@ class TimeSeries(np.ndarray):
         if not isinstance(shift, datetime.timedelta):
             shift = datetime.timedelta(seconds=shift)
 
-        timeseries_copy = TimeSeries(self[...],
-                          self.start + shift,
-                          self.stop + shift,
-                          self.period,
-                          self.length,
-                          self.units,
-                          self.meta
-        ) #Create a copy of TimeSeries with shifted start and stop times
+        # A copy of the data, so that changing the shifted series doesn't change this one
+        timeseries_copy = self.promote(np.array(self))
+        timeseries_copy._start = self.start + shift
+        if timeseries_copy._stop is not None:
+            timeseries_copy._stop = timeseries_copy._stop + shift
 
         return timeseries_copy
 
     def convert_to(self, new_unit: Unit | str):
-        """ Returns a new TimeSeries after being converted to a new unit, appropriately scales TimeSeries
+        """
+        Returns a new TimeSeries after being converted to a new unit, appropriately scales TimeSeries
 
-            :param str new_unit: The unit the entire series will be translated to
+        :param str new_unit: The unit the entire series will be translated to
 
-            :raises ValueError: Cannot convert TimeSeries without units
-            :raises ValueError: Unable to convert between units of different dimensionality
+        :raises ValueError: Cannot convert TimeSeries without units
+        :raises ValueError: Unable to convert between units of different dimensionality
 
-            :return: TimeSeries with converted units
+        :return: TimeSeries with converted units
         """
 
         new_unit_parsed = self.ureg.parse_units(new_unit)
@@ -608,47 +568,51 @@ class TimeSeries(np.ndarray):
 
     @staticmethod
     def align(*args) -> list:
+        """
+        Re-interpolate TimeSeries onto a shared x–axis: the time range they all cover, with the finest of their
+        periods (rounded down to divide the range evenly).
+
+        :raises ValueError: If the TimeSeries don't all overlap in time.
+        :return: The aligned TimeSeries, in the order given.
+        """
         start_time = max(arg.start.timestamp() for arg in args)
         end_time = min(arg.stop.timestamp() for arg in args)
         period = min(arg.period for arg in args)
 
         new_length = end_time - start_time
-        num_points = math.ceil(new_length / period) + 1
+        if new_length < 0:
+            raise ValueError("Cannot align TimeSeries that don't overlap in time!")
+
+        # As in generate_timeseries, spans within a thousandth of a period of a whole number of periods are that number
+        num_points = math.ceil(new_length / period - 1e-3) + 1
         new_x_axis = np.linspace(start_time, end_time, num_points)
+        new_period = new_length / (num_points - 1) if num_points > 1 else period
 
         new_args = []
         for array in args:
-            start_index = array.index_of(array.relative_time(start_time))
-            stop_index = array.index_of(array.relative_time(end_time))
+            # Interpolate from each series' own x–axis, so its samples keep their true times
+            interpolated_values = np.interp(new_x_axis, array.unix_x_axis, np.asarray(array))
 
-            new_array = array[start_index:stop_index + 1]
-            if array.start.tzinfo is not None:
-                tz = array.start.tzinfo
-                new_array._start = datetime.datetime.fromtimestamp(start_time, tz)
-                new_array._stop = datetime.datetime.fromtimestamp(end_time, tz)
-            else:
-                new_array._start = datetime.datetime.fromtimestamp(start_time)
-                new_array._stop = datetime.datetime.fromtimestamp(end_time)
-
-            new_array._period = period
-            new_array._length = new_length
-
-            interpolated_values = np.interp(new_x_axis, new_array.unix_x_axis, new_array)
-            new_array_interpolated = new_array.promote(interpolated_values)
-
-            new_args.append(new_array_interpolated)
+            new_args.append(
+                TimeSeries(
+                    interpolated_values,
+                    datetime.datetime.fromtimestamp(start_time, array.start.tzinfo),
+                    period=new_period,
+                    units=array.units,
+                    meta=copy.copy(array.meta)
+                )
+            )
 
         return new_args
 
     @staticmethod
     def merge(*args, fill_value: float = 0):
-        """The merge function combines several TimeSeries into one contiguous series. Any spaces in time is filled by the 'fill_value'. 
+        """
+        The merge function combines several TimeSeries into one contiguous series. Any spaces in time is filled by the 'fill_value'.
         It assumes that the datapoints pull from the same source, as overlapping point are overridden.
 
         :param float fill_value: The value for filling between gaps of time. Defaults to 0.
-
         :raises ValueError: If no TimeSeries are input
-
         :return TimeSeries: The merged series
         """        
         
@@ -661,8 +625,8 @@ class TimeSeries(np.ndarray):
         period = min(ts.period for ts in args)  # highest resolution
 
         new_length = end_time - start_time
-        num_points = math.ceil(new_length / period) + 1
-        
+        num_points = math.ceil(new_length / period - 1e-3) + 1
+
         merged_values = np.full(num_points, fill_value, dtype=float)
 
         # Use metadata from the first series
@@ -695,16 +659,12 @@ class TimeSeries(np.ndarray):
             merged_values[indices] = ts_values
 
         # Create final series
-        tz = base.start.tzinfo
-        new_start_dt = datetime.datetime.fromtimestamp(start_time, tz)
-        new_stop_dt = datetime.datetime.fromtimestamp(end_time, tz)
-
+        # Values were placed every ``period`` from the start, which fixes the stop (it may pass end_time by less
+        # than a period)
         merged_series = TimeSeries(
             merged_values,
-            start_time=new_start_dt,
-            stop_time=new_stop_dt,
+            start_time=datetime.datetime.fromtimestamp(start_time, base.start.tzinfo),
             period=period,
-            length=new_length,
             units=units,
             meta=meta
         )
@@ -713,44 +673,74 @@ class TimeSeries(np.ndarray):
     
     @staticmethod
     def from_query_dataframe(query_df: pd.DataFrame, period: float, field: str, units: Unit | str):
-        # Transform the DataFrame into a nicer format where we have our time-series data indexed by time
-        query_df['_time'] = pd.to_datetime(query_df['_time'])
-        query_df.set_index('_time', inplace=True)
+        """
+        Create a TimeSeries from the DataFrame of an InfluxDB query for one field, re-interpolated onto an even grid
+        of ``period`` seconds. ``query_df`` is not modified.
 
-        # Get the x-axis in relative seconds (first element is t=0)
-        x_axis = query_df.index.map(lambda x: x.timestamp()).to_numpy()
-        x_axis -= x_axis[0]  # Subtract off first time, so the x_axis starts at 0 with units of seconds
+        :param pd.DataFrame query_df: Query result, with ``_time``, ``car``, ``_measurement`` and ``field`` columns.
+        :param float period: Time between elements of the result, in seconds.
+        :param str field: The column holding the data.
+        :param str | Unit units: Units of the data.
+        :return: Homogenized TimeSeries, in the timezone of ``_time`` (UTC if it has none).
+        """
+        times = pd.DatetimeIndex(pd.to_datetime(query_df['_time']))
+        x_axis = np.array([t.timestamp() for t in times], dtype=float)
 
-        # Reshape the x-axis to have the right number of elements for our needed period
-        temporal_length: float = x_axis[-1]  # Total time of the query in seconds
-        desired_num_elements: int = math.ceil(temporal_length / period)
-        desired_x_axis = np.linspace(0, temporal_length, desired_num_elements+1, endpoint=True)
-
-        # Re-interpolate our data on desired x-axis
-        wave = query_df[[field]].to_numpy().reshape(-1)
-        wave_interpolated = np.interp(desired_x_axis, x_axis, wave)
-
-        actual_granularity = np.mean(np.diff(desired_x_axis))
-
-        # Compile metadata
         meta: dict = {
             "car": query_df["car"].to_numpy()[0],
             "measurement": query_df["_measurement"].to_numpy()[0],
             "field": field
         }
 
-        new_wave = TimeSeries(wave_interpolated, 
-                              start_time = query_df.index.to_numpy()[0].to_pydatetime(),
-                              stop_time = query_df.index.to_numpy()[-1].to_pydatetime(),
-                              period = actual_granularity,
-                              length = temporal_length,
-                              units = units,
-                              meta = meta)
-
-        return new_wave
+        return TimeSeries.generate_timeseries(x_axis,
+                                              query_df[field].to_numpy(),
+                                              period,
+                                              units,
+                                              timezone=times.tz or datetime.timezone.utc,
+                                              meta=meta)
 
     @staticmethod
-    def generate_timeseries(x_axis: list, 
+    def from_samples(timestamps,
+                     values,
+                     period: float,
+                     units: Unit | str = None,
+                     meta: dict = None) -> "TimeSeries":
+        """
+        Create a TimeSeries from timestamped samples, re-interpolated onto an even grid of ``period`` seconds.
+        Missing values (``None`` or NaN) are dropped first, so they are interpolated across rather than kept.
+
+        :param timestamps: Sample times, ascending: UTC UNIX timestamps in seconds, or timezone-aware datetimes.
+        :param values: The sample at each timestamp.
+        :param float period: Time between elements of the result, in seconds.
+        :param str | Unit units: Units of the data, dimensionless if ``None``.
+        :param dict meta: Metadata for the TimeSeries.
+        :raises ValueError: If there are no (non-missing) samples, ``timestamps`` and ``values`` differ in length,
+            a datetime is naive, or ``period`` isn't positive.
+        :return: Homogenized TimeSeries, with timezone-aware UTC start and stop times.
+        """
+        if len(timestamps) != len(values):
+            raise ValueError(f"Got {len(timestamps)} timestamps but {len(values)} values!")
+
+        def to_unix(t) -> float:
+            if isinstance(t, datetime.datetime):
+                if t.tzinfo is None:
+                    raise ValueError(f"Timestamp {t} does not have an assigned timezone!")
+                return t.timestamp()
+            if isinstance(t, np.datetime64):  # Timezone-naive by design, and UTC by convention
+                return float((t - np.datetime64(0, "s")) / np.timedelta64(1, "s"))
+            return float(t)
+
+        times = np.array([to_unix(t) for t in timestamps], dtype=float)
+        data = np.array([np.nan if v is None else v for v in values], dtype=float)
+
+        present = ~np.isnan(data)
+        if not present.any():
+            raise ValueError("Cannot create a TimeSeries without any samples!")
+
+        return TimeSeries.generate_timeseries(times[present], data[present], period, units, meta=meta)
+
+    @staticmethod
+    def generate_timeseries(x_axis: list,
                             y_axis: list, 
                             period: float, 
                             units: Unit | str, 
@@ -759,51 +749,90 @@ class TimeSeries(np.ndarray):
         """
         Creates a TimeSeries from a non-homogeneous / not evenly spaces set of data with a specified period. Useful for converting weirder data into a neat TimeSeries.
 
-        :param list x_axis: Data point times
+        :param list x_axis: Data point times, as ascending UNIX timestamps in seconds
         :param list y_axis: Data points
         :param float period: Time between data points in seconds
         :param str | Unit units: Units of the TimeSeries
         :param datetime.timezone timezone: Timezone
         :param dict meta: Metadata for the TimeSeries
 
+        :raises ValueError: If ``period`` isn't positive.
         :return: Homogenized TimeSeries
-
         """
+        if not period > 0:
+            raise ValueError(f"Period must be positive, not {period}!")
+
         if meta is None:
             meta = {}
 
         # Get the x-axis in relative seconds (first element is t=0)
-        rel_x_axis = x_axis.copy()
-        rel_x_axis -= x_axis[0]  # Subtract off first time, so the x_axis starts at 0
+        x_axis = np.asarray(x_axis, dtype=float)
+        rel_x_axis = x_axis - x_axis[0]
 
-        # Reshape the x-axis to have the right number of elements for needed period
+        # Reshape the x-axis to have the right number of elements for needed period. Spans within a thousandth of a
+        # period of a whole number of periods are that number: UNIX timestamps only carry ~0.2 us of precision, which
+        # would otherwise add an extra element (0.2 s / 0.1 s -> 2.000002)
         temporal_length: float = rel_x_axis[-1]  # Total time of the query in seconds
-        desired_num_elements: int = math.ceil(temporal_length / period)
+        desired_num_elements: int = math.ceil(temporal_length / period - 1e-3)
         desired_x_axis = np.linspace(0, temporal_length, desired_num_elements + 1, endpoint=True)
 
         # Re-interpolate our data on x-axis
-        wave = np.array(y_axis).reshape(-1)
+        wave = np.array(y_axis, dtype=float).reshape(-1)
         wave_interpolated = np.interp(desired_x_axis, rel_x_axis, wave)
 
-        actual_granularity = np.mean(np.diff(desired_x_axis))
+        # A single data point spans no time, so its x-axis has no spacing to measure
+        actual_granularity = float(np.mean(np.diff(desired_x_axis))) if desired_num_elements > 0 else period
 
-        new_wave = TimeSeries(wave_interpolated, 
-                              start_time = datetime.datetime.fromtimestamp(x_axis[0], tz = timezone),
-                              stop_time = datetime.datetime.fromtimestamp(x_axis[0], tz = timezone),
+        start_time = datetime.datetime.fromtimestamp(x_axis[0], tz=timezone)
+
+        new_wave = TimeSeries(wave_interpolated,
+                              start_time = start_time,
                               period = actual_granularity,
-                              length = temporal_length,
                               units = units,
                               meta = meta)
 
         return new_wave
 
     @staticmethod
-    def from_csv(path, period, field):
+    def from_csv(path, period: float, field: str = None, units: Unit | str = None) -> "TimeSeries":
+        """
+        Create a TimeSeries from a CSV exported from InfluxDB, with ``_time``, ``_field`` and ``_value`` columns,
+        re-interpolated onto an even grid of ``period`` seconds.
+
+        :param path: Path to the CSV.
+        :param float period: Time between elements of the result, in seconds.
+        :param str field: The field to read. Optional if the CSV only has one.
+        :param str | Unit units: Units of the data, dimensionless if ``None``.
+        :raises ValueError: If ``field`` isn't given and the CSV has several fields, or it has no rows for the field.
+        :return: Homogenized TimeSeries.
+        """
         df = pd.read_csv(path)
 
-        fields = df['_field'].unique()
-        assert len(fields) == 1, "more than one field type in table"
-        tuple_arr = np.stack((pd.to_datetime(df['_time']), df['_value']), axis=1)
-        result = np.fromiter(map(lambda x: re.sub("[^0-9|.]", "", x), tuple_arr[:, 1]), dtype=float)
+        if field is None:
+            fields = df['_field'].unique()
+            if len(fields) != 1:
+                raise ValueError(f"The CSV has fields {list(fields)}: choose one with `field`!")
+            field = fields[0]
 
-        return result
+        df = df[df['_field'] == field]
+        if df.empty:
+            raise ValueError(f"The CSV has no rows for field {field!r}!")
+
+        times = pd.DatetimeIndex(pd.to_datetime(df['_time']))
+        order = np.argsort(times.asi8, kind="stable")
+        x_axis = np.array([t.timestamp() for t in times], dtype=float)[order]
+
+        # Strip anything around the number (e.g. units), keeping its sign and exponent
+        values = pd.to_numeric(
+            df['_value'].astype(str).str.replace(r"[^0-9eE.+\-]", "", regex=True)
+        ).to_numpy(dtype=float)[order]
+
+        meta = {"field": field}
+        if "_measurement" in df.columns:
+            meta["measurement"] = df["_measurement"].iloc[0]
+        if "car" in df.columns:
+            meta["car"] = df["car"].iloc[0]
+
+        return TimeSeries.generate_timeseries(
+            x_axis, values, period, units, timezone=times.tz or datetime.timezone.utc, meta=meta
+        )

@@ -514,7 +514,7 @@ def test_time_shift_behavior():
                       datetime.datetime.fromtimestamp(1 + 946684800.0, tz = datetime.timezone.utc),
                       datetime.datetime.fromtimestamp(3 + 946684800.0, tz = datetime.timezone.utc),
                       1,
-                      3,
+                      2,
                       "m"
     )
 
@@ -540,6 +540,13 @@ def test_timeseries_generation():
 
     assert np.allclose(ts, [1, 2, 3, 4])
     assert ts.units == "meter"
+
+
+def test_timeseries_generation_stops_at_the_last_point():
+    ts = TimeSeries.generate_timeseries([946684801.0, 946684804.0], [1, 4], 1, "m")
+
+    assert ts.stop.timestamp() == 946684804.0
+    assert ts.length == 3.0
 
 def test_merge():
     # Basic merge with gap filling
@@ -611,3 +618,174 @@ def test_convert_to():
 
     with pytest.raises(ValueError): 
         _ = ts1.convert_to("ft")
+
+def test_from_samples_regrids_onto_the_period():
+    start = datetime.datetime(2024, 7, 16, 14, 0, tzinfo=datetime.timezone.utc)
+    timestamps = [start.timestamp() + t for t in (0.0, 1.0, 2.0)]
+
+    series = TimeSeries.from_samples(timestamps, [0.0, 10.0, 20.0], period=0.5, units="W", meta={"signal": "P"})
+
+    assert list(series) == pytest.approx([0.0, 5.0, 10.0, 15.0, 20.0])
+    assert series.period == pytest.approx(0.5)
+    assert series.start == start
+    assert series.stop == start + datetime.timedelta(seconds=2)
+    assert series.length == pytest.approx(2.0)
+    assert str(series.units) == "watt"
+    assert series.meta == {"signal": "P"}
+
+
+def test_from_samples_accepts_datetimes_and_drops_missing_values():
+    start = datetime.datetime(2024, 7, 16, 14, 0, tzinfo=datetime.timezone.utc)
+    timestamps = [start + datetime.timedelta(seconds=t) for t in range(4)]
+
+    series = TimeSeries.from_samples(timestamps, [None, 1.0, float("nan"), 3.0], period=1.0)
+
+    assert series.start == start + datetime.timedelta(seconds=1)
+    assert list(series) == pytest.approx([1.0, 2.0, 3.0])
+    assert series.units.dimensionless
+    assert series.meta == {}
+
+
+def test_from_samples_single_sample():
+    series = TimeSeries.from_samples([1_720_000_000.0], [4.0], period=0.1)
+
+    assert list(series) == [4.0]
+    assert (series.length, series.period) == (0.0, 0.1)
+
+
+def test_from_samples_rejects_empty_and_mismatched_input():
+    with pytest.raises(ValueError, match="without any samples"):
+        TimeSeries.from_samples([1.0], [None], period=1.0)
+
+    with pytest.raises(ValueError, match="2 timestamps but 1 values"):
+        TimeSeries.from_samples([1.0, 2.0], [1.0], period=1.0)
+
+
+def test_constructor_derives_stop_and_length_from_the_period():
+    start = datetime.datetime(2024, 7, 16, 14, 0, tzinfo=datetime.timezone.utc)
+
+    series = TimeSeries([1, 2, 3, 4], start, period=0.5)
+
+    assert series.length == pytest.approx(1.5)
+    assert series.stop == start + datetime.timedelta(seconds=1.5)
+    assert series.meta == {}
+    assert series.units.dimensionless
+
+
+def test_constructor_derives_the_period_from_the_stop():
+    start = datetime.datetime(2024, 7, 16, 14, 0, tzinfo=datetime.timezone.utc)
+
+    series = TimeSeries([1, 2, 3], start, start + datetime.timedelta(seconds=4))
+
+    assert series.period == pytest.approx(2.0)
+
+
+def test_constructor_warns_and_trusts_the_period_over_a_disagreeing_length():
+    start = datetime.datetime(2024, 7, 16, 14, 0, tzinfo=datetime.timezone.utc)
+
+    with pytest.warns(UserWarning, match="length"):
+        series = TimeSeries([1, 2, 3], start, period=1.0, length=3.0)
+
+    assert series.length == 2.0
+    assert series.stop == start + datetime.timedelta(seconds=2)
+
+
+def test_align_keeps_samples_at_their_true_times():
+    # Each value is its own time, so aligned series should agree wherever they overlap
+    base = 946684800.0
+    a = quick_gen_timeseries(np.array([0, 4]) + base, np.arange(5.0))
+    b = TimeSeries(np.arange(5.0) + 0.4, datetime.datetime.fromtimestamp(base + 0.4, tz=datetime.timezone.utc),
+                   period=1.0)
+
+    a_aligned, b_aligned = TimeSeries.align(a, b)
+
+    assert np.allclose(np.asarray(a_aligned), np.asarray(b_aligned))
+    assert a_aligned[0] == pytest.approx(0.4)
+    assert a_aligned.stop == b_aligned.stop == a.stop
+
+
+def test_align_rejects_series_that_dont_overlap():
+    base = 946684800.0
+    a = quick_gen_timeseries(np.array([0, 2]) + base, [1, 2, 3])
+    b = quick_gen_timeseries(np.array([5, 7]) + base, [1, 2, 3])
+
+    with pytest.raises(ValueError, match="overlap"):
+        TimeSeries.align(a, b)
+
+
+def test_slicing_moves_the_x_axis():
+    base = 946684800.0
+    series = quick_gen_timeseries(np.array([0, 9]) + base, np.arange(10.0))
+
+    view = series[2:8:2]
+
+    assert list(view) == [2.0, 4.0, 6.0]
+    assert view.start.timestamp() == base + 2
+    assert view.period == 2.0
+    assert view.stop.timestamp() == base + 6
+
+
+def test_shift_and_promote_copy_data_and_metadata():
+    base = 946684800.0
+    series = quick_gen_timeseries(np.array([0, 2]) + base, [1.0, 2.0, 3.0])
+    series.meta = {"field": "x"}
+
+    shifted = series.shift(1)
+    shifted[0] = 99.0
+    shifted.meta["field"] = "y"
+
+    assert series[0] == 1.0
+    assert series.meta == {"field": "x"}
+
+
+def test_slice_keeps_metadata():
+    base = 946684800.0
+    series = quick_gen_timeseries(np.array([0, 4]) + base, np.arange(5.0))
+    series.meta = {"field": "x"}
+
+    sliced = series.slice(series.start, series.stop)
+
+    assert sliced.meta == {"field": "x"}
+
+
+def test_naive_datetime_index_is_a_value_error_even_out_of_bounds():
+    series = quick_gen_timeseries(np.array([0, 2]) + 946684800.0, [1, 2, 3])
+
+    with pytest.raises(ValueError):
+        _ = series[datetime.datetime(1990, 1, 1)]
+
+
+def test_plot_handles_sunbeam_metadata():
+    import matplotlib
+    matplotlib.use("Agg")
+
+    series = TimeSeries.from_samples([0.0, 1.0], [1.0, 2.0], 1.0, "W", meta={"event": "e", "signal": "s"})
+    series.plot(show=False)
+
+
+def test_from_samples_rejects_naive_datetimes_and_bad_periods():
+    with pytest.raises(ValueError, match="timezone"):
+        TimeSeries.from_samples([datetime.datetime(2024, 1, 1)], [1.0], period=1.0)
+
+    with pytest.raises(ValueError, match="positive"):
+        TimeSeries.from_samples([0.0, 1.0], [1.0, 2.0], period=0.0)
+
+
+def test_from_csv_keeps_signs_and_returns_a_time_series(tmp_path):
+    path = tmp_path / "export.csv"
+    path.write_text(
+        "_time,_field,_value,_measurement\n"
+        "2024-07-16T14:00:01Z,Current,-2.5 A,BMS\n"
+        "2024-07-16T14:00:00Z,Current,-1.5 A,BMS\n"
+        "2024-07-16T14:00:00Z,Voltage,100,BMS\n"
+    )
+
+    series = TimeSeries.from_csv(path, period=0.5, field="Current", units="A")
+
+    assert isinstance(series, TimeSeries)
+    assert list(series) == pytest.approx([-1.5, -2.0, -2.5])
+    assert series.start == datetime.datetime(2024, 7, 16, 14, 0, tzinfo=datetime.timezone.utc)
+    assert series.meta == {"field": "Current", "measurement": "BMS"}
+
+    with pytest.raises(ValueError, match="choose one"):
+        TimeSeries.from_csv(path, period=0.5)
