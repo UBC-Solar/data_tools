@@ -1,10 +1,12 @@
 import base64
+from bisect import bisect_left
 from datetime import datetime, timezone
 from urllib.parse import quote
 from dotenv import load_dotenv
 import numpy as np
 import os
 import requests
+import warnings
 from data_tools.collections import TimeSeries
 import dill
 import json
@@ -19,7 +21,15 @@ class SunbeamCache:
         Create a client to connect to the Sunbeam Cache API.
 
         Uses ``api_url`` if set, or by default "api.sunbeam.ubcsolar.com/cache".
+
+        .. deprecated::
+            Sunbeam V2 has no cache API, so this only works against a Sunbeam V1 server.
         """
+        warnings.warn(
+            "SunbeamCache targets the Sunbeam V1 cache API, which Sunbeam V2 doesn't have.",
+            DeprecationWarning,
+            stacklevel=2
+        )
         self._base_url = api_url or "api.sunbeam.ubcsolar.com/cache"
 
     def _build_url(self, *components):
@@ -188,22 +198,34 @@ class SunbeamClient:
         params: dict = {}
         while True:
             page = self._get(path, params=params, timeout=timeout)
+            if pages and page["timestamps"] and page["timestamps"][0] >= pages[-1]["timestamps"][0]:
+                # Asking again would return this same page forever
+                raise RuntimeError(
+                    f"Paging {signal!r} in {event!r} stalled at {params['end']}: a page of samples shares one "
+                    f"millisecond!"
+                )
             pages.append(page)
             if not page["truncated"] or not page["timestamps"]:
                 break
             earliest = datetime.fromtimestamp(page["timestamps"][0] / 1000, tz=timezone.utc)
             params = {"end": earliest.isoformat()}
 
-        timestamps: list[int] = []
-        values: list = []
-        # Newest page first, each older one prepended
+        # Newest page first. A sample that rounded up to a newer page's first millisecond comes back in both
+        # pages, so each older page only contributes the samples before everything already kept.
+        timestamp_chunks: list[list[int]] = []
+        value_chunks: list[list] = []
+        earliest_kept = None
         for page in pages:
-            # A sample that rounded up to the newer page's first millisecond comes back in both pages
-            keep = len(page["timestamps"])
-            while timestamps and keep and page["timestamps"][keep - 1] >= timestamps[0]:
-                keep -= 1
-            timestamps = page["timestamps"][:keep] + timestamps
-            values = page["values"][:keep] + values
+            page_timestamps = page["timestamps"]
+            keep = len(page_timestamps) if earliest_kept is None else bisect_left(page_timestamps, earliest_kept)
+            timestamp_chunks.append(page_timestamps[:keep])
+            value_chunks.append(page["values"][:keep])
+            if keep:
+                earliest_kept = page_timestamps[0]
+
+        # Oldest first, joined once
+        timestamps: list[int] = [t for chunk in reversed(timestamp_chunks) for t in chunk]
+        values: list = [v for chunk in reversed(value_chunks) for v in chunk]
 
         if not any(value is not None for value in values):
             raise ValueError(f"Sunbeam has no data for {signal!r} in {event!r}!")
@@ -212,10 +234,14 @@ class SunbeamClient:
         frequency = latest["frequency"]
         seconds = np.array(timestamps, dtype=float) / 1000
 
+        # Samples that share a millisecond don't say anything about the spacing
+        spacings = np.diff(seconds)
+        spacings = spacings[spacings > 0]
+
         if frequency:
             period = 1 / frequency
-        elif len(seconds) > 1:
-            period = float(np.median(np.diff(seconds)))
+        elif len(spacings) > 0:
+            period = float(np.median(spacings))
         else:
             period = 1.0
 

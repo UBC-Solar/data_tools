@@ -300,8 +300,8 @@ class InfluxDBClient:
         query_df = self.query_series(start, stop, field_str, bucket, car, measurement)
         time_series = TimeSeries.from_query_dataframe(query_df, granularity, field_str, units)
 
+        # The stop follows the start
         time_series._start = time_series._start + timezone_fix
-        time_series._stop = time_series._stop + timezone_fix
 
         return time_series
 

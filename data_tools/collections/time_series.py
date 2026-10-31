@@ -3,8 +3,8 @@ import datetime
 import matplotlib.pyplot as plt
 import math
 import pandas as pd
-import re
 import copy
+import warnings
 from pint.registry import Unit
 
 
@@ -18,6 +18,11 @@ class TimeSeries(np.ndarray):
     Data is homogenous and evenly-spaced, such that temporal period between subsequent elements is constant.
     """
     UnitRegistry = unit_registry
+
+    # How far a given ``length`` or ``stop`` may disagree with the one derived from ``period``, in seconds, as
+    # the larger of an absolute amount (datetimes only carry microseconds) and a fraction of the period
+    _ABS_TOLERANCE = 1e-5
+    _REL_TOLERANCE = 1e-3
 
     # __new__ and __array_finalize__ are mandatory to ensure that
     # `TimeSeries` properly acts like a ndarray when necessary.
@@ -40,6 +45,7 @@ class TimeSeries(np.ndarray):
     def __array_finalize__(self, obj):
         if obj is None:
             return
+
         self._start = getattr(obj, '_start', None)
         self._stop = getattr(obj, '_stop', None)
         self._units = getattr(obj, '_units', None)
@@ -47,14 +53,28 @@ class TimeSeries(np.ndarray):
         self._period = getattr(obj, '_period', None)
         self._meta = getattr(obj, '_meta', None)
 
-    def __init__(self, input_array, 
-                 start_time: datetime.datetime, 
-                 stop_time: datetime.datetime,
-                 period: float,
-                 length: float,
+    def __init__(self, input_array,
+                 start_time: datetime.datetime = None,
+                 stop_time: datetime.datetime = None,
+                 period: float = None,
+                 length: float = None,
                  units: Unit | str = None,
                  meta: dict = None):
-
+        """
+        :param input_array: The evenly-spaced data.
+        :param datetime.datetime start_time: Timezone-aware time of the first element.
+        :param datetime.datetime stop_time: Optional, timezone-aware time of the last element. Derived from
+            ``start_time`` and ``period`` when they are given, so it only needs to be given in their place.
+        :param float period: Time between elements in seconds. If not given, it is derived from ``length`` (or
+            ``stop_time``) and the number of elements.
+        :param float length: Optional, time between the first and last element in seconds. Like ``stop_time``,
+            derived from ``period`` when it is given.
+        :param str | Unit units: Units of the data, dimensionless if ``None``.
+        :param dict meta: Metadata for the TimeSeries.
+        :raises ValueError: If ``start_time`` or ``stop_time`` is naive.
+        :warns UserWarning: If ``length`` or ``stop_time`` disagrees with ``period``, in which case the length and
+            stop are derived from ``period``.
+        """
         # Check if the start and stop are not naive
         if start_time is not None:
             if start_time.tzinfo is None:
@@ -64,9 +84,32 @@ class TimeSeries(np.ndarray):
             if stop_time.tzinfo is None:
                 raise ValueError("The end time does not have an assigned timezone!")
 
+        num_elements = self._num_elements()
+        stop_length = (stop_time - start_time).total_seconds() \
+            if start_time is not None and stop_time is not None else None
+
+        # Derive the period from whichever span was given
+        if period is None and num_elements > 1:
+            span = length if length is not None else stop_length
+            if span is not None:
+                period = span / (num_elements - 1)
+
+        # Anything else given should agree with the period, which wins: the x–axis is evenly spaced by it
+        if period is not None:
+            derived_length = period * max(num_elements - 1, 0)
+            tolerance = max(TimeSeries._ABS_TOLERANCE, TimeSeries._REL_TOLERANCE * abs(period))
+            for name, given in (("length", length), ("stop_time", stop_length)):
+                if given is not None and abs(given - derived_length) > tolerance:
+                    warnings.warn(
+                        f"The {name} implies a length of {given} s, but {num_elements} elements with a period of "
+                        f"{period} s span {derived_length} s! Using {derived_length} s.",
+                        stacklevel=2
+                    )
 
         self._start: datetime.datetime = start_time
+        # Only used when there is no period to derive them from
         self._stop: datetime.datetime = stop_time
+        self._length: float = length if length is not None else stop_length
 
         # Setting units
         if units is None:
@@ -83,9 +126,8 @@ class TimeSeries(np.ndarray):
 
         self._period: float = period
 
-        self._length: float = length
-
-        self._meta = meta
+    def _num_elements(self) -> int:
+        return self.shape[0] if self.ndim > 0 else 1
 
     @property
     def ureg(self):
@@ -274,7 +316,7 @@ class TimeSeries(np.ndarray):
         """
         This wave's x–axis in relative seconds, such that the first element is ``t=0``.
         """
-        relative_x_axis = np.linspace(0.0, self._length, len(self))
+        relative_x_axis = np.linspace(0.0, self.length, len(self))
 
         return relative_x_axis
 
@@ -298,8 +340,10 @@ class TimeSeries(np.ndarray):
         """
         Total time between the first and last element of this wave's data
         """
+        if self._period is None:
+            return self._length
 
-        return self._length
+        return self._period * max(self._num_elements() - 1, 0)
 
     @property
     def period(self) -> float:
@@ -347,7 +391,11 @@ class TimeSeries(np.ndarray):
         """
         UTC datetime of the last data element
         """
-        return self._stop
+        length = self.length
+        if self._start is None or self._period is None or length is None:
+            return self._stop
+
+        return self._start + datetime.timedelta(seconds=length)
 
     def __getitem__(self, item):
         data_to_slice = self
@@ -361,21 +409,22 @@ class TimeSeries(np.ndarray):
             if num_elements == 0:
                 raise IndexError("Cannot index an empty TimeSeries by datetime!")
 
+            if item.tzinfo is None:
+                raise ValueError("The index does not have an assigned timezone!")
+
             item_ts = item.timestamp()
 
             # Same values as unix_x_axis[0] and unix_x_axis[-1], without building the whole axis on every lookup
             start_timestamp: float = self.start.timestamp()
-            stop_timestamp: float = start_timestamp + self._length if num_elements > 1 else start_timestamp
+            stop_timestamp: float = start_timestamp + self.length if num_elements > 1 else start_timestamp
 
             if item_ts > stop_timestamp or item_ts < start_timestamp:
+                tz = self.start.tzinfo
                 raise IndexError(
                     f"Datetime {item} is out of bounds! "
-                    f"Range: [{datetime.datetime.fromtimestamp(start_timestamp)}, "
-                    f"{datetime.datetime.fromtimestamp(stop_timestamp)}]"
+                    f"Range: [{datetime.datetime.fromtimestamp(start_timestamp, tz)}, "
+                    f"{datetime.datetime.fromtimestamp(stop_timestamp, tz)}]"
                 )
-            
-            if item.tzinfo is None:
-                raise ValueError("The index does not have an assigned timezone!")
 
             dt = stop_timestamp - start_timestamp
 
@@ -386,7 +435,16 @@ class TimeSeries(np.ndarray):
 
             return data_to_slice.interpolate_indices(interpolation_index)
 
-        return super(TimeSeries, data_to_slice).__getitem__(item)
+        result = super(TimeSeries, data_to_slice).__getitem__(item)
+
+        # A forward slice is still evenly spaced: move its x–axis to the elements it kept
+        if isinstance(item, slice) and isinstance(result, TimeSeries) and self.ndim == 1:
+            kept = range(len(self))[item]
+            if kept.step > 0 and len(kept) > 0 and self._start is not None and self._period is not None:
+                result._start = self._start + datetime.timedelta(seconds=kept.start * self._period)
+                result._period = self._period * kept.step
+
+        return result
 
     @property
     def meta(self) -> dict:
@@ -406,12 +464,19 @@ class TimeSeries(np.ndarray):
         :param bool show: Show plots (disable if you want to stack multiple plots, for example).
         """
 
+        meta = self.meta or {}
+
+        # InfluxDB series name a measurement and field; Sunbeam series an event and signal
+        name = meta.get("field", meta.get("signal"))
+        group = meta.get("measurement", meta.get("event"))
+
         fig, ax = plt.subplots()
 
-        ax.set_title(f"{self.meta['measurement']}: {self.meta['field']}")
-        ax.set_ylabel(self.units if self.units != "" else "Arbitrary Units")
-        ax.set_xlabel("Time (s)")
-        ax.plot(self.datetime_x_axis, self, label=self.meta['field'])
+        ax.set_title(f"{group}: {name}" if group is not None else (name or ""))
+        dimensionless = self.units is None or self.units == self.ureg.dimensionless
+        ax.set_ylabel("Arbitrary Units" if dimensionless else str(self.units))
+        ax.set_xlabel("Time")
+        ax.plot(self.datetime_x_axis, np.asarray(self), label=name)
 
         if show:
             plt.show()
@@ -450,15 +515,21 @@ class TimeSeries(np.ndarray):
         :param array: plain ndarray to be promoted
         :return: new, promoted TimeSeries with the same properties as this TimeSeries
         """
-        meta: dict = self.meta
+        # A copy, so that changing one TimeSeries' metadata doesn't change the other's
+        meta: dict = copy.copy(self.meta)
 
-        return TimeSeries(array, 
-                          self.start, 
-                          self.stop,  
-                          self.period, 
-                          self.length, 
-                          self.units,
-                          meta)
+        # With a period, the stop and length follow from it (and the length of ``array``)
+        unspaced = self.period is None
+
+        return TimeSeries(
+            array,
+            self.start,
+            stop_time=self.stop if unspaced else None,
+            period=self.period,
+            length=self.length if unspaced else None,
+            units=self.units,
+            meta=meta
+        )
     
     def interpolate_indices(self, i: float) -> float:
         """ Function which interpolates between the two nearest indices
@@ -517,26 +588,17 @@ class TimeSeries(np.ndarray):
             relative_stop = dt
 
         # Finding indexes to slice with
-        start_index = math.ceil((relative_start/self.period).total_seconds()) 
-        stop_index = math.floor((relative_stop/self.period).total_seconds())
+        start_index = math.ceil((relative_start / self.period).total_seconds())
+        stop_index = min(math.floor((relative_stop / self.period).total_seconds()), len(self) - 1)
 
-        # Find new start and end time
-        new_start_time = datetime.timedelta(seconds = start_index * self.period) + self.start
-        new_stop_time = datetime.timedelta(seconds = stop_index * self.period) + self.start
-        y_data = []
-        for i in range(start_index, stop_index + 1):
-            y_data.append(self[i])
-        
-        if self.start.tzinfo is not None:
-            new_start_time = new_start_time.replace(tzinfo = self.start.tzinfo)
-            new_stop_time = new_stop_time.replace(tzinfo = self.stop.tzinfo)
+        new_series = TimeSeries(
+            np.array(self)[start_index:stop_index + 1],
+            self.start + datetime.timedelta(seconds = start_index * self.period),
+            period = self.period,
+            units = self.units,
+            meta = copy.copy(self.meta)
+        )
 
-        new_series = TimeSeries(y_data, 
-                                new_start_time,
-                                new_stop_time,
-                                self._period,
-                                length = (new_stop_time - new_start_time).total_seconds(),
-                                units = self.units)
         return new_series
     
     def shift(self, shift: float | datetime.timedelta):
@@ -548,14 +610,11 @@ class TimeSeries(np.ndarray):
         if not isinstance(shift, datetime.timedelta):
             shift = datetime.timedelta(seconds=shift)
 
-        timeseries_copy = TimeSeries(self[...],
-                          self.start + shift,
-                          self.stop + shift,
-                          self.period,
-                          self.length,
-                          self.units,
-                          self.meta
-        ) #Create a copy of TimeSeries with shifted start and stop times
+        # A copy of the data, so that changing the shifted series doesn't change this one
+        timeseries_copy = self.promote(np.array(self))
+        timeseries_copy._start = self.start + shift
+        if timeseries_copy._stop is not None:
+            timeseries_copy._stop = timeseries_copy._stop + shift
 
         return timeseries_copy
 
@@ -608,35 +667,40 @@ class TimeSeries(np.ndarray):
 
     @staticmethod
     def align(*args) -> list:
+        """
+        Re-interpolate TimeSeries onto a shared x–axis: the time range they all cover, with the finest of their
+        periods (rounded down to divide the range evenly).
+
+        :raises ValueError: If the TimeSeries don't all overlap in time.
+        :return: The aligned TimeSeries, in the order given.
+        """
         start_time = max(arg.start.timestamp() for arg in args)
         end_time = min(arg.stop.timestamp() for arg in args)
         period = min(arg.period for arg in args)
 
         new_length = end_time - start_time
-        num_points = math.ceil(new_length / period) + 1
+        if new_length < 0:
+            raise ValueError("Cannot align TimeSeries that don't overlap in time!")
+
+        # As in generate_timeseries, spans within a thousandth of a period of a whole number of periods are that number
+        num_points = math.ceil(new_length / period - 1e-3) + 1
         new_x_axis = np.linspace(start_time, end_time, num_points)
+        new_period = new_length / (num_points - 1) if num_points > 1 else period
 
         new_args = []
         for array in args:
-            start_index = array.index_of(array.relative_time(start_time))
-            stop_index = array.index_of(array.relative_time(end_time))
+            # Interpolate from each series' own x–axis, so its samples keep their true times
+            interpolated_values = np.interp(new_x_axis, array.unix_x_axis, np.asarray(array))
 
-            new_array = array[start_index:stop_index + 1]
-            if array.start.tzinfo is not None:
-                tz = array.start.tzinfo
-                new_array._start = datetime.datetime.fromtimestamp(start_time, tz)
-                new_array._stop = datetime.datetime.fromtimestamp(end_time, tz)
-            else:
-                new_array._start = datetime.datetime.fromtimestamp(start_time)
-                new_array._stop = datetime.datetime.fromtimestamp(end_time)
-
-            new_array._period = period
-            new_array._length = new_length
-
-            interpolated_values = np.interp(new_x_axis, new_array.unix_x_axis, new_array)
-            new_array_interpolated = new_array.promote(interpolated_values)
-
-            new_args.append(new_array_interpolated)
+            new_args.append(
+                TimeSeries(
+                    interpolated_values,
+                    datetime.datetime.fromtimestamp(start_time, array.start.tzinfo),
+                    period=new_period,
+                    units=array.units,
+                    meta=copy.copy(array.meta)
+                )
+            )
 
         return new_args
 
@@ -661,8 +725,8 @@ class TimeSeries(np.ndarray):
         period = min(ts.period for ts in args)  # highest resolution
 
         new_length = end_time - start_time
-        num_points = math.ceil(new_length / period) + 1
-        
+        num_points = math.ceil(new_length / period - 1e-3) + 1
+
         merged_values = np.full(num_points, fill_value, dtype=float)
 
         # Use metadata from the first series
@@ -695,16 +759,12 @@ class TimeSeries(np.ndarray):
             merged_values[indices] = ts_values
 
         # Create final series
-        tz = base.start.tzinfo
-        new_start_dt = datetime.datetime.fromtimestamp(start_time, tz)
-        new_stop_dt = datetime.datetime.fromtimestamp(end_time, tz)
-
+        # Values were placed every ``period`` from the start, which fixes the stop (it may pass end_time by less
+        # than a period)
         merged_series = TimeSeries(
             merged_values,
-            start_time=new_start_dt,
-            stop_time=new_stop_dt,
+            start_time=datetime.datetime.fromtimestamp(start_time, base.start.tzinfo),
             period=period,
-            length=new_length,
             units=units,
             meta=meta
         )
@@ -713,41 +773,31 @@ class TimeSeries(np.ndarray):
     
     @staticmethod
     def from_query_dataframe(query_df: pd.DataFrame, period: float, field: str, units: Unit | str):
-        # Transform the DataFrame into a nicer format where we have our time-series data indexed by time
-        query_df['_time'] = pd.to_datetime(query_df['_time'])
-        query_df.set_index('_time', inplace=True)
+        """
+        Create a TimeSeries from the DataFrame of an InfluxDB query for one field, re-interpolated onto an even grid
+        of ``period`` seconds. ``query_df`` is not modified.
 
-        # Get the x-axis in relative seconds (first element is t=0)
-        x_axis = query_df.index.map(lambda x: x.timestamp()).to_numpy()
-        x_axis -= x_axis[0]  # Subtract off first time, so the x_axis starts at 0 with units of seconds
+        :param pd.DataFrame query_df: Query result, with ``_time``, ``car``, ``_measurement`` and ``field`` columns.
+        :param float period: Time between elements of the result, in seconds.
+        :param str field: The column holding the data.
+        :param str | Unit units: Units of the data.
+        :return: Homogenized TimeSeries, in the timezone of ``_time`` (UTC if it has none).
+        """
+        times = pd.DatetimeIndex(pd.to_datetime(query_df['_time']))
+        x_axis = np.array([t.timestamp() for t in times], dtype=float)
 
-        # Reshape the x-axis to have the right number of elements for our needed period
-        temporal_length: float = x_axis[-1]  # Total time of the query in seconds
-        desired_num_elements: int = math.ceil(temporal_length / period)
-        desired_x_axis = np.linspace(0, temporal_length, desired_num_elements+1, endpoint=True)
-
-        # Re-interpolate our data on desired x-axis
-        wave = query_df[[field]].to_numpy().reshape(-1)
-        wave_interpolated = np.interp(desired_x_axis, x_axis, wave)
-
-        actual_granularity = np.mean(np.diff(desired_x_axis))
-
-        # Compile metadata
         meta: dict = {
             "car": query_df["car"].to_numpy()[0],
             "measurement": query_df["_measurement"].to_numpy()[0],
             "field": field
         }
 
-        new_wave = TimeSeries(wave_interpolated, 
-                              start_time = query_df.index.to_numpy()[0].to_pydatetime(),
-                              stop_time = query_df.index.to_numpy()[-1].to_pydatetime(),
-                              period = actual_granularity,
-                              length = temporal_length,
-                              units = units,
-                              meta = meta)
-
-        return new_wave
+        return TimeSeries.generate_timeseries(x_axis,
+                                              query_df[field].to_numpy(),
+                                              period,
+                                              units,
+                                              timezone=times.tz or datetime.timezone.utc,
+                                              meta=meta)
 
     @staticmethod
     def from_samples(timestamps,
@@ -764,15 +814,23 @@ class TimeSeries(np.ndarray):
         :param float period: Time between elements of the result, in seconds.
         :param str | Unit units: Units of the data, dimensionless if ``None``.
         :param dict meta: Metadata for the TimeSeries.
-        :raises ValueError: If there are no (non-missing) samples, or ``timestamps`` and ``values`` differ in length.
+        :raises ValueError: If there are no (non-missing) samples, ``timestamps`` and ``values`` differ in length,
+            a datetime is naive, or ``period`` isn't positive.
         :return: Homogenized TimeSeries, with timezone-aware UTC start and stop times.
         """
         if len(timestamps) != len(values):
             raise ValueError(f"Got {len(timestamps)} timestamps but {len(values)} values!")
 
-        times = np.array([
-            t.timestamp() if isinstance(t, datetime.datetime) else float(t) for t in timestamps
-        ], dtype=float)
+        def to_unix(t) -> float:
+            if isinstance(t, datetime.datetime):
+                if t.tzinfo is None:
+                    raise ValueError(f"Timestamp {t} does not have an assigned timezone!")
+                return t.timestamp()
+            if isinstance(t, np.datetime64):  # Timezone-naive by design, and UTC by convention
+                return float((t - np.datetime64(0, "s")) / np.timedelta64(1, "s"))
+            return float(t)
+
+        times = np.array([to_unix(t) for t in timestamps], dtype=float)
         data = np.array([np.nan if v is None else v for v in values], dtype=float)
 
         present = ~np.isnan(data)
@@ -798,9 +856,13 @@ class TimeSeries(np.ndarray):
         :param datetime.timezone timezone: Timezone
         :param dict meta: Metadata for the TimeSeries
 
+        :raises ValueError: If ``period`` isn't positive.
         :return: Homogenized TimeSeries
 
         """
+        if not period > 0:
+            raise ValueError(f"Period must be positive, not {period}!")
+
         if meta is None:
             meta = {}
 
@@ -824,23 +886,53 @@ class TimeSeries(np.ndarray):
 
         start_time = datetime.datetime.fromtimestamp(x_axis[0], tz=timezone)
 
-        new_wave = TimeSeries(wave_interpolated, 
+        new_wave = TimeSeries(wave_interpolated,
                               start_time = start_time,
-                              stop_time = start_time + datetime.timedelta(seconds=temporal_length),
                               period = actual_granularity,
-                              length = temporal_length,
                               units = units,
                               meta = meta)
 
         return new_wave
 
     @staticmethod
-    def from_csv(path, period, field):
+    def from_csv(path, period: float, field: str = None, units: Unit | str = None) -> "TimeSeries":
+        """
+        Create a TimeSeries from a CSV exported from InfluxDB, with ``_time``, ``_field`` and ``_value`` columns,
+        re-interpolated onto an even grid of ``period`` seconds.
+
+        :param path: Path to the CSV.
+        :param float period: Time between elements of the result, in seconds.
+        :param str field: The field to read. Optional if the CSV only has one.
+        :param str | Unit units: Units of the data, dimensionless if ``None``.
+        :raises ValueError: If ``field`` isn't given and the CSV has several fields, or it has no rows for the field.
+        :return: Homogenized TimeSeries.
+        """
         df = pd.read_csv(path)
 
-        fields = df['_field'].unique()
-        assert len(fields) == 1, "more than one field type in table"
-        tuple_arr = np.stack((pd.to_datetime(df['_time']), df['_value']), axis=1)
-        result = np.fromiter(map(lambda x: re.sub("[^0-9|.]", "", x), tuple_arr[:, 1]), dtype=float)
+        if field is None:
+            fields = df['_field'].unique()
+            if len(fields) != 1:
+                raise ValueError(f"The CSV has fields {list(fields)}: choose one with `field`!")
+            field = fields[0]
 
-        return result
+        df = df[df['_field'] == field]
+        if df.empty:
+            raise ValueError(f"The CSV has no rows for field {field!r}!")
+
+        times = pd.DatetimeIndex(pd.to_datetime(df['_time']))
+        order = np.argsort(times.asi8, kind="stable")
+        x_axis = np.array([t.timestamp() for t in times], dtype=float)[order]
+
+        # Strip anything around the number (e.g. units), keeping its sign and exponent
+        values = pd.to_numeric(
+            df['_value'].astype(str).str.replace(r"[^0-9eE.+\-]", "", regex=True)
+        ).to_numpy(dtype=float)[order]
+
+        meta = {"field": field}
+        if "_measurement" in df.columns:
+            meta["measurement"] = df["_measurement"].iloc[0]
+        if "car" in df.columns:
+            meta["car"] = df["car"].iloc[0]
+
+        return TimeSeries.generate_timeseries(x_axis, values, period, units,
+                                              timezone=times.tz or datetime.timezone.utc, meta=meta)

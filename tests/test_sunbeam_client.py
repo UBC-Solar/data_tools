@@ -142,3 +142,23 @@ def test_no_data_raises_value_error(monkeypatch):
 
     with pytest.raises(ValueError, match="no data"):
         SunbeamClient("http://sunbeam:8000").get_time_series("FSGP_2024_Day_1", "MotorPower")
+
+
+def test_paging_that_makes_no_progress_raises(monkeypatch):
+    # Every sample in one millisecond: asking for the samples before it returns the same page again
+    fake = FakeServer(count=25, limit=10, inclusive_end=True)
+    fake.timestamps = [START_MS] * 25
+    monkeypatch.setattr(requests, "get", fake.get)
+
+    with pytest.raises(RuntimeError, match="stalled"):
+        SunbeamClient("sunbeam.test").get_time_series("FSGP_2024_Day_1", "MotorPower")
+
+
+def test_unknown_frequency_ignores_samples_sharing_a_millisecond(monkeypatch):
+    fake = FakeServer(count=5, frequency=None)
+    fake.timestamps = [START_MS, START_MS, START_MS, START_MS + 200, START_MS + 400]
+    monkeypatch.setattr(requests, "get", fake.get)
+
+    series = SunbeamClient("sunbeam.test").get_time_series("FSGP_2024_Day_1", "MotorPower")
+
+    assert series.period == pytest.approx(0.2)
