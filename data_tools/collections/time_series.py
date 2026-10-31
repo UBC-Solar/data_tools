@@ -27,13 +27,16 @@ class TimeSeries(np.ndarray):
 
     # __new__ and __array_finalize__ are mandatory to ensure that
     # `TimeSeries` properly acts like a ndarray when necessary.
-    def __new__(cls, input_array, 
-                start_time: datetime.datetime = None, 
-                stop_time: datetime.datetime = None,
-                period: float = None,
-                length: float = None,
-                units = None,
-                meta: dict = None):
+    def __new__(
+            cls,
+            input_array,
+            start_time: datetime.datetime = None,
+            stop_time: datetime.datetime = None,
+            period: float = None,
+            length: float = None,
+            units = None,
+            meta: dict = None
+    ):
         obj = np.asarray(input_array).view(cls)
         obj._start = start_time
         obj._stop = stop_time
@@ -41,6 +44,7 @@ class TimeSeries(np.ndarray):
         obj._period = period
         obj._length = length
         obj._meta = meta
+
         return obj
 
     def __array_finalize__(self, obj):
@@ -102,8 +106,8 @@ class TimeSeries(np.ndarray):
             for name, given in (("length", length), ("stop_time", stop_length)):
                 if given is not None and abs(given - derived_length) > tolerance:
                     warnings.warn(
-                        f"The {name} implies a length of {given} s, but {num_elements} elements with a period of "
-                        f"{period} s span {derived_length} s! Using {derived_length} s.",
+                        f"The {name} implies a length of {given} s, but {num_elements} elements with a period "
+                        f"of {period} s span {derived_length} s! Using {derived_length} s.",
                         stacklevel=2
                     )
 
@@ -515,14 +519,15 @@ class TimeSeries(np.ndarray):
         return timeseries_copy
 
     def convert_to(self, new_unit: Unit | str):
-        """ Returns a new TimeSeries after being converted to a new unit, appropriately scales TimeSeries
+        """
+        Returns a new TimeSeries after being converted to a new unit, appropriately scales TimeSeries
 
-            :param str new_unit: The unit the entire series will be translated to
+        :param str new_unit: The unit the entire series will be translated to
 
-            :raises ValueError: Cannot convert TimeSeries without units
-            :raises ValueError: Unable to convert between units of different dimensionality
+        :raises ValueError: Cannot convert TimeSeries without units
+        :raises ValueError: Unable to convert between units of different dimensionality
 
-            :return: TimeSeries with converted units
+        :return: TimeSeries with converted units
         """
 
         new_unit_parsed = self.ureg.parse_units(new_unit)
@@ -602,13 +607,12 @@ class TimeSeries(np.ndarray):
 
     @staticmethod
     def merge(*args, fill_value: float = 0):
-        """The merge function combines several TimeSeries into one contiguous series. Any spaces in time is filled by the 'fill_value'. 
+        """
+        The merge function combines several TimeSeries into one contiguous series. Any spaces in time is filled by the 'fill_value'.
         It assumes that the datapoints pull from the same source, as overlapping point are overridden.
 
         :param float fill_value: The value for filling between gaps of time. Defaults to 0.
-
         :raises ValueError: If no TimeSeries are input
-
         :return TimeSeries: The merged series
         """        
         
@@ -754,7 +758,6 @@ class TimeSeries(np.ndarray):
 
         :raises ValueError: If ``period`` isn't positive.
         :return: Homogenized TimeSeries
-
         """
         if not period > 0:
             raise ValueError(f"Period must be positive, not {period}!")
@@ -830,5 +833,6 @@ class TimeSeries(np.ndarray):
         if "car" in df.columns:
             meta["car"] = df["car"].iloc[0]
 
-        return TimeSeries.generate_timeseries(x_axis, values, period, units,
-                                              timezone=times.tz or datetime.timezone.utc, meta=meta)
+        return TimeSeries.generate_timeseries(
+            x_axis, values, period, units, timezone=times.tz or datetime.timezone.utc, meta=meta
+        )
