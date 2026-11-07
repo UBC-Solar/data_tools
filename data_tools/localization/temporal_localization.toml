@@ -15,6 +15,9 @@ shift = 7
 # that the motor temperature spiked at 4:00PM on InfluxDB which again indicates a shift of +6.
 shift = 6
 
+# Berkeley (CalSol) ASC 2026 data (car="Berkeley", 2026-07-25 – 2026-08-01) was logged in real UTC and written
+# shifted by -7 h to match this section's shift of 7. It relies on this section. Our car logged nothing
+# 2026-07-15 – 2026-08-10, so the dates never overlap.
 [2025-07-23]  # 2025-07-23 –
 # Back in Vancouver, same issue as 2025-04-01 – 2025-06-23.
 shift = 7
