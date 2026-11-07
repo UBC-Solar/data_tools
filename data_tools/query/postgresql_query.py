@@ -111,32 +111,17 @@ class PostgresClient:
         timestamps = np.fromiter([datum.timestamp for datum in queried_data], dtype=float)
         values = np.fromiter([datum.value for datum in queried_data], dtype=float)
 
-        # The start and end times of the returned data may not be the same as what was requested,
-        # and we need the actual values to store the metadata properly
-        actual_start_time = datetime.fromtimestamp(timestamps[0], tz=timezone.utc)
-        actual_end_time = datetime.fromtimestamp(timestamps[-1], tz=timezone.utc)
-
-        # Subtract off the first timestamp so every timestamp is delta-time from the first.
-        timestamps -= timestamps[0]
-
-        # Reform the x-axis as a homogenous array
-        x_axis = np.arange(timestamps[0], timestamps[-1], granularity)
-
-        # Interpolate the data array onto this new x-axis
-        wave = np.interp(x_axis, timestamps, values)
-
-        time_series_dict = {
-            "start": actual_start_time,
-            "stop": actual_end_time,
-            "car": "N/A",
-            "measurement": "N/A",
-            "field": field,
-            "granularity": granularity,
-            "length": len(x_axis),
-            "units": get_data_units(get_sensor_id(field)),
-        }
-
-        return TimeSeries(wave, time_series_dict)
+        return TimeSeries.from_samples(
+            timestamps,
+            values,
+            period=granularity,
+            units=get_data_units(get_sensor_id(field)),
+            meta={
+                "car": "N/A",
+                "measurement": "N/A",
+                "field": field,
+            },
+        )
 
     def init_schema(self):
         """

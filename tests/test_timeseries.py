@@ -6,11 +6,9 @@ import datetime
 
 # Helper Function for testing
 def quick_gen_timeseries(x_data, y_data, units = "m"):
-    time_series = TimeSeries(y_data, 
+    time_series = TimeSeries(y_data,
                              datetime.datetime.fromtimestamp(x_data[0], tz = datetime.timezone.utc),
-                             datetime.datetime.fromtimestamp(x_data[-1], tz = datetime.timezone.utc),
-                             period = 1.0,
-                             length = x_data[-1] - x_data[0],
+                             period=1.0,
                              units=units)
     
     return time_series
@@ -40,17 +38,13 @@ def test_align_with_different_granularity():
     y_data_2 = [1, 2, 1, 2, 7, 8, 3, 2,  4, 4, 4, 1, 4, 3, 1, 2, 1, 2, 7, 8, 3, 2, 4, 4, 4, 1, 1]
     x_data_2 = np.array([2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5, 10, 10.5, 11, 11.5, 12, 12.5, 13, 13.5, 14, 14.5, 15]) + 946684800.0
 
-    time_series_1 = TimeSeries(y_data_1, 
+    time_series_1 = TimeSeries(y_data_1,
                                datetime.datetime.fromtimestamp(x_data_1[0], tz = datetime.timezone.utc),
-                               datetime.datetime.fromtimestamp(x_data_1[-1], tz = datetime.timezone.utc),
-                               period = 1.0,
-                               length = x_data_1[-1] - x_data_1[0],)
+                               period=1.0)
 
-    time_series_2 = TimeSeries(y_data_2, 
+    time_series_2 = TimeSeries(y_data_2,
                                datetime.datetime.fromtimestamp(x_data_2[0], tz = datetime.timezone.utc),
-                               datetime.datetime.fromtimestamp(x_data_2[-1], tz = datetime.timezone.utc),
-                               period = 0.5,
-                               length = x_data_2[-1] - x_data_2[0],)
+                               period=0.5)
 
     time_series_1_aligned, time_series_2_aligned = TimeSeries.align(time_series_1, time_series_2)
 
@@ -61,11 +55,9 @@ def test_interpolate_index():
     y_data_1 = [1, 2, 3, 3, 3, 2, 4,  4,  4,  1]
     x_data_1 = np.array([4, 5, 6, 7, 8, 9, 10, 11, 12, 13]) + 946684800.0  # January 1st, 2000 in UNIX time
 
-    time_series_1 = TimeSeries(y_data_1, 
+    time_series_1 = TimeSeries(y_data_1,
                                datetime.datetime.fromtimestamp(x_data_1[0], tz = datetime.timezone.utc),
-                               datetime.datetime.fromtimestamp(x_data_1[-1], tz = datetime.timezone.utc),
-                               period = 1.0,
-                               length = x_data_1[-1] - x_data_1[0],)
+                               period=1.0)
     
     assert math.isclose(time_series_1.interpolate_indices(1.3), y_data_1[1] * 0.7 + y_data_1[2] * 0.3)
     assert time_series_1.interpolate_indices(2.4) == 3
@@ -76,11 +68,9 @@ def test_datetime_index():
     y_data_1 = [1, 2, 3, 3, 3, 2, 4,  5,  4,  1]
     x_data_1 = np.array([4, 5, 6, 7, 8, 9, 10, 11, 12, 13]) + 946684800.0  # January 1st, 2000 in UNIX time
 
-    time_series_1 = TimeSeries(y_data_1, 
+    time_series_1 = TimeSeries(y_data_1,
                                datetime.datetime.fromtimestamp(x_data_1[0], tz = datetime.timezone.utc),
-                               datetime.datetime.fromtimestamp(x_data_1[-1], tz = datetime.timezone.utc),
-                               period = 1.0,
-                               length = x_data_1[-1] - x_data_1[0],)
+                               period=1.0)
 
     time1 = datetime.datetime.fromtimestamp(946684800.0 + 4, tz = datetime.timezone.utc)
     time2 = datetime.datetime.fromtimestamp(946684800.0 + 11, tz = datetime.timezone.utc)
@@ -189,18 +179,14 @@ def test_multiplication_auto_align_different_granularity():
     y2 = [10, 20, 30, 40, 50, 60, 70]
     x2 = np.array([0, 0.5, 1, 1.5, 2, 2.5, 3]) + 946684800.0
 
-    ts1 = TimeSeries(y1, 
+    ts1 = TimeSeries(y1,
                      datetime.datetime.fromtimestamp(x1[0], tz = datetime.timezone.utc),
-                     datetime.datetime.fromtimestamp(x1[-1], tz = datetime.timezone.utc),
-                     period = 1.0,
-                     length = x1[-1] - x1[0],
+                     period=1.0,
                      units="m")
 
-    ts2 = TimeSeries(y2, 
-                     datetime.datetime.fromtimestamp(x2[0], tz = datetime.timezone.utc), 
-                     datetime.datetime.fromtimestamp(x2[-1], tz = datetime.timezone.utc), 
-                     period = 0.5, 
-                     length = x2[-1] - x2[0],
+    ts2 = TimeSeries(y2,
+                     datetime.datetime.fromtimestamp(x2[0], tz = datetime.timezone.utc),
+                     period=0.5,
                      units="m")
 
     result = ts1 * ts2
@@ -327,19 +313,13 @@ def test_addition_different_units():
     y2 = [4, 5, 6]
     x2 = np.array([0, 1, 2]) + 946684800.0
 
-    ts1 = TimeSeries(y1, 
+    ts1 = TimeSeries(y1,
                      datetime.datetime.fromtimestamp(x1[0], tz = datetime.timezone.utc),
-                     datetime.datetime.fromtimestamp(x1[-1], tz = datetime.timezone.utc),
-                     period = 1.0,
-                     length = x1[-1] - x1[0]
-                     )
+                     period=1.0)
 
-    ts2 = TimeSeries(y2, 
-                     datetime.datetime.fromtimestamp(x2[0], tz = datetime.timezone.utc), 
-                     datetime.datetime.fromtimestamp(x2[-1], tz = datetime.timezone.utc), 
-                     period = 1.0, 
-                     length = x2[-1] - x2[0]
-                     )
+    ts2 = TimeSeries(y2,
+                     datetime.datetime.fromtimestamp(x2[0], tz = datetime.timezone.utc),
+                     period=1.0)
 
 
     ts1.override_units("km")
@@ -510,13 +490,10 @@ def test_time_shift_behavior():
     assert shifted_backward.stop.timestamp() == ts2.stop.timestamp() - 3
 
     # Preserve metadata test
-    ts3 = TimeSeries([1, 2, 3], 
-                      datetime.datetime.fromtimestamp(1 + 946684800.0, tz = datetime.timezone.utc),
-                      datetime.datetime.fromtimestamp(3 + 946684800.0, tz = datetime.timezone.utc),
-                      1,
-                      3,
-                      "m"
-    )
+    ts3 = TimeSeries([1, 2, 3],
+                     datetime.datetime.fromtimestamp(1 + 946684800.0, tz = datetime.timezone.utc),
+                     period=1,
+                     units="m")
 
     shifted_meta = ts3.shift(10)
 
@@ -540,6 +517,13 @@ def test_timeseries_generation():
 
     assert np.allclose(ts, [1, 2, 3, 4])
     assert ts.units == "meter"
+
+
+def test_timeseries_generation_stops_at_the_last_point():
+    ts = TimeSeries.generate_timeseries([946684801.0, 946684804.0], [1, 4], 1, "m")
+
+    assert ts.stop.timestamp() == 946684804.0
+    assert ts.length == 3.0
 
 def test_merge():
     # Basic merge with gap filling
@@ -611,3 +595,206 @@ def test_convert_to():
 
     with pytest.raises(ValueError): 
         _ = ts1.convert_to("ft")
+
+def test_from_samples_regrids_onto_the_period():
+    start = datetime.datetime(2024, 7, 16, 14, 0, tzinfo=datetime.timezone.utc)
+    timestamps = [start.timestamp() + t for t in (0.0, 1.0, 2.0)]
+
+    series = TimeSeries.from_samples(timestamps, [0.0, 10.0, 20.0], period=0.5, units="W", meta={"signal": "P"})
+
+    assert list(series) == pytest.approx([0.0, 5.0, 10.0, 15.0, 20.0])
+    assert series.period == pytest.approx(0.5)
+    assert series.start == start
+    assert series.stop == start + datetime.timedelta(seconds=2)
+    assert series.length == pytest.approx(2.0)
+    assert str(series.units) == "watt"
+    assert series.meta == {"signal": "P"}
+
+
+def test_from_samples_accepts_datetimes_and_keeps_missing_values():
+    start = datetime.datetime(2024, 7, 16, 14, 0, tzinfo=datetime.timezone.utc)
+    timestamps = [start + datetime.timedelta(seconds=t) for t in range(4)]
+
+    series = TimeSeries.from_samples(timestamps, [None, 1.0, float("nan"), 3.0], period=1.0)
+
+    assert series.start == start
+    assert list(series) == pytest.approx([np.nan, 1.0, np.nan, 3.0], nan_ok=True)
+    assert series.units.dimensionless
+    assert series.meta == {}
+
+
+def test_from_samples_single_sample():
+    series = TimeSeries.from_samples([1_720_000_000.0], [4.0], period=0.1)
+
+    assert list(series) == [4.0]
+    assert (series.length, series.period) == (0.0, 0.1)
+
+
+def test_from_samples_rejects_empty_and_mismatched_input():
+    with pytest.raises(ValueError, match="without any samples"):
+        TimeSeries.from_samples([], [], period=1.0)
+
+    with pytest.raises(ValueError, match="2 timestamps but 1 values"):
+        TimeSeries.from_samples([1.0, 2.0], [1.0], period=1.0)
+
+
+def test_constructor_derives_stop_and_length_from_the_period():
+    start = datetime.datetime(2024, 7, 16, 14, 0, tzinfo=datetime.timezone.utc)
+
+    series = TimeSeries([1, 2, 3, 4], start, 0.5)
+
+    assert series.length == pytest.approx(1.5)
+    assert series.stop == start + datetime.timedelta(seconds=1.5)
+    assert series.meta == {}
+    assert series.units.dimensionless
+
+
+def test_constructor_rejects_bad_start_times_and_periods():
+    start = datetime.datetime(2024, 7, 16, 14, 0, tzinfo=datetime.timezone.utc)
+
+    with pytest.raises(ValueError, match="timezone"):
+        TimeSeries([1, 2], datetime.datetime(2024, 7, 16), 1.0)
+
+    with pytest.raises(ValueError, match="positive"):
+        TimeSeries([1, 2], start, 0.0)
+
+    # The old (data, start, stop, period, length, ...) order puts the stop where the period goes
+    with pytest.raises(TypeError, match="period"):
+        TimeSeries([1, 2], start, start + datetime.timedelta(seconds=1), 1.0, 1.0)
+
+
+def test_align_keeps_samples_at_their_true_times():
+    # Each value is its own time, so aligned series should agree wherever they overlap
+    base = 946684800.0
+    a = quick_gen_timeseries(np.array([0, 4]) + base, np.arange(5.0))
+    b = TimeSeries(np.arange(5.0) + 0.4, datetime.datetime.fromtimestamp(base + 0.4, tz=datetime.timezone.utc),
+                   period=1.0)
+
+    a_aligned, b_aligned = TimeSeries.align(a, b)
+
+    assert np.allclose(np.asarray(a_aligned), np.asarray(b_aligned))
+    assert a_aligned[0] == pytest.approx(0.4)
+    assert a_aligned.stop == b_aligned.stop == a.stop
+
+
+def test_align_rejects_series_that_dont_overlap():
+    base = 946684800.0
+    a = quick_gen_timeseries(np.array([0, 2]) + base, [1, 2, 3])
+    b = quick_gen_timeseries(np.array([5, 7]) + base, [1, 2, 3])
+
+    with pytest.raises(ValueError, match="overlap"):
+        TimeSeries.align(a, b)
+
+
+def test_slicing_moves_the_x_axis():
+    base = 946684800.0
+    series = quick_gen_timeseries(np.array([0, 9]) + base, np.arange(10.0))
+
+    view = series[2:8:2]
+
+    assert list(view) == [2.0, 4.0, 6.0]
+    assert view.start.timestamp() == base + 2
+    assert view.period == 2.0
+    assert view.stop.timestamp() == base + 6
+
+
+def test_shift_and_promote_copy_data_and_metadata():
+    base = 946684800.0
+    series = quick_gen_timeseries(np.array([0, 2]) + base, [1.0, 2.0, 3.0])
+    series.meta = {"field": "x"}
+
+    shifted = series.shift(1)
+    shifted[0] = 99.0
+    shifted.meta["field"] = "y"
+
+    assert series[0] == 1.0
+    assert series.meta == {"field": "x"}
+
+
+def test_slice_keeps_metadata():
+    base = 946684800.0
+    series = quick_gen_timeseries(np.array([0, 4]) + base, np.arange(5.0))
+    series.meta = {"field": "x"}
+
+    sliced = series.slice(series.start, series.stop)
+
+    assert sliced.meta == {"field": "x"}
+
+
+def test_naive_datetime_index_is_a_value_error_even_out_of_bounds():
+    series = quick_gen_timeseries(np.array([0, 2]) + 946684800.0, [1, 2, 3])
+
+    with pytest.raises(ValueError):
+        _ = series[datetime.datetime(1990, 1, 1)]
+
+
+def test_plot_handles_sunbeam_metadata():
+    import matplotlib
+    matplotlib.use("Agg")
+
+    series = TimeSeries.from_samples([0.0, 1.0], [1.0, 2.0], 1.0, "W", meta={"event": "e", "signal": "s"})
+    series.plot(show=False)
+
+
+def test_from_samples_rejects_naive_datetimes_and_bad_periods():
+    with pytest.raises(ValueError, match="timezone"):
+        TimeSeries.from_samples([datetime.datetime(2024, 1, 1)], [1.0], period=1.0)
+
+    with pytest.raises(ValueError, match="positive"):
+        TimeSeries.from_samples([0.0, 1.0], [1.0, 2.0], period=0.0)
+
+
+def test_from_csv_keeps_signs_and_returns_a_time_series(tmp_path):
+    path = tmp_path / "export.csv"
+    path.write_text(
+        "_time,_field,_value,_measurement\n"
+        "2024-07-16T14:00:01Z,Current,-2.5 A,BMS\n"
+        "2024-07-16T14:00:00Z,Current,-1.5 A,BMS\n"
+        "2024-07-16T14:00:00Z,Voltage,100,BMS\n"
+    )
+
+    series = TimeSeries.from_csv(path, period=0.5, field="Current", units="A")
+
+    assert isinstance(series, TimeSeries)
+    assert list(series) == pytest.approx([-1.5, -2.0, -2.5])
+    assert series.start == datetime.datetime(2024, 7, 16, 14, 0, tzinfo=datetime.timezone.utc)
+    assert series.meta == {"field": "Current", "measurement": "BMS"}
+
+    with pytest.raises(ValueError, match="choose one"):
+        TimeSeries.from_csv(path, period=0.5)
+
+
+def test_from_samples_interpolates_between_present_samples_around_a_gap():
+    # Only the elements interpolated from the missing sample at t=2 are missing
+    series = TimeSeries.from_samples([0.0, 1.0, 2.0, 3.0, 4.0], [0.0, 10.0, None, 30.0, 40.0], period=0.5)
+
+    assert list(series) == pytest.approx([0.0, 5.0, 10.0, np.nan, np.nan, np.nan, 30.0, 35.0, 40.0], nan_ok=True)
+
+
+def test_from_samples_snaps_onto_multiples_of_the_period():
+    base = 1_720_000_000.0
+    series = TimeSeries.from_samples([base + 0.05, base + 1.05], [0.0, 1.0], period=0.1)
+
+    assert series.period == 0.1
+    assert len(series) == 10
+    assert series.start.timestamp() == pytest.approx(base + 0.1)
+    assert series.stop.timestamp() == pytest.approx(base + 1.0)
+    assert list(series) == pytest.approx([0.05 + 0.1 * i for i in range(10)], abs=1e-6)
+
+
+def test_series_with_the_same_period_share_timestamps():
+    # Jittered by a few milliseconds, like CAN and radio delays, and starting at different times
+    base = 1_720_000_000.0
+    a = TimeSeries.from_samples([base + 0.003, base + 0.102, base + 0.204, base + 0.299], [0, 1, 2, 3], 0.1)
+    b = TimeSeries.from_samples([base + 0.137, base + 0.241, base + 0.338], [5, 6, 7], 0.1)
+
+    assert a.start.timestamp() == pytest.approx(base + 0.1)
+    assert b.start.timestamp() == pytest.approx(base + 0.2)
+    for series in (a, b):
+        periods_since_epoch = series.unix_x_axis / 0.1
+        assert np.allclose(periods_since_epoch, np.round(periods_since_epoch), rtol=0, atol=1e-4)
+
+
+def test_from_samples_rejects_data_between_two_multiples_of_the_period():
+    with pytest.raises(ValueError, match="No multiple"):
+        TimeSeries.from_samples([1_720_000_000.03, 1_720_000_000.07], [1.0, 2.0], period=0.1)
