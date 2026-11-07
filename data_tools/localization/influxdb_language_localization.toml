@@ -51,6 +51,9 @@ Acceleration_Y = ["Acceleration_Y", "TEL", "", 10]
 Acceleration_Z = ["Acceleration_Z", "TEL", "", 10]
 
 
+# Berkeley (CalSol) ASC 2026 data (car="Berkeley", CAN_log, 2026-07-25 – 2026-08-01) was translated into the names
+# below and relies on this section. Our car logged nothing 2026-07-15 – 2026-08-10, so the dates never overlap.
+# Don't add a section starting in 2026-07-25 – 2026-08-01 without accounting for it.
 [2026-01-01]   # 2026-01-20 –
 VehicleSpeed = ["MotorRotatingSpeed", "MC", "km/h", 10]
 PackVoltage = ["TotalPackVoltage", "BMS", "V", 10]
