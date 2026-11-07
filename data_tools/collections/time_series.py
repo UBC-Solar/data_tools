@@ -645,15 +645,23 @@ class TimeSeries(np.ndarray):
                      meta: dict = None) -> "TimeSeries":
         """
         Create a TimeSeries from timestamped samples, re-interpolated onto an even grid of ``period`` seconds.
-        Missing values (``None`` or NaN) are dropped first, so they are interpolated across rather than kept.
+        Missing values (``None`` or NaN) are kept as NaN: every element that would be interpolated from a missing
+        value is NaN, while the elements between present samples are interpolated as usual.
+
+        The period is exact, and elements are at whole multiples of it since the UNIX epoch: the result starts at
+        the first multiple at or after the first timestamp and stops at the last multiple at or before the last one,
+        so up to a period of data is left out at each end (e.g. samples from 0.05 s to 1.05 s at ``period=0.1`` give
+        10 elements from 0.1 s to 1.0 s). Series with the same period then share timestamps, so combining them
+        doesn't interpolate again. Timestamps within a thousandth of a period of a multiple count as on it.
 
         :param timestamps: Sample times, ascending: UTC UNIX timestamps in seconds, or timezone-aware datetimes.
         :param values: The sample at each timestamp.
         :param float period: Time between elements of the result, in seconds.
         :param str | Unit units: Units of the data, dimensionless if ``None``.
         :param dict meta: Metadata for the TimeSeries.
-        :raises ValueError: If there are no (non-missing) samples, ``timestamps`` and ``values`` differ in length,
-            a datetime is naive, or ``period`` isn't positive.
+        :raises ValueError: If there are no samples, ``timestamps`` and ``values`` differ in length, a datetime is
+            naive, ``period`` isn't positive, or no multiple of ``period`` falls between the first and last
+            timestamps.
         :return: Homogenized TimeSeries, with timezone-aware UTC start and stop times.
         """
         if len(timestamps) != len(values):
@@ -671,21 +679,25 @@ class TimeSeries(np.ndarray):
         times = np.array([to_unix(t) for t in timestamps], dtype=float)
         data = np.array([np.nan if v is None else v for v in values], dtype=float)
 
-        present = ~np.isnan(data)
-        if not present.any():
+        if len(times) == 0:
             raise ValueError("Cannot create a TimeSeries without any samples!")
 
-        return TimeSeries.generate_timeseries(times[present], data[present], period, units, meta=meta)
+        return TimeSeries.generate_timeseries(times, data, period, units, meta=meta)
 
     @staticmethod
     def generate_timeseries(x_axis: list,
-                            y_axis: list, 
-                            period: float, 
-                            units: Unit | str, 
-                            timezone: datetime.timezone = datetime.timezone.utc, 
+                            y_axis: list,
+                            period: float,
+                            units: Unit | str,
+                            timezone: datetime.timezone = datetime.timezone.utc,
                             meta: dict = None):
         """
         Creates a TimeSeries from a non-homogeneous / not evenly spaces set of data with a specified period. Useful for converting weirder data into a neat TimeSeries.
+
+        The result is on a fixed grid: its elements are at whole multiples of ``period`` since the UNIX epoch, from
+        the first at or after the first data point to the last at or before the last one. Series with the same
+        period therefore share timestamps, so combining them doesn't interpolate again. Data points within a
+        thousandth of a period of a grid point count as on it.
 
         :param list x_axis: Data point times, as ascending UNIX timestamps in seconds
         :param list y_axis: Data points
@@ -694,7 +706,7 @@ class TimeSeries(np.ndarray):
         :param datetime.timezone timezone: Timezone
         :param dict meta: Metadata for the TimeSeries
 
-        :raises ValueError: If ``period`` isn't positive.
+        :raises ValueError: If ``period`` isn't positive, or no grid point falls within the data.
         :return: Homogenized TimeSeries
         """
         if not period > 0:
@@ -703,29 +715,25 @@ class TimeSeries(np.ndarray):
         if meta is None:
             meta = {}
 
-        # Get the x-axis in relative seconds (first element is t=0)
         x_axis = np.asarray(x_axis, dtype=float)
-        rel_x_axis = x_axis - x_axis[0]
 
-        # Reshape the x-axis to have the right number of elements for needed period. Spans within a thousandth of a
-        # period of a whole number of periods are that number: UNIX timestamps only carry ~0.2 us of precision, which
-        # would otherwise add an extra element (0.2 s / 0.1 s -> 2.000002)
-        temporal_length: float = rel_x_axis[-1]  # Total time of the query in seconds
-        desired_num_elements: int = math.ceil(temporal_length / period - 1e-3)
-        desired_x_axis = np.linspace(0, temporal_length, desired_num_elements + 1, endpoint=True)
+        # Indices of the first and last grid points within the data, counting data points within a thousandth of a
+        # period of a grid point as on it
+        first_index = math.ceil(x_axis[0] / period - 1e-3)
+        last_index = math.floor(x_axis[-1] / period + 1e-3)
+        if last_index < first_index:
+            raise ValueError(
+                f"No multiple of the {period} s period falls between the first and last data points "
+                f"({x_axis[0]} s to {x_axis[-1]} s)!"
+            )
 
-        # Re-interpolate our data on x-axis
-        wave = np.array(y_axis, dtype=float).reshape(-1)
-        wave_interpolated = np.interp(desired_x_axis, rel_x_axis, wave)
-
-        # A single data point spans no time, so its x-axis has no spacing to measure
-        actual_granularity = float(np.mean(np.diff(desired_x_axis))) if desired_num_elements > 0 else period
-
-        start_time = datetime.datetime.fromtimestamp(x_axis[0], tz=timezone)
+        # Re-interpolate our data onto the grid
+        grid = np.arange(first_index, last_index + 1) * period
+        wave_interpolated = np.interp(grid, x_axis, np.array(y_axis, dtype=float).reshape(-1))
 
         new_wave = TimeSeries(wave_interpolated,
-                              start_time = start_time,
-                              period = actual_granularity,
+                              start_time = datetime.datetime.fromtimestamp(grid[0], tz=timezone),
+                              period = period,
                               units = units,
                               meta = meta)
 

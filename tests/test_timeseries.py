@@ -611,14 +611,14 @@ def test_from_samples_regrids_onto_the_period():
     assert series.meta == {"signal": "P"}
 
 
-def test_from_samples_accepts_datetimes_and_drops_missing_values():
+def test_from_samples_accepts_datetimes_and_keeps_missing_values():
     start = datetime.datetime(2024, 7, 16, 14, 0, tzinfo=datetime.timezone.utc)
     timestamps = [start + datetime.timedelta(seconds=t) for t in range(4)]
 
     series = TimeSeries.from_samples(timestamps, [None, 1.0, float("nan"), 3.0], period=1.0)
 
-    assert series.start == start + datetime.timedelta(seconds=1)
-    assert list(series) == pytest.approx([1.0, 2.0, 3.0])
+    assert series.start == start
+    assert list(series) == pytest.approx([np.nan, 1.0, np.nan, 3.0], nan_ok=True)
     assert series.units.dimensionless
     assert series.meta == {}
 
@@ -632,7 +632,7 @@ def test_from_samples_single_sample():
 
 def test_from_samples_rejects_empty_and_mismatched_input():
     with pytest.raises(ValueError, match="without any samples"):
-        TimeSeries.from_samples([1.0], [None], period=1.0)
+        TimeSeries.from_samples([], [], period=1.0)
 
     with pytest.raises(ValueError, match="2 timestamps but 1 values"):
         TimeSeries.from_samples([1.0, 2.0], [1.0], period=1.0)
@@ -762,3 +762,39 @@ def test_from_csv_keeps_signs_and_returns_a_time_series(tmp_path):
 
     with pytest.raises(ValueError, match="choose one"):
         TimeSeries.from_csv(path, period=0.5)
+
+
+def test_from_samples_interpolates_between_present_samples_around_a_gap():
+    # Only the elements interpolated from the missing sample at t=2 are missing
+    series = TimeSeries.from_samples([0.0, 1.0, 2.0, 3.0, 4.0], [0.0, 10.0, None, 30.0, 40.0], period=0.5)
+
+    assert list(series) == pytest.approx([0.0, 5.0, 10.0, np.nan, np.nan, np.nan, 30.0, 35.0, 40.0], nan_ok=True)
+
+
+def test_from_samples_snaps_onto_multiples_of_the_period():
+    base = 1_720_000_000.0
+    series = TimeSeries.from_samples([base + 0.05, base + 1.05], [0.0, 1.0], period=0.1)
+
+    assert series.period == 0.1
+    assert len(series) == 10
+    assert series.start.timestamp() == pytest.approx(base + 0.1)
+    assert series.stop.timestamp() == pytest.approx(base + 1.0)
+    assert list(series) == pytest.approx([0.05 + 0.1 * i for i in range(10)], abs=1e-6)
+
+
+def test_series_with_the_same_period_share_timestamps():
+    # Jittered by a few milliseconds, like CAN and radio delays, and starting at different times
+    base = 1_720_000_000.0
+    a = TimeSeries.from_samples([base + 0.003, base + 0.102, base + 0.204, base + 0.299], [0, 1, 2, 3], 0.1)
+    b = TimeSeries.from_samples([base + 0.137, base + 0.241, base + 0.338], [5, 6, 7], 0.1)
+
+    assert a.start.timestamp() == pytest.approx(base + 0.1)
+    assert b.start.timestamp() == pytest.approx(base + 0.2)
+    for series in (a, b):
+        periods_since_epoch = series.unix_x_axis / 0.1
+        assert np.allclose(periods_since_epoch, np.round(periods_since_epoch), rtol=0, atol=1e-4)
+
+
+def test_from_samples_rejects_data_between_two_multiples_of_the_period():
+    with pytest.raises(ValueError, match="No multiple"):
+        TimeSeries.from_samples([1_720_000_000.03, 1_720_000_000.07], [1.0, 2.0], period=0.1)

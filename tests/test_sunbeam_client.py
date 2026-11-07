@@ -84,7 +84,7 @@ def test_lists_events_and_signals(server):
 def test_time_series_gets_everything_in_one_request(server):
     series = SunbeamClient("http://sunbeam:8000").get_time_series("FSGP_2024_Day_1", "MotorPower")
 
-    assert list(series) == pytest.approx([float(i) for i in range(25)])
+    assert list(series) == pytest.approx([float(i) for i in range(25)], abs=1e-4)
     assert server.requests == [
         ("http://sunbeam:8000/events/FSGP_2024_Day_1/signals/MotorPower/data", {"limit": 0})
     ]
@@ -104,13 +104,13 @@ def test_names_are_url_encoded(server):
     assert server.requests[0][0] == "http://sunbeam:8000/events/FSGP%202024%2FDay%201/signals/MotorPower/data"
 
 
-def test_missing_values_are_interpolated_across(monkeypatch):
+def test_missing_values_are_kept_as_nan(monkeypatch):
     fake = FakeServer(count=3, values=[1.0, None, 3.0])
     monkeypatch.setattr(requests, "get", fake.get)
 
     series = SunbeamClient("http://sunbeam:8000").get_time_series("FSGP_2024_Day_1", "MotorPower")
 
-    assert list(series) == pytest.approx([1.0, 2.0, 3.0])
+    assert list(series) == pytest.approx([1.0, float("nan"), 3.0], nan_ok=True)
 
 
 def test_unknown_frequency_uses_the_sample_spacing(monkeypatch):
