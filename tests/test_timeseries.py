@@ -6,11 +6,9 @@ import datetime
 
 # Helper Function for testing
 def quick_gen_timeseries(x_data, y_data, units = "m"):
-    time_series = TimeSeries(y_data, 
+    time_series = TimeSeries(y_data,
                              datetime.datetime.fromtimestamp(x_data[0], tz = datetime.timezone.utc),
-                             datetime.datetime.fromtimestamp(x_data[-1], tz = datetime.timezone.utc),
-                             period = 1.0,
-                             length = x_data[-1] - x_data[0],
+                             period=1.0,
                              units=units)
     
     return time_series
@@ -40,17 +38,13 @@ def test_align_with_different_granularity():
     y_data_2 = [1, 2, 1, 2, 7, 8, 3, 2,  4, 4, 4, 1, 4, 3, 1, 2, 1, 2, 7, 8, 3, 2, 4, 4, 4, 1, 1]
     x_data_2 = np.array([2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5, 10, 10.5, 11, 11.5, 12, 12.5, 13, 13.5, 14, 14.5, 15]) + 946684800.0
 
-    time_series_1 = TimeSeries(y_data_1, 
+    time_series_1 = TimeSeries(y_data_1,
                                datetime.datetime.fromtimestamp(x_data_1[0], tz = datetime.timezone.utc),
-                               datetime.datetime.fromtimestamp(x_data_1[-1], tz = datetime.timezone.utc),
-                               period = 1.0,
-                               length = x_data_1[-1] - x_data_1[0],)
+                               period=1.0)
 
-    time_series_2 = TimeSeries(y_data_2, 
+    time_series_2 = TimeSeries(y_data_2,
                                datetime.datetime.fromtimestamp(x_data_2[0], tz = datetime.timezone.utc),
-                               datetime.datetime.fromtimestamp(x_data_2[-1], tz = datetime.timezone.utc),
-                               period = 0.5,
-                               length = x_data_2[-1] - x_data_2[0],)
+                               period=0.5)
 
     time_series_1_aligned, time_series_2_aligned = TimeSeries.align(time_series_1, time_series_2)
 
@@ -61,11 +55,9 @@ def test_interpolate_index():
     y_data_1 = [1, 2, 3, 3, 3, 2, 4,  4,  4,  1]
     x_data_1 = np.array([4, 5, 6, 7, 8, 9, 10, 11, 12, 13]) + 946684800.0  # January 1st, 2000 in UNIX time
 
-    time_series_1 = TimeSeries(y_data_1, 
+    time_series_1 = TimeSeries(y_data_1,
                                datetime.datetime.fromtimestamp(x_data_1[0], tz = datetime.timezone.utc),
-                               datetime.datetime.fromtimestamp(x_data_1[-1], tz = datetime.timezone.utc),
-                               period = 1.0,
-                               length = x_data_1[-1] - x_data_1[0],)
+                               period=1.0)
     
     assert math.isclose(time_series_1.interpolate_indices(1.3), y_data_1[1] * 0.7 + y_data_1[2] * 0.3)
     assert time_series_1.interpolate_indices(2.4) == 3
@@ -76,11 +68,9 @@ def test_datetime_index():
     y_data_1 = [1, 2, 3, 3, 3, 2, 4,  5,  4,  1]
     x_data_1 = np.array([4, 5, 6, 7, 8, 9, 10, 11, 12, 13]) + 946684800.0  # January 1st, 2000 in UNIX time
 
-    time_series_1 = TimeSeries(y_data_1, 
+    time_series_1 = TimeSeries(y_data_1,
                                datetime.datetime.fromtimestamp(x_data_1[0], tz = datetime.timezone.utc),
-                               datetime.datetime.fromtimestamp(x_data_1[-1], tz = datetime.timezone.utc),
-                               period = 1.0,
-                               length = x_data_1[-1] - x_data_1[0],)
+                               period=1.0)
 
     time1 = datetime.datetime.fromtimestamp(946684800.0 + 4, tz = datetime.timezone.utc)
     time2 = datetime.datetime.fromtimestamp(946684800.0 + 11, tz = datetime.timezone.utc)
@@ -189,18 +179,14 @@ def test_multiplication_auto_align_different_granularity():
     y2 = [10, 20, 30, 40, 50, 60, 70]
     x2 = np.array([0, 0.5, 1, 1.5, 2, 2.5, 3]) + 946684800.0
 
-    ts1 = TimeSeries(y1, 
+    ts1 = TimeSeries(y1,
                      datetime.datetime.fromtimestamp(x1[0], tz = datetime.timezone.utc),
-                     datetime.datetime.fromtimestamp(x1[-1], tz = datetime.timezone.utc),
-                     period = 1.0,
-                     length = x1[-1] - x1[0],
+                     period=1.0,
                      units="m")
 
-    ts2 = TimeSeries(y2, 
-                     datetime.datetime.fromtimestamp(x2[0], tz = datetime.timezone.utc), 
-                     datetime.datetime.fromtimestamp(x2[-1], tz = datetime.timezone.utc), 
-                     period = 0.5, 
-                     length = x2[-1] - x2[0],
+    ts2 = TimeSeries(y2,
+                     datetime.datetime.fromtimestamp(x2[0], tz = datetime.timezone.utc),
+                     period=0.5,
                      units="m")
 
     result = ts1 * ts2
@@ -327,19 +313,13 @@ def test_addition_different_units():
     y2 = [4, 5, 6]
     x2 = np.array([0, 1, 2]) + 946684800.0
 
-    ts1 = TimeSeries(y1, 
+    ts1 = TimeSeries(y1,
                      datetime.datetime.fromtimestamp(x1[0], tz = datetime.timezone.utc),
-                     datetime.datetime.fromtimestamp(x1[-1], tz = datetime.timezone.utc),
-                     period = 1.0,
-                     length = x1[-1] - x1[0]
-                     )
+                     period=1.0)
 
-    ts2 = TimeSeries(y2, 
-                     datetime.datetime.fromtimestamp(x2[0], tz = datetime.timezone.utc), 
-                     datetime.datetime.fromtimestamp(x2[-1], tz = datetime.timezone.utc), 
-                     period = 1.0, 
-                     length = x2[-1] - x2[0]
-                     )
+    ts2 = TimeSeries(y2,
+                     datetime.datetime.fromtimestamp(x2[0], tz = datetime.timezone.utc),
+                     period=1.0)
 
 
     ts1.override_units("km")
@@ -510,13 +490,10 @@ def test_time_shift_behavior():
     assert shifted_backward.stop.timestamp() == ts2.stop.timestamp() - 3
 
     # Preserve metadata test
-    ts3 = TimeSeries([1, 2, 3], 
-                      datetime.datetime.fromtimestamp(1 + 946684800.0, tz = datetime.timezone.utc),
-                      datetime.datetime.fromtimestamp(3 + 946684800.0, tz = datetime.timezone.utc),
-                      1,
-                      2,
-                      "m"
-    )
+    ts3 = TimeSeries([1, 2, 3],
+                     datetime.datetime.fromtimestamp(1 + 946684800.0, tz = datetime.timezone.utc),
+                     period=1,
+                     units="m")
 
     shifted_meta = ts3.shift(10)
 
@@ -664,7 +641,7 @@ def test_from_samples_rejects_empty_and_mismatched_input():
 def test_constructor_derives_stop_and_length_from_the_period():
     start = datetime.datetime(2024, 7, 16, 14, 0, tzinfo=datetime.timezone.utc)
 
-    series = TimeSeries([1, 2, 3, 4], start, period=0.5)
+    series = TimeSeries([1, 2, 3, 4], start, 0.5)
 
     assert series.length == pytest.approx(1.5)
     assert series.stop == start + datetime.timedelta(seconds=1.5)
@@ -672,22 +649,18 @@ def test_constructor_derives_stop_and_length_from_the_period():
     assert series.units.dimensionless
 
 
-def test_constructor_derives_the_period_from_the_stop():
+def test_constructor_rejects_bad_start_times_and_periods():
     start = datetime.datetime(2024, 7, 16, 14, 0, tzinfo=datetime.timezone.utc)
 
-    series = TimeSeries([1, 2, 3], start, start + datetime.timedelta(seconds=4))
+    with pytest.raises(ValueError, match="timezone"):
+        TimeSeries([1, 2], datetime.datetime(2024, 7, 16), 1.0)
 
-    assert series.period == pytest.approx(2.0)
+    with pytest.raises(ValueError, match="positive"):
+        TimeSeries([1, 2], start, 0.0)
 
-
-def test_constructor_warns_and_trusts_the_period_over_a_disagreeing_length():
-    start = datetime.datetime(2024, 7, 16, 14, 0, tzinfo=datetime.timezone.utc)
-
-    with pytest.warns(UserWarning, match="length"):
-        series = TimeSeries([1, 2, 3], start, period=1.0, length=3.0)
-
-    assert series.length == 2.0
-    assert series.stop == start + datetime.timedelta(seconds=2)
+    # The old (data, start, stop, period, length, ...) order puts the stop where the period goes
+    with pytest.raises(TypeError, match="period"):
+        TimeSeries([1, 2], start, start + datetime.timedelta(seconds=1), 1.0, 1.0)
 
 
 def test_align_keeps_samples_at_their_true_times():

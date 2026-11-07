@@ -1,6 +1,4 @@
 import base64
-from bisect import bisect_left
-from datetime import datetime, timezone
 from urllib.parse import quote
 from dotenv import load_dotenv
 import numpy as np
@@ -185,53 +183,26 @@ class SunbeamClient:
 
         :param event: The name of the event.
         :param signal: The name of the signal.
-        :param timeout: The amount of time to wait for each request (long signals take several) to return.
+        :param timeout: The amount of time to wait for the request to return.
         :raises KeyError: If there is no such event, or the event has no such signal.
         :raises ValueError: If the signal has no data.
-        :raises requests.exceptions.Timeout: If a request times out.
+        :raises RuntimeError: If the server truncated the data, i.e. it doesn't support ``limit=0``.
+        :raises requests.exceptions.Timeout: If the request times out.
         """
         path = f"/events/{quote(event, safe='')}/signals/{quote(signal, safe='')}/data"
 
-        # The API returns at most a page of the MOST RECENT samples before ``end``; walk backwards until a page
-        # isn't truncated. Timestamps are epoch milliseconds, ascending.
-        pages: list[dict] = []
-        params: dict = {}
-        while True:
-            page = self._get(path, params=params, timeout=timeout)
-            if pages and page["timestamps"] and page["timestamps"][0] >= pages[-1]["timestamps"][0]:
-                # Asking again would return this same page forever
-                raise RuntimeError(
-                    f"Paging {signal!r} in {event!r} stalled at {params['end']}: a page of samples shares one "
-                    f"millisecond!"
-                )
-            pages.append(page)
-            if not page["truncated"] or not page["timestamps"]:
-                break
-            earliest = datetime.fromtimestamp(page["timestamps"][0] / 1000, tz=timezone.utc)
-            params = {"end": earliest.isoformat()}
+        # limit=0 asks for the whole event in one response. Timestamps are epoch milliseconds, ascending.
+        response = self._get(path, params={"limit": 0}, timeout=timeout)
+        if response["truncated"]:
+            raise RuntimeError("Sunbeam truncated the data despite `limit=0`: is the server up to date?")
 
-        # Newest page first. A sample that rounded up to a newer page's first millisecond comes back in both
-        # pages, so each older page only contributes the samples before everything already kept.
-        timestamp_chunks: list[list[int]] = []
-        value_chunks: list[list] = []
-        earliest_kept = None
-        for page in pages:
-            page_timestamps = page["timestamps"]
-            keep = len(page_timestamps) if earliest_kept is None else bisect_left(page_timestamps, earliest_kept)
-            timestamp_chunks.append(page_timestamps[:keep])
-            value_chunks.append(page["values"][:keep])
-            if keep:
-                earliest_kept = page_timestamps[0]
-
-        # Oldest first, joined once
-        timestamps: list[int] = [t for chunk in reversed(timestamp_chunks) for t in chunk]
-        values: list = [v for chunk in reversed(value_chunks) for v in chunk]
+        timestamps: list[int] = response["timestamps"]
+        values: list = response["values"]
 
         if not any(value is not None for value in values):
             raise ValueError(f"Sunbeam has no data for {signal!r} in {event!r}!")
 
-        latest = pages[0]
-        frequency = latest["frequency"]
+        frequency = response["frequency"]
         seconds = np.array(timestamps, dtype=float) / 1000
 
         # Samples that share a millisecond don't say anything about the spacing
@@ -249,12 +220,12 @@ class SunbeamClient:
             seconds,
             values,
             period=period,
-            units=latest["unit"] or None,
+            units=response["unit"] or None,
             meta={
                 "event": event,
                 "signal": signal,
-                "source": latest["source"],
-                "description": latest["description"],
+                "source": response["source"],
+                "description": response["description"],
                 "frequency": frequency,
             },
         )

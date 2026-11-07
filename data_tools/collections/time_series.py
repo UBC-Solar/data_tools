@@ -5,7 +5,6 @@ import math
 import pandas as pd
 import copy
 import operator
-import warnings
 from pint.registry import Unit
 
 
@@ -20,29 +19,20 @@ class TimeSeries(np.ndarray):
     """
     UnitRegistry = unit_registry
 
-    # How far a given ``length`` or ``stop`` may disagree with the one derived from ``period``, in seconds, as
-    # the larger of an absolute amount (datetimes only carry microseconds) and a fraction of the period
-    _ABS_TOLERANCE = 1e-5
-    _REL_TOLERANCE = 1e-3
-
     # __new__ and __array_finalize__ are mandatory to ensure that
     # `TimeSeries` properly acts like a ndarray when necessary.
     def __new__(
             cls,
             input_array,
-            start_time: datetime.datetime = None,
-            stop_time: datetime.datetime = None,
-            period: float = None,
-            length: float = None,
-            units = None,
+            start_time: datetime.datetime,
+            period: float,
+            units: Unit | str = None,
             meta: dict = None
     ):
         obj = np.asarray(input_array).view(cls)
         obj._start = start_time
-        obj._stop = stop_time
-        obj._units = units
         obj._period = period
-        obj._length = length
+        obj._units = units
         obj._meta = meta
 
         return obj
@@ -52,69 +42,39 @@ class TimeSeries(np.ndarray):
             return
 
         self._start = getattr(obj, '_start', None)
-        self._stop = getattr(obj, '_stop', None)
-        self._units = getattr(obj, '_units', None)
-        self._length = getattr(obj, '_length', None)
         self._period = getattr(obj, '_period', None)
+        self._units = getattr(obj, '_units', None)
         self._meta = getattr(obj, '_meta', None)
 
     def __init__(self, input_array,
-                 start_time: datetime.datetime = None,
-                 stop_time: datetime.datetime = None,
-                 period: float = None,
-                 length: float = None,
+                 start_time: datetime.datetime,
+                 period: float,
                  units: Unit | str = None,
                  meta: dict = None):
         """
         :param input_array: The evenly-spaced data.
         :param datetime.datetime start_time: Timezone-aware time of the first element.
-        :param datetime.datetime stop_time: Optional, timezone-aware time of the last element. Derived from
-            ``start_time`` and ``period`` when they are given, so it only needs to be given in their place.
-        :param float period: Time between elements in seconds. If not given, it is derived from ``length`` (or
-            ``stop_time``) and the number of elements.
-        :param float length: Optional, time between the first and last element in seconds. Like ``stop_time``,
-            derived from ``period`` when it is given.
+        :param float period: Time between elements, in seconds. With ``start_time``, it fixes the x–axis: ``stop``
+            and ``length`` follow from them and the number of elements.
         :param str | Unit units: Units of the data, dimensionless if ``None``.
         :param dict meta: Metadata for the TimeSeries.
-        :raises ValueError: If ``start_time`` or ``stop_time`` is naive.
-        :warns UserWarning: If ``length`` or ``stop_time`` disagrees with ``period``, in which case the length and
-            stop are derived from ``period``.
+        :raises TypeError: If ``start_time`` isn't a datetime, or ``period`` isn't a number.
+        :raises ValueError: If ``start_time`` is naive, or ``period`` isn't positive.
         """
-        # Check if the start and stop are not naive
-        if start_time is not None:
-            if start_time.tzinfo is None:
-                raise ValueError("The start time does not have an assigned timezone!")
+        if not isinstance(start_time, datetime.datetime):
+            raise TypeError(f"The start time must be a datetime, not {type(start_time)}!")
 
-        if stop_time is not None:
-            if stop_time.tzinfo is None:
-                raise ValueError("The end time does not have an assigned timezone!")
+        if start_time.tzinfo is None:
+            raise ValueError("The start time does not have an assigned timezone!")
 
-        num_elements = self._num_elements()
-        stop_length = (stop_time - start_time).total_seconds() \
-            if start_time is not None and stop_time is not None else None
+        if isinstance(period, bool) or not isinstance(period, (int, float, np.integer, np.floating)):
+            raise TypeError(f"The period must be a number of seconds, not {type(period)}!")
 
-        # Derive the period from whichever span was given
-        if period is None and num_elements > 1:
-            span = length if length is not None else stop_length
-            if span is not None:
-                period = span / (num_elements - 1)
-
-        # Anything else given should agree with the period, which wins: the x–axis is evenly spaced by it
-        if period is not None:
-            derived_length = period * max(num_elements - 1, 0)
-            tolerance = max(TimeSeries._ABS_TOLERANCE, TimeSeries._REL_TOLERANCE * abs(period))
-            for name, given in (("length", length), ("stop_time", stop_length)):
-                if given is not None and abs(given - derived_length) > tolerance:
-                    warnings.warn(
-                        f"The {name} implies a length of {given} s, but {num_elements} elements with a period "
-                        f"of {period} s span {derived_length} s! Using {derived_length} s.",
-                        stacklevel=2
-                    )
+        if not period > 0:
+            raise ValueError(f"The period must be positive, not {period}!")
 
         self._start: datetime.datetime = start_time
-        # Only used when there is no period to derive them from
-        self._stop: datetime.datetime = stop_time
-        self._length: float = length if length is not None else stop_length
+        self._period: float = float(period)
 
         # Setting units
         if units is None:
@@ -128,8 +88,6 @@ class TimeSeries(np.ndarray):
             self._meta = {}
         else:
             self._meta = meta
-
-        self._period: float = period
 
     def _num_elements(self) -> int:
         return self.shape[0] if self.ndim > 0 else 1
@@ -240,9 +198,6 @@ class TimeSeries(np.ndarray):
         """
         Total time between the first and last element of this wave's data
         """
-        if self._period is None:
-            return self._length
-
         return self._period * max(self._num_elements() - 1, 0)
 
     @property
@@ -291,11 +246,7 @@ class TimeSeries(np.ndarray):
         """
         UTC datetime of the last data element
         """
-        length = self.length
-        if self._start is None or self._period is None or length is None:
-            return self._stop
-
-        return self._start + datetime.timedelta(seconds=length)
+        return self._start + datetime.timedelta(seconds=self.length)
 
     def __getitem__(self, item):
         data_to_slice = self
@@ -406,7 +357,7 @@ class TimeSeries(np.ndarray):
     def promote(self, array: np.ndarray):
         """
         Promote a plain ndarray, ``array``, to a TimeSeries with the same properties
-        as this TimeSeries (start_time, stop_time, period, length, units, meta)
+        as this TimeSeries (start_time, period, units, meta)
 
         This method is particularly useful for interfacing
         with libraries such as SciPy and NumPy, which will return an ndarray even when
@@ -418,18 +369,7 @@ class TimeSeries(np.ndarray):
         # A copy, so that changing one TimeSeries' metadata doesn't change the other's
         meta: dict = copy.copy(self.meta)
 
-        # With a period, the stop and length follow from it (and the length of ``array``)
-        unspaced = self.period is None
-
-        return TimeSeries(
-            array,
-            self.start,
-            stop_time=self.stop if unspaced else None,
-            period=self.period,
-            length=self.length if unspaced else None,
-            units=self.units,
-            meta=meta
-        )
+        return TimeSeries(array, self.start, self.period, self.units, meta)
     
     def interpolate_indices(self, i: float) -> float:
         """ Function which interpolates between the two nearest indices
@@ -513,8 +453,6 @@ class TimeSeries(np.ndarray):
         # A copy of the data, so that changing the shifted series doesn't change this one
         timeseries_copy = self.promote(np.array(self))
         timeseries_copy._start = self.start + shift
-        if timeseries_copy._stop is not None:
-            timeseries_copy._stop = timeseries_copy._stop + shift
 
         return timeseries_copy
 

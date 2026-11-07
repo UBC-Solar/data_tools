@@ -19,15 +19,15 @@ class FakeResponse:
 
 
 class FakeServer:
-    """ Serves one signal the way Sunbeam's data endpoint does: the most recent ``limit`` samples before ``end``. """
+    """ Serves one signal the way Sunbeam's data endpoint does: the most recent ``limit`` samples, all if 0. """
 
-    def __init__(self, count=25, limit=10, frequency=10.0, unit="W", values=None, inclusive_end=False):
+    def __init__(self, count=25, limit=10, frequency=10.0, unit="W", values=None, supports_unlimited=True):
         self.timestamps = [START_MS + 100 * i for i in range(count)]
         self.values = values if values is not None else [float(i) for i in range(count)]
         self.limit = limit
         self.frequency = frequency
         self.unit = unit
-        self.inclusive_end = inclusive_end
+        self.supports_unlimited = supports_unlimited
         self.requests = []
 
     def get(self, url, params=None, timeout=None):
@@ -42,14 +42,14 @@ class FakeServer:
         if "/nope/" in url:
             return FakeResponse(404, {"detail": "Event 'FSGP_2024_Day_1' has no signal named 'nope'."})
 
-        end = params.get("end") if params else None
-        end_ms = datetime.fromisoformat(end).timestamp() * 1000 if end else float("inf")
-        rows = [
-            (t, v) for t, v in zip(self.timestamps, self.values)
-            if t < end_ms or (self.inclusive_end and t == end_ms)
-        ]
-        truncated = len(rows) > self.limit
-        rows = rows[-self.limit:]
+        limit = (params or {}).get("limit", self.limit)
+        if limit == 0 and not self.supports_unlimited:
+            limit = self.limit
+
+        rows = list(zip(self.timestamps, self.values))
+        truncated = 0 < limit < len(rows)
+        if truncated:
+            rows = rows[-limit:]
 
         return FakeResponse(200, {
             "event_name": "FSGP_2024_Day_1", "signal": "MotorPower",
@@ -81,11 +81,13 @@ def test_lists_events_and_signals(server):
     assert client.list_signals("FSGP_2024_Day_1", with_data=False) == ["MotorPower", "PackPower"]
 
 
-def test_time_series_pages_through_everything(server):
+def test_time_series_gets_everything_in_one_request(server):
     series = SunbeamClient("http://sunbeam:8000").get_time_series("FSGP_2024_Day_1", "MotorPower")
 
     assert list(series) == pytest.approx([float(i) for i in range(25)])
-    assert len(server.requests) == 3
+    assert server.requests == [
+        ("http://sunbeam:8000/events/FSGP_2024_Day_1/signals/MotorPower/data", {"limit": 0})
+    ]
     assert series.period == pytest.approx(0.1)
     assert series.start == datetime.fromtimestamp(START_MS / 1000, tz=timezone.utc)
     assert series.length == pytest.approx(2.4)
@@ -94,16 +96,6 @@ def test_time_series_pages_through_everything(server):
         "event": "FSGP_2024_Day_1", "signal": "MotorPower", "source": "derived",
         "description": "Motor power", "frequency": 10.0,
     }
-
-
-def test_a_sample_in_two_pages_is_kept_once(monkeypatch):
-    # As when a sample's sub-millisecond time rounds up to the next page's first timestamp
-    fake = FakeServer(inclusive_end=True)
-    monkeypatch.setattr(requests, "get", fake.get)
-
-    series = SunbeamClient("http://sunbeam:8000").get_time_series("FSGP_2024_Day_1", "MotorPower")
-
-    assert list(series) == pytest.approx([float(i) for i in range(25)])
 
 
 def test_names_are_url_encoded(server):
@@ -144,16 +136,6 @@ def test_no_data_raises_value_error(monkeypatch):
         SunbeamClient("http://sunbeam:8000").get_time_series("FSGP_2024_Day_1", "MotorPower")
 
 
-def test_paging_that_makes_no_progress_raises(monkeypatch):
-    # Every sample in one millisecond: asking for the samples before it returns the same page again
-    fake = FakeServer(count=25, limit=10, inclusive_end=True)
-    fake.timestamps = [START_MS] * 25
-    monkeypatch.setattr(requests, "get", fake.get)
-
-    with pytest.raises(RuntimeError, match="stalled"):
-        SunbeamClient("sunbeam.test").get_time_series("FSGP_2024_Day_1", "MotorPower")
-
-
 def test_unknown_frequency_ignores_samples_sharing_a_millisecond(monkeypatch):
     fake = FakeServer(count=5, frequency=None)
     fake.timestamps = [START_MS, START_MS, START_MS, START_MS + 200, START_MS + 400]
@@ -162,3 +144,11 @@ def test_unknown_frequency_ignores_samples_sharing_a_millisecond(monkeypatch):
     series = SunbeamClient("sunbeam.test").get_time_series("FSGP_2024_Day_1", "MotorPower")
 
     assert series.period == pytest.approx(0.2)
+
+
+def test_a_server_without_unlimited_queries_raises(monkeypatch):
+    fake = FakeServer(supports_unlimited=False)
+    monkeypatch.setattr(requests, "get", fake.get)
+
+    with pytest.raises(RuntimeError, match="truncated"):
+        SunbeamClient("http://sunbeam:8000").get_time_series("FSGP_2024_Day_1", "MotorPower")
